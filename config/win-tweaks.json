@@ -1,0 +1,1088 @@
+﻿{
+  "WPFTweaksDisableGameDVR": {
+    "title": "Desativar Xbox Game DVR e Gravação em 2º Plano",
+    "category": "Desempenho & Energia",
+    "description": "Desativa a gravação contínua de tela do Xbox Game Bar, reduzindo o uso de GPU/Vídeo e eliminando micro-stutterings em jogos.",
+    "rationale": "O recurso Historical Capture mantém sessões de codificação de vídeo (NVENC/AMF) e buffers D3D ativos em segundo plano. Desativá-lo preserva a Xbox Game Bar para convites de amigos, mas impede gravação contínua involuntária. Fonte: Documentação Microsoft Policy CSP ApplicationManagement/AllowGameDVR.",
+    "impact": "Médio",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKCU:\\System\\GameConfigStore",
+        "name": "GameDVR_Enabled",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": 1
+      },
+      {
+        "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR",
+        "name": "AppCaptureEnabled",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": 1
+      },
+      {
+        "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\GameDVR",
+        "name": "AllowGameDVR",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": "<RemoveEntry>"
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksMouseRawInput": {
+    "title": "Mouse 1:1 (Desativar Aprimorar Precisão do Ponteiro)",
+    "category": "Desempenho & Energia",
+    "description": "Desativa a curva de aceleração de ponteiro do Windows (MouseSpeed=0, MouseThreshold1=0, MouseThreshold2=0) para resposta linear 1:1.",
+    "rationale": "Jogos sem Raw Input nativo ou menus de inventário baseados no cursor do sistema herdam a curva de aceleração EPP (Enhance Pointer Precision) do Windows, prejudicando a memória muscular em FPS competitivos. Fonte: Documentação Win32 SystemParametersInfo SPI_SETMOUSE.",
+    "impact": "Alto",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKCU:\\Control Panel\\Mouse",
+        "name": "MouseSpeed",
+        "type": "String",
+        "value": "0",
+        "originalValue": "1"
+      },
+      {
+        "path": "HKCU:\\Control Panel\\Mouse",
+        "name": "MouseThreshold1",
+        "type": "String",
+        "value": "0",
+        "originalValue": "6"
+      },
+      {
+        "path": "HKCU:\\Control Panel\\Mouse",
+        "name": "MouseThreshold2",
+        "type": "String",
+        "value": "0",
+        "originalValue": "10"
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksSmartPowerPlan": {
+    "title": "Gerenciamento de Energia Inteligente (Desktop / Ryzen X3D / Notebook)",
+    "category": "Desempenho & Energia",
+    "description": "Ativa Alto Desempenho em Desktops, mantém Equilibrado em processadores AMD Ryzen X3D (exigido pelo Core Parking 3D V-Cache) e preserva a bateria em Notebooks.",
+    "rationale": "Em CPUs AMD Ryzen 7000X3D/9000X3D com múltiplos CCDs, o driver AMD 3D V-Cache Performance Optimizer exige o plano Equilibrado (Balanced) para estacionar o CCD sem cache durante jogos. Em demais desktops, Alto Desempenho evita latência de transição de estados P-State. Fonte: Guia Oficial de Review AMD Ryzen X3D.",
+    "impact": "Médio",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": ["Set-RedimoSmartPowerPlan"],
+    "undoScript": ["Restore-RedimoPowerPlan"],
+    "checkScript": "Test-RedimoSmartPowerPlan"
+  },
+  "WPFTweaksUltimatePowerPlan": {
+    "title": "Ativar Plano Desempenho Máximo (Ultimate Performance)",
+    "category": "Desempenho & Energia",
+    "description": "Desbloqueia e ativa o plano oculto Ultimate Performance da Microsoft (sem duplicar esquemas existentes).",
+    "rationale": "Reduz micro-latências de gerenciamento de energia de dispositivos e frequência de CPU. Em CPUs modernas com SpeedShift/CPPC o ganho sobre Alto Desempenho é marginal, e aumenta o consumo em idle; não recomendado para Ryzen dual-CCD X3D ou notebooks.",
+    "impact": "Baixo",
+    "riskLevel": "Moderate",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": ["Enable-RedimoUltimatePowerPlan"],
+    "undoScript": ["Restore-RedimoPowerPlan"],
+    "checkScript": "Test-RedimoUltimatePowerPlan"
+  },
+  "WPFTweaksDisableHibernation": {
+    "title": "Desativar Hibernação e Liberar Espaço no SSD (hiberfil.sys)",
+    "category": "Desempenho & Energia",
+    "description": "Executa powercfg -h off e desativa a hibernação, liberando vários gigabytes no SSD do sistema.",
+    "rationale": "O arquivo hiberfil.sys reserva cerca de 40% da capacidade da memória RAM no drive principal. Em desktops com SSD, desativar a hibernação recupera espaço em disco imediatamente e evita gravações desnecessárias ao desligar. Fonte: Microsoft Docs powercfg.",
+    "impact": "Médio",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power",
+        "name": "HibernateEnabled",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": 1
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": ["Disable-RedimoHibernation"],
+    "undoScript": ["Enable-RedimoHibernation"],
+    "checkScript": null
+  },
+  "WPFTweaksDisableFastStartup": {
+    "title": "Desativar Inicialização Rápida (Fast Startup)",
+    "category": "Desempenho & Energia",
+    "description": "Garante que o comando Desligar encerre completamente a sessão do kernel e recarregue drivers do zero.",
+    "rationale": "Com Fast Startup ativo (HiberbootEnabled=1), desligar o PC apenas hiberna a sessão do kernel, acumulando uptime de drivers de GPU/áudio/anti-cheat por semanas e causando instabilidade. Em SSDs NVMe a diferença no tempo de boot é mínima.",
+    "impact": "Médio",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Power",
+        "name": "HiberbootEnabled",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": 1
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksUsbPollingOptimization": {
+    "title": "Otimizar Portas USB para Alto Polling Rate (1000Hz a 8000Hz)",
+    "category": "Desempenho & Energia",
+    "description": "Desativa a Suspensão Seletiva de USB no plano de energia ativo e impede que o Windows desligue os USB Root Hubs para economizar energia.",
+    "rationale": "Mouses e teclados competitivos (1000Hz a 8000Hz) podem sofrer desconexões momentâneas ou jitter de input quando o controlador USB entra em estado de baixo consumo (Selective Suspend). Fonte: Microsoft USB Selective Suspend documentation.",
+    "impact": "Médio",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": ["Optimize-UsbPower"],
+    "undoScript": ["Restore-UsbPower"],
+    "checkScript": "Test-UsbPowerOptimized"
+  },
+  "WPFTweaksDisableMPO": {
+    "title": "Desativar Multiplane Overlay (MPO) no DWM",
+    "category": "Desempenho & Energia",
+    "description": "Aplica OverlayTestMode=5 no Desktop Window Manager para diagnosticar ou corrigir piscadas de tela e travamentos ao dar Alt+Tab.",
+    "rationale": "O MPO permite que o DWM componha planos de hardware diretamente na GPU, mas apresenta bugs conhecidos em combinações de monitores multi-refresh rate com vídeos acelerados por hardware. Nota: em builds recentes do Windows 11 24H2+, a chave OverlayTestMode pode ser ignorada pelo DWM. Fonte: NVIDIA Support KB 5157.",
+    "impact": "Situacional",
+    "riskLevel": "Moderate",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": true,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\Dwm",
+        "name": "OverlayTestMode",
+        "type": "DWord",
+        "value": 5,
+        "originalValue": "<RemoveEntry>"
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksEnableGameMode": {
+    "title": "Garantir Modo de Jogo (Windows Game Mode) Ativo",
+    "category": "Desempenho & Energia",
+    "description": "Ativa o Modo de Jogo do Windows para priorizar threads do jogo ativo e suspender indexação/Windows Update durante a partida.",
+    "rationale": "No Windows 10 1903+ e Windows 11, o Game Mode é essencial para o agendador de threads (especialmente em CPUs híbridas Intel P/E-cores e AMD Ryzen X3D) e impede reinícios ou downloads do Windows Update durante jogos.",
+    "impact": "Médio",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKCU:\\Software\\Microsoft\\GameBar",
+        "name": "AllowAutoGameMode",
+        "type": "DWord",
+        "value": 1,
+        "originalValue": 1
+      },
+      {
+        "path": "HKCU:\\Software\\Microsoft\\GameBar",
+        "name": "AutoGameModeEnabled",
+        "type": "DWord",
+        "value": 1,
+        "originalValue": 1
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksEnableHAGS": {
+    "title": "Ativar Agendamento de GPU Acelerado por Hardware (HAGS)",
+    "category": "Desempenho & Energia",
+    "description": "Habilita o Hardware-Accelerated GPU Scheduling (HwSchMode=2), exigido para DLSS 3 Frame Generation e redução de overhead de CPU.",
+    "rationale": "Transfere o gerenciamento de fila de memória de vídeo do kernel do Windows para o processador dedicado da GPU. Obrigatório para NVIDIA DLSS 3 Frame Generation. Requer reinicialização. Fonte: Microsoft DirectX Developer Blog.",
+    "impact": "Médio",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": 19041,
+    "requiresReboot": true,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers",
+        "name": "HwSchMode",
+        "type": "DWord",
+        "value": 2,
+        "originalValue": 1
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksNetworkThrottling": {
+    "title": "Desativar Throttling de Rede Multimídia (MMCSS)",
+    "category": "Desempenho & Energia",
+    "description": "Configura NetworkThrottlingIndex=0xFFFFFFFF e SystemResponsiveness=10 no perfil multimídia do Windows.",
+    "rationale": "O Multimedia Class Scheduler Service (MMCSS) aplica por padrão um limite de processamento de pacotes de rede (10 pacotes/ms) quando fluxos de áudio/mídia estão ativos. Desativar o limite evita picos de ping quando jogos e apps de voz rodam juntos. Fonte: Microsoft KB 948066.",
+    "impact": "Baixo",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
+        "name": "NetworkThrottlingIndex",
+        "type": "DWord",
+        "value": -1,
+        "originalValue": 10
+      },
+      {
+        "path": "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
+        "name": "SystemResponsiveness",
+        "type": "DWord",
+        "value": 10,
+        "originalValue": 20
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksDisableTelemetry": {
+    "title": "Reduzir Telemetria do Windows e Serviços de Diagnóstico",
+    "category": "Privacidade & Telemetria",
+    "description": "Reduz o nível de coleta de dados de diagnóstico ao mínimo suportado e desativa os serviços DiagTrack e dmwappushservice.",
+    "rationale": "Interrompe o envio contínuo de telemetria de uso em segundo plano pelo serviço Connected User Experiences and Telemetry (DiagTrack). Nota transparente: AllowTelemetry=0 só tem efeito em edições Enterprise/Education; no Windows Home/Pro o sistema aplica o nível mínimo 1 (Required).",
+    "impact": "Médio",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+        "name": "AllowTelemetry",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": "<RemoveEntry>"
+      },
+      {
+        "path": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection",
+        "name": "AllowTelemetry",
+        "type": "DWord",
+        "value": 1,
+        "originalValue": 3
+      },
+      {
+        "path": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection",
+        "name": "MaxTelemetryAllowed",
+        "type": "DWord",
+        "value": 1,
+        "originalValue": 3
+      }
+    ],
+    "services": [
+      {
+        "name": "DiagTrack",
+        "startupType": "Disabled",
+        "originalType": "Automatic"
+      },
+      {
+        "name": "dmwappushservice",
+        "startupType": "Disabled",
+        "originalType": "Manual"
+      }
+    ],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksDisableAdvertisingId": {
+    "title": "Desativar ID de Anúncio e Experiências Personalizadas",
+    "category": "Privacidade & Telemetria",
+    "description": "Impede que aplicativos UWP/Win32 usem o identificador de publicidade do usuário e desativa recomendações baseadas em diagnóstico.",
+    "rationale": "Desliga o rastreamento por Advertising ID e o uso de dados de diagnóstico para personalizar dicas, anúncios e recomendações na interface do Windows.",
+    "impact": "Baixo",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo",
+        "name": "Enabled",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": 1
+      },
+      {
+        "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\AdvertisingInfo",
+        "name": "DisabledByGroupPolicy",
+        "type": "DWord",
+        "value": 1,
+        "originalValue": "<RemoveEntry>"
+      },
+      {
+        "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Privacy",
+        "name": "TailoredExperiencesWithDiagnosticDataEnabled",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": 1
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksDisableActivityHistory": {
+    "title": "Desativar Histórico de Atividades e Sincronização de Timeline",
+    "category": "Privacidade & Telemetria",
+    "description": "Impede que o Windows armazene e envie à nuvem o histórico de aplicativos abertos, arquivos e navegação.",
+    "rationale": "Desativa as políticas EnableActivityFeed, PublishUserActivities e UploadUserActivities, reduzindo gravações em disco e sincronização em segundo plano.",
+    "impact": "Baixo",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+        "name": "EnableActivityFeed",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": "<RemoveEntry>"
+      },
+      {
+        "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+        "name": "PublishUserActivities",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": "<RemoveEntry>"
+      },
+      {
+        "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+        "name": "UploadUserActivities",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": "<RemoveEntry>"
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksDisableTelemetryTasks": {
+    "title": "Desativar Tarefas Agendadas de Telemetria (CEIP e Compatibility Appraiser)",
+    "category": "Privacidade & Telemetria",
+    "description": "Desativa as tarefas agendadas Microsoft Compatibility Appraiser, ProgramDataUpdater e Customer Experience Improvement Program.",
+    "rationale": "O processo CompatTelRunner.exe (acionado pelo Microsoft Compatibility Appraiser) é conhecido por causar alto uso de CPU e leitura intensa de disco em segundo plano.",
+    "impact": "Médio",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [],
+    "services": [],
+    "scheduledTasks": [
+      {
+        "path": "\\Microsoft\\Windows\\Application Experience\\",
+        "name": "Microsoft Compatibility Appraiser",
+        "state": "Disabled",
+        "originalState": "Ready"
+      },
+      {
+        "path": "\\Microsoft\\Windows\\Application Experience\\",
+        "name": "ProgramDataUpdater",
+        "state": "Disabled",
+        "originalState": "Ready"
+      },
+      {
+        "path": "\\Microsoft\\Windows\\Customer Experience Improvement Program\\",
+        "name": "Consolidator",
+        "state": "Disabled",
+        "originalState": "Ready"
+      },
+      {
+        "path": "\\Microsoft\\Windows\\Customer Experience Improvement Program\\",
+        "name": "UsbCeip",
+        "state": "Disabled",
+        "originalState": "Ready"
+      },
+      {
+        "path": "\\Microsoft\\Windows\\DiskDiagnostic\\",
+        "name": "Microsoft-Windows-DiskDiagnosticDataCollector",
+        "state": "Disabled",
+        "originalState": "Ready"
+      }
+    ],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksDisableRecall": {
+    "title": "Desativar Windows Recall (Captura de Tela por IA)",
+    "category": "Privacidade & Telemetria",
+    "description": "Bloqueia via política de grupo a análise de dados por IA e o salvamento de snapshots de tela do Windows Recall no Windows 11.",
+    "rationale": "Aplica as políticas oficiais DisableAIDataAnalysis e TurnOffSavingSnapshots documentadas pela Microsoft para impedir que o Recall capture e indexe a tela periodicamente. Fonte: Microsoft Policy CSP WindowsAI.",
+    "impact": "Médio",
+    "riskLevel": "Safe",
+    "osSupport": ["Win11"],
+    "minBuild": 22621,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+        "name": "DisableAIDataAnalysis",
+        "type": "DWord",
+        "value": 1,
+        "originalValue": "<RemoveEntry>"
+      },
+      {
+        "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+        "name": "TurnOffSavingSnapshots",
+        "type": "DWord",
+        "value": 1,
+        "originalValue": "<RemoveEntry>"
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksDisableLocationTracking": {
+    "title": "Desativar Rastreamento de Localização do Sistema",
+    "category": "Privacidade & Telemetria",
+    "description": "Bloqueia o acesso global à localização geográfica para aplicativos e serviços do Windows.",
+    "rationale": "Em desktops e setups gamers, o serviço de localização é desnecessário e expõe metadados geográficos a aplicativos UWP.",
+    "impact": "Baixo",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\location",
+        "name": "Value",
+        "type": "String",
+        "value": "Deny",
+        "originalValue": "Allow"
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksDisableFeedbackPrompts": {
+    "title": "Desativar Notificações de Feedback do Windows",
+    "category": "Privacidade & Telemetria",
+    "description": "Define a frequência de solicitações de avaliação do Windows (SIUF) como Nunca.",
+    "rationale": "Evita popups de pesquisa de satisfação do Windows interrompendo sessões de uso ou jogos.",
+    "impact": "Baixo",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKCU:\\Software\\Microsoft\\Siuf\\Rules",
+        "name": "NumberOfSIUFInPeriod",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": "<RemoveEntry>"
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksClassicContextMenu": {
+    "title": "Restaurar Menu de Contexto Clássico no Windows 11",
+    "category": "Interface & Windows 11",
+    "description": "Exibe diretamente o menu de clique direito completo no Windows 11 sem precisar clicar em 'Mostrar mais opções'.",
+    "rationale": "Registra o override COM em HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32, eliminando a camada extra de latência do menu XAML do Windows 11.",
+    "impact": "Alto",
+    "riskLevel": "Safe",
+    "osSupport": ["Win11"],
+    "minBuild": 22000,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKCU:\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32",
+        "name": "(Default)",
+        "type": "String",
+        "value": "",
+        "originalValue": "<RemoveKey>"
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksDisableBingSearch": {
+    "title": "Desativar Busca Web do Bing no Menu Iniciar",
+    "category": "Interface & Windows 11",
+    "description": "Configura DisableSearchBoxSuggestions=1 para que a pesquisa do Menu Iniciar busque apenas arquivos, configurações e programas locais.",
+    "rationale": "Remove requisições HTTP ao Bing a cada tecla digitada no Menu Iniciar, deixando a pesquisa local instantânea e eliminando resultados web indesejados. Fonte: Microsoft Policy Explorer/DisableSearchBoxSuggestions.",
+    "impact": "Alto",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKCU:\\Software\\Policies\\Microsoft\\Windows\\Explorer",
+        "name": "DisableSearchBoxSuggestions",
+        "type": "DWord",
+        "value": 1,
+        "originalValue": "<RemoveEntry>"
+      },
+      {
+        "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Search",
+        "name": "BingSearchEnabled",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": 1
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksDisableWidgets": {
+    "title": "Desativar Widgets e Notícias/Interesses na Barra de Tarefas",
+    "category": "Interface & Windows 11",
+    "description": "Desativa o painel de Widgets do Windows 11 (WindowsWebExperiencePack) e o feed de Notícias e Interesses do Windows 10.",
+    "rationale": "O painel de Widgets mantém processos WebView2 (msedgewebview2.exe) residentes em memória RAM mesmo sem o usuário abrir o painel. A política AllowNewsAndInterests=0 encerra o recurso completamente.",
+    "impact": "Alto",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Dsh",
+        "name": "AllowNewsAndInterests",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": "<RemoveEntry>"
+      },
+      {
+        "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Feeds",
+        "name": "EnableFeeds",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": "<RemoveEntry>"
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksDisableCopilot": {
+    "title": "Desativar Windows Copilot e Remover Botão da Barra de Tarefas",
+    "category": "Interface & Windows 11",
+    "description": "Oculta o botão do Copilot na barra de tarefas, aplica a política de bloqueio e remove o pacote Appx Microsoft.Copilot.",
+    "rationale": "Em versões recentes do Windows 11 (23H2/24H2+), a política TurnOffWindowsCopilot sozinha foi substituída pelo pacote Appx Microsoft.Copilot. Combinar a remoção do pacote com a política e ocultação do botão garante desativação completa.",
+    "impact": "Médio",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKCU:\\Software\\Policies\\Microsoft\\Windows\\WindowsCopilot",
+        "name": "TurnOffWindowsCopilot",
+        "type": "DWord",
+        "value": 1,
+        "originalValue": "<RemoveEntry>"
+      },
+      {
+        "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsCopilot",
+        "name": "TurnOffWindowsCopilot",
+        "type": "DWord",
+        "value": 1,
+        "originalValue": "<RemoveEntry>"
+      },
+      {
+        "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "ShowCopilotButton",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": 1
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [
+      {
+        "name": "Microsoft.Copilot",
+        "storeId": "9NHT9RB2F4HD"
+      }
+    ],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksShowFileExtensions": {
+    "title": "Mostrar Extensões de Arquivos no Explorer",
+    "category": "Interface & Windows 11",
+    "description": "Configura HideFileExt=0 para exibir sempre a extensão real de todos os arquivos (.exe, .ps1, .dll, .txt).",
+    "rationale": "Prática essencial de segurança e usabilidade: evita execução acidental de arquivos maliciosos com dupla extensão (ex: documento.pdf.exe).",
+    "impact": "Médio",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "HideFileExt",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": 1
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksDisableStartSuggestions": {
+    "title": "Desativar Sugestões, Dicas e Anúncios no Menu Iniciar e Tela de Bloqueio",
+    "category": "Interface & Windows 11",
+    "description": "Desativa o ContentDeliveryManager para impedir instalação silenciosa de apps promovidos e recomendações comerciais no Iniciar.",
+    "rationale": "O Windows ContentDeliveryManager baixa e sugere aplicativos patrocinados automaticamente no Menu Iniciar em instalações recém-formatadas.",
+    "impact": "Médio",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SystemPaneSuggestionsEnabled",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": 1
+      },
+      {
+        "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SilentInstalledAppsEnabled",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": 1
+      },
+      {
+        "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SubscribedContent-338388Enabled",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": 1
+      },
+      {
+        "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SubscribedContent-338389Enabled",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": 1
+      },
+      {
+        "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "RotatingLockScreenOverlayEnabled",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": 1
+      },
+      {
+        "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SoftLandingEnabled",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": 1
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksDisableStickyKeys": {
+    "title": "Desativar Atalho das Teclas de Aderência (5x Shift)",
+    "category": "Interface & Windows 11",
+    "description": "Impede que pressionar a tecla Shift 5 vezes seguidas minimize o jogo com o alerta das Teclas de Aderência.",
+    "rationale": "Em jogos onde a tecla Shift é usada para agachar ou caminhar (crouch/walk em VALORANT e CS2), o atalho padrão Flags=510 abre um diálogo modal e tira o foco da janela do jogo.",
+    "impact": "Médio",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [
+      {
+        "path": "HKCU:\\Control Panel\\Accessibility\\StickyKeys",
+        "name": "Flags",
+        "type": "String",
+        "value": "506",
+        "originalValue": "510"
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksRemoveClipchamp": {
+    "title": "Remover Microsoft Clipchamp (Appx)",
+    "category": "Remoção de Bloatware (Appx)",
+    "description": "Remove o editor de vídeo web-wrapper Clipchamp para todos os usuários e do provisionamento do sistema (reversível via reinstalação).",
+    "rationale": "Pré-instalado no Windows 11, ocupa espaço e registra tarefas de atualização sem necessidade para quem usa editores dedicados.",
+    "impact": "Baixo",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [
+      {
+        "name": "Clipchamp.Clipchamp",
+        "storeId": "9P1J8S7CCWWT"
+      }
+    ],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksRemoveFeedbackHub": {
+    "title": "Remover Hub de Comentários / Feedback Hub (Appx)",
+    "category": "Remoção de Bloatware (Appx)",
+    "description": "Remove o aplicativo Microsoft.WindowsFeedbackHub do sistema e do provisionamento (reversível via reinstalação).",
+    "rationale": "Utilitário de envio de telemetria e feedback da Microsoft raramente utilizado por usuários finais.",
+    "impact": "Baixo",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [
+      {
+        "name": "Microsoft.WindowsFeedbackHub",
+        "storeId": "9NBLGGH4R32N"
+      }
+    ],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksRemoveGetHelp": {
+    "title": "Remover Obter Ajuda / Get Help (Appx)",
+    "category": "Remoção de Bloatware (Appx)",
+    "description": "Remove o assistente de suporte Microsoft.GetHelp (reversível via reinstalação).",
+    "rationale": "Substitui o antigo suporte básico por um chat web desnecessário para usuários técnicos.",
+    "impact": "Baixo",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [
+      {
+        "name": "Microsoft.GetHelp",
+        "storeId": "9PKDZBMV1H3T"
+      }
+    ],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksRemoveBingNewsWeather": {
+    "title": "Remover Bing Notícias e Clima (Appx)",
+    "category": "Remoção de Bloatware (Appx)",
+    "description": "Remove os pacotes Microsoft.BingNews e Microsoft.BingWeather (reversível via reinstalação).",
+    "rationale": "Aplicativos MSN pré-instalados que executam tarefas de atualização de blocos dinâmicos e notificações em segundo plano.",
+    "impact": "Baixo",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [
+      {
+        "name": "Microsoft.BingNews",
+        "storeId": "9WZDNCRFHVFW"
+      },
+      {
+        "name": "Microsoft.BingWeather",
+        "storeId": "9WZDNCRFJ3Q2"
+      }
+    ],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksRemoveSolitaire": {
+    "title": "Remover Microsoft Solitaire Collection (Appx)",
+    "category": "Remoção de Bloatware (Appx)",
+    "description": "Remove o pacote de jogos casuais com anúncios Microsoft.MicrosoftSolitaireCollection (reversível via reinstalação).",
+    "rationale": "Bloatware clássico pré-instalado em todas as edições de consumidor do Windows 10 e 11.",
+    "impact": "Baixo",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [
+      {
+        "name": "Microsoft.MicrosoftSolitaireCollection",
+        "storeId": "9WZDNCRFHWD2"
+      }
+    ],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksRemoveNewOutlook": {
+    "title": "Remover Novo Outlook for Windows (Appx)",
+    "category": "Remoção de Bloatware (Appx)",
+    "description": "Remove o cliente web-wrapper Microsoft.OutlookForWindows pré-instalado no Windows 11 23H2/24H2 (reversível via reinstalação).",
+    "rationale": "Aplicativo baseado em WebView2 que substituiu o app Email e inicia processos em segundo plano mesmo para quem usa webmail no navegador.",
+    "impact": "Baixo",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [
+      {
+        "name": "Microsoft.OutlookForWindows",
+        "storeId": "9NRX63209R7B"
+      }
+    ],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksRemoveTeamsPersonal": {
+    "title": "Remover Microsoft Teams Pessoal (Chat Integrado)",
+    "category": "Remoção de Bloatware (Appx)",
+    "description": "Remove o pacote MicrosoftTeams (versão pessoal integrada ao Windows 11, preservando o Teams corporativo se instalado) (reversível via reinstalação).",
+    "rationale": "O Teams pessoal pré-instalado carrega instâncias do Edge WebView2 no login do usuário.",
+    "impact": "Médio",
+    "riskLevel": "Safe",
+    "osSupport": ["Win11"],
+    "minBuild": 22000,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [
+      {
+        "name": "MicrosoftTeams",
+        "storeId": "9MSSGKG348SP"
+      }
+    ],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksRemoveCortana": {
+    "title": "Remover Cortana Legada (Appx)",
+    "category": "Remoção de Bloatware (Appx)",
+    "description": "Remove o aplicativo descontinuado da Cortana (Microsoft.549981C3F5F10) (reversível via reinstalação).",
+    "rationale": "A Microsoft encerrou o suporte ao app standalone da Cortana no Windows, tornando o pacote obsoleto.",
+    "impact": "Baixo",
+    "riskLevel": "Safe",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [
+      {
+        "name": "Microsoft.549981C3F5F10",
+        "storeId": "9NFFX4SZZ23L"
+      }
+    ],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  },
+  "WPFTweaksRemoveOneDrive": {
+    "title": "Desinstalar Microsoft OneDrive de Forma Limpa e Segura",
+    "category": "Remoção de Bloatware (Appx)",
+    "description": "Desinstala o cliente de sincronização OneDrive apenas após verificar que as pastas Área de Trabalho e Documentos não estão redirecionadas (KFM).",
+    "rationale": "O OneDrive inicia junto com o Windows e sincroniza continuamente a pasta do usuário, causando uso de rede e I/O de disco durante jogos. A trava de verificação de Known Folder Move (KFM) impede que o usuário perca atalhos da Área de Trabalho.",
+    "impact": "Médio",
+    "riskLevel": "Moderate",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": false,
+    "confirmMessage": null,
+    "registry": [],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": ["Remove-RedimoOneDrive"],
+    "undoScript": ["Install-RedimoOneDrive"],
+    "checkScript": "Test-RedimoOneDriveRemoved"
+  },
+  "WPFTweaksDisableHVCI": {
+    "title": "Desativar Integridade da Memória (HVCI / Isolamento de Núcleo)",
+    "category": "Avançado",
+    "description": "Desativa apenas o Hypervisor-Protected Code Integrity (HVCI), mantendo o TPM 2.0 e Secure Boot intactos.",
+    "rationale": "A verificação de integridade de código em páginas de memória do kernel via hipervisor adiciona overhead mensurável de CPU em jogos limitados por processador (5% a 12% em CPUs sem suporte nativo a MBEC). A própria Microsoft documenta a opção de desativar o HVCI para ganho de desempenho em jogos, mas alerta sobre a redução de segurança e possíveis exigências do Riot Vanguard / FACEIT no Windows 11. Fonte: Microsoft Support 'Options to optimize gaming performance in Windows 11'.",
+    "impact": "Situacional",
+    "riskLevel": "Advanced",
+    "osSupport": ["Win10", "Win11"],
+    "minBuild": null,
+    "requiresReboot": true,
+    "confirmMessage": "ATENÇÃO (Riot Vanguard / FACEIT): Desativar a Integridade da Memória (HVCI) reduz a proteção de segurança baseada em virtualização do Windows. Em algumas contas ou versões do Windows 11, o Riot Vanguard (VALORANT/LoL) ou o FACEIT Anti-Cheat podem exigir que o Isolamento de Núcleo (HVCI) esteja ATIVO para abrir o jogo. Deseja realmente selecionar este ajuste avançado? (Requer reinicialização)",
+    "registry": [
+      {
+        "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\DeviceGuard\\Scenarios\\HypervisorEnforcedCodeIntegrity",
+        "name": "Enabled",
+        "type": "DWord",
+        "value": 0,
+        "originalValue": 1
+      }
+    ],
+    "services": [],
+    "scheduledTasks": [],
+    "appx": [],
+    "invokeScript": [],
+    "undoScript": [],
+    "checkScript": null
+  }
+}

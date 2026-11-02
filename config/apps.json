@@ -1,0 +1,462 @@
+﻿{
+  "Brave": {
+    "name": "Brave Browser",
+    "category": "Navegadores",
+    "description": "Navegador rápido baseado em Chromium com bloqueador de anúncios e rastreadores nativo.",
+    "winget": "Brave.Brave",
+    "flatpak": "com.brave.Browser",
+    "apt": "brave-browser",
+    "pacman": "brave-bin",
+    "dnf": "brave-browser"
+  },
+  "Firefox": {
+    "name": "Mozilla Firefox",
+    "category": "Navegadores",
+    "description": "Navegador código aberto focado em privacidade, extensibilidade e motor Gecko independente.",
+    "winget": "Mozilla.Firefox",
+    "flatpak": "org.mozilla.firefox",
+    "apt": "firefox",
+    "pacman": "firefox",
+    "dnf": "firefox"
+  },
+  "Chrome": {
+    "name": "Google Chrome",
+    "category": "Navegadores",
+    "description": "Navegador oficial do Google com sincronização de conta e amplo suporte a padrões web.",
+    "winget": "Google.Chrome",
+    "flatpak": "com.google.Chrome",
+    "apt": "google-chrome-stable",
+    "pacman": "google-chrome",
+    "dnf": "google-chrome-stable"
+  },
+  "LibreWolf": {
+    "name": "LibreWolf",
+    "category": "Navegadores",
+    "description": "Fork do Firefox endurecido para privacidade, sem telemetria e com uBlock Origin pré-instalado.",
+    "winget": "LibreWolf.LibreWolf",
+    "flatpak": "io.gitlab.librewolf-community",
+    "apt": "librewolf",
+    "pacman": "librewolf-bin",
+    "dnf": "librewolf"
+  },
+  "ZenBrowser": {
+    "name": "Zen Browser",
+    "category": "Navegadores",
+    "description": "Navegador moderno baseado no Firefox com abas verticais, workspaces e foco em produtividade.",
+    "winget": "Zen-Team.Zen-Browser",
+    "flatpak": "app.zen_browser.zen",
+    "apt": null,
+    "pacman": "zen-browser-bin",
+    "dnf": null
+  },
+  "UngoogledChromium": {
+    "name": "Ungoogled Chromium",
+    "category": "Navegadores",
+    "description": "Chromium puro sem serviços em segundo plano ou integrações proprietárias do Google.",
+    "winget": "eloston.ungoogled-chromium",
+    "flatpak": "io.github.ungoogled_software.ungoogled_chromium",
+    "apt": null,
+    "pacman": "ungoogled-chromium-bin",
+    "dnf": null
+  },
+  "Discord": {
+    "name": "Discord",
+    "category": "Comunicação",
+    "description": "Plataforma padrão de voz, vídeo e chat em texto para comunidades e jogos.",
+    "winget": "Discord.Discord",
+    "flatpak": "com.discordapp.Discord",
+    "apt": "discord",
+    "pacman": "discord",
+    "dnf": "discord"
+  },
+  "Vesktop": {
+    "name": "Vesktop (Vencord Desktop)",
+    "category": "Comunicação",
+    "description": "Cliente alternativo leve para Discord com Vencord embutido e menor consumo de recursos.",
+    "winget": "Vencord.Vesktop",
+    "flatpak": "dev.vencord.Vesktop",
+    "apt": null,
+    "pacman": "vesktop-bin",
+    "dnf": null
+  },
+  "Telegram": {
+    "name": "Telegram Desktop",
+    "category": "Comunicação",
+    "description": "Mensageiro rápido e leve baseado em nuvem para desktop.",
+    "winget": "Telegram.TelegramDesktop",
+    "flatpak": "org.telegram.desktop",
+    "apt": "telegram-desktop",
+    "pacman": "telegram-desktop",
+    "dnf": "telegram-desktop"
+  },
+  "TeamSpeak": {
+    "name": "TeamSpeak Client",
+    "category": "Comunicação",
+    "description": "Cliente de comunicação por voz de baixíssima latência e mínimo uso de CPU.",
+    "winget": "TeamSpeakSystems.TeamSpeakClient",
+    "flatpak": "com.teamspeak.TeamSpeak",
+    "apt": null,
+    "pacman": "teamspeak3",
+    "dnf": null
+  },
+  "Steam": {
+    "name": "Steam",
+    "category": "Jogos & Launchers",
+    "description": "Principal plataforma e launcher de jogos para PC.",
+    "winget": "Valve.Steam",
+    "flatpak": "com.valvesoftware.Steam",
+    "apt": "steam",
+    "pacman": "steam",
+    "dnf": "steam"
+  },
+  "EpicGames": {
+    "name": "Epic Games Launcher",
+    "category": "Jogos & Launchers",
+    "description": "Launcher oficial para Fortnite, Rocket League, Unreal Engine e jogos da Epic Games Store.",
+    "winget": "EpicGames.EpicGamesLauncher",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "Heroic": {
+    "name": "Heroic Games Launcher",
+    "category": "Jogos & Launchers",
+    "description": "Launcher open-source leve para jogos da Epic Games, GOG e Amazon Prime Gaming.",
+    "winget": "HeroicGamesLauncher.HeroicGamesLauncher",
+    "flatpak": "com.heroicgameslauncher.hgl",
+    "apt": null,
+    "pacman": "heroic-games-launcher-bin",
+    "dnf": null
+  },
+  "GOGGalaxy": {
+    "name": "GOG Galaxy",
+    "category": "Jogos & Launchers",
+    "description": "Cliente oficial da GOG para jogos livres de DRM e integração de bibliotecas.",
+    "winget": "GOG.Galaxy",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "EAApp": {
+    "name": "EA App",
+    "category": "Jogos & Launchers",
+    "description": "Launcher oficial da Electronic Arts (Apex Legends, Battlefield, EA Sports FC).",
+    "winget": "ElectronicArts.EADesktop",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "UbisoftConnect": {
+    "name": "Ubisoft Connect",
+    "category": "Jogos & Launchers",
+    "description": "Launcher oficial da Ubisoft (Rainbow Six Siege, Assassin's Creed, The Division).",
+    "winget": "Ubisoft.Connect",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "Playnite": {
+    "name": "Playnite",
+    "category": "Jogos & Launchers",
+    "description": "Gerenciador unificado open-source para todas as suas bibliotecas de jogos e emuladores.",
+    "winget": "Playnite.Playnite",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "MSIAfterburner": {
+    "name": "MSI Afterburner",
+    "category": "Jogos & Launchers",
+    "description": "Utilitário referência para monitoramento em tempo real, curva de fans, undervolt e overclock de GPU.",
+    "winget": "Guru3D.Afterburner",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "RTSS": {
+    "name": "RivaTuner Statistics Server (RTSS)",
+    "category": "Jogos & Launchers",
+    "description": "Servidor de overlay de hardware (OSD) e limitador de FPS com frametime estável.",
+    "winget": "Guru3D.RTSS",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "CapFrameX": {
+    "name": "CapFrameX",
+    "category": "Jogos & Launchers",
+    "description": "Ferramenta precisa de benchmark, captura de frametime e análise de 1% e 0.1% lows baseada em PresentMon.",
+    "winget": "CXWorld.CapFrameX",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "OBSStudio": {
+    "name": "OBS Studio",
+    "category": "Jogos & Launchers",
+    "description": "Software gratuito e open-source para gravação de gameplay (Replay Buffer) e transmissões ao vivo.",
+    "winget": "OBSProject.OBSStudio",
+    "flatpak": "com.obsproject.Studio",
+    "apt": "obs-studio",
+    "pacman": "obs-studio",
+    "dnf": "obs-studio"
+  },
+  "HWiNFO": {
+    "name": "HWiNFO",
+    "category": "Jogos & Launchers",
+    "description": "Diagnóstico completo e monitoramento detalhado de sensores térmicos, tensões e clocks de CPU/GPU.",
+    "winget": "REALiX.HWiNFO",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "CPUZ": {
+    "name": "CPUID CPU-Z",
+    "category": "Jogos & Launchers",
+    "description": "Utilitário leve para inspecionar especificações de processador, placa-mãe e timings de memória RAM.",
+    "winget": "CPUID.CPU-Z",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "GPUZ": {
+    "name": "TechPowerUp GPU-Z",
+    "category": "Jogos & Launchers",
+    "description": "Utilitário para verificar informações técnicas de placa de vídeo, VRAM, barramento PCIe e sensores.",
+    "winget": "TechPowerUp.GPU-Z",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "NVCleanstall": {
+    "name": "TechPowerUp NVCleanstall",
+    "category": "Jogos & Launchers",
+    "description": "Instalador customizado para drivers NVIDIA sem telemetria, bloatware ou serviços desnecessários.",
+    "winget": "TechPowerUp.NVCleanstall",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "DDU": {
+    "name": "Display Driver Uninstaller (DDU)",
+    "category": "Jogos & Launchers",
+    "description": "Removedor completo de drivers de vídeo NVIDIA, AMD e Intel para instalação limpa sem conflitos.",
+    "winget": "Wagnardsoft.DisplayDriverUninstaller",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "VCRedistX64": {
+    "name": "Visual C++ Redistributable 2015-2022 (x64)",
+    "category": "Runtimes & Utilitários",
+    "description": "Bibliotecas de runtime C++ 64-bits essenciais para rodar jogos e programas no Windows sem erros de DLL.",
+    "winget": "Microsoft.VCRedist.2015+.x64",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "VCRedistX86": {
+    "name": "Visual C++ Redistributable 2015-2022 (x86)",
+    "category": "Runtimes & Utilitários",
+    "description": "Bibliotecas de runtime C++ 32-bits exigidas por jogos e launchers clássicos ou híbridos.",
+    "winget": "Microsoft.VCRedist.2015+.x86",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "DotNetDesktop8": {
+    "name": ".NET Desktop Runtime 8 (LTS)",
+    "category": "Runtimes & Utilitários",
+    "description": "Runtime oficial da Microsoft necessário para aplicativos desktop modernos em WPF e Windows Forms.",
+    "winget": "Microsoft.DotNet.DesktopRuntime.8",
+    "flatpak": null,
+    "apt": "dotnet-runtime-8.0",
+    "pacman": "dotnet-runtime",
+    "dnf": "dotnet-runtime-8.0"
+  },
+  "DirectXRuntime": {
+    "name": "DirectX End-User Runtime",
+    "category": "Runtimes & Utilitários",
+    "description": "Bibliotecas legadas do DirectX 9/10/11 (D3DX9, XInput, XAudio) exigidas por diversos jogos.",
+    "winget": "Microsoft.DirectX",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "SevenZip": {
+    "name": "7-Zip",
+    "category": "Runtimes & Utilitários",
+    "description": "Descompactador de arquivos leve, gratuito e de altíssima eficiência (.7z, .zip, .rar, .tar).",
+    "winget": "7zip.7zip",
+    "flatpak": null,
+    "apt": "p7zip-full",
+    "pacman": "7zip",
+    "dnf": "p7zip"
+  },
+  "NanaZip": {
+    "name": "NanaZip",
+    "category": "Runtimes & Utilitários",
+    "description": "Fork moderno do 7-Zip com integração nativa ao menu de contexto do Windows 11.",
+    "winget": "M2Team.NanaZip",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "Everything": {
+    "name": "Everything (voidtools)",
+    "category": "Runtimes & Utilitários",
+    "description": "Mecanismo de busca instantânea de arquivos e pastas no Windows via tabela MFT do NTFS.",
+    "winget": "voidtools.Everything",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "WizTree": {
+    "name": "WizTree",
+    "category": "Runtimes & Utilitários",
+    "description": "Analisador ultrarrápido de espaço em disco para identificar arquivos e pastas gigantes no SSD.",
+    "winget": "AntibodySoftware.WizTree",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "PowerToys": {
+    "name": "Microsoft PowerToys",
+    "category": "Runtimes & Utilitários",
+    "description": "Suíte oficial de utilitários avançados para Windows (FancyZones, PowerToys Run, Color Picker).",
+    "winget": "Microsoft.PowerToys",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "ShareX": {
+    "name": "ShareX",
+    "category": "Runtimes & Utilitários",
+    "description": "Ferramenta avançada e open-source para captura de tela, anotação rápida e gravação de GIF/vídeo.",
+    "winget": "ShareX.ShareX",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "VLC": {
+    "name": "VLC Media Player",
+    "category": "Runtimes & Utilitários",
+    "description": "Reprodutor multimídia universal open-source com suporte nativo a praticamente qualquer codec.",
+    "winget": "VideoLAN.VLC",
+    "flatpak": "org.videolan.VLC",
+    "apt": "vlc",
+    "pacman": "vlc",
+    "dnf": "vlc"
+  },
+  "qBittorrent": {
+    "name": "qBittorrent",
+    "category": "Runtimes & Utilitários",
+    "description": "Cliente BitTorrent gratuito, leve, open-source e livre de anúncios.",
+    "winget": "qBittorrent.qBittorrent",
+    "flatpak": "org.qbittorrent.qBittorrent",
+    "apt": "qbittorrent",
+    "pacman": "qbittorrent",
+    "dnf": "qbittorrent"
+  },
+  "Bitwarden": {
+    "name": "Bitwarden",
+    "category": "Runtimes & Utilitários",
+    "description": "Gerenciador de senhas open-source com criptografia de ponta a ponta.",
+    "winget": "Bitwarden.Bitwarden",
+    "flatpak": "com.bitwarden.desktop",
+    "apt": null,
+    "pacman": "bitwarden",
+    "dnf": null
+  },
+  "NotepadPlusPlus": {
+    "name": "Notepad++",
+    "category": "Runtimes & Utilitários",
+    "description": "Editor de texto e código-fonte ultrarrápido para Windows.",
+    "winget": "Notepad++.Notepad++",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "Git": {
+    "name": "Git",
+    "category": "Desenvolvimento",
+    "description": "Sistema de controle de versão distribuído padrão da indústria.",
+    "winget": "Git.Git",
+    "flatpak": null,
+    "apt": "git",
+    "pacman": "git",
+    "dnf": "git"
+  },
+  "VSCode": {
+    "name": "Visual Studio Code",
+    "category": "Desenvolvimento",
+    "description": "Editor de código extensível da Microsoft com suporte a depuração, Git e milhares de extensões.",
+    "winget": "Microsoft.VisualStudioCode",
+    "flatpak": "com.visualstudio.code",
+    "apt": "code",
+    "pacman": "code",
+    "dnf": "code"
+  },
+  "VSCodium": {
+    "name": "VSCodium",
+    "category": "Desenvolvimento",
+    "description": "Binários livres do VS Code compilados sem telemetria ou rastreamento da Microsoft.",
+    "winget": "VSCodium.VSCodium",
+    "flatpak": "com.vscodium.codium",
+    "apt": "codium",
+    "pacman": "vscodium-bin",
+    "dnf": "codium"
+  },
+  "WindowsTerminal": {
+    "name": "Windows Terminal",
+    "category": "Desenvolvimento",
+    "description": "Terminal moderno da Microsoft com abas, aceleração por GPU e suporte a múltiplos perfis.",
+    "winget": "Microsoft.WindowsTerminal",
+    "flatpak": null,
+    "apt": null,
+    "pacman": null,
+    "dnf": null
+  },
+  "Python312": {
+    "name": "Python 3.12",
+    "category": "Desenvolvimento",
+    "description": "Interpretador oficial da linguagem Python 3.12 com pip incluso.",
+    "winget": "Python.Python.3.12",
+    "flatpak": null,
+    "apt": "python3",
+    "pacman": "python",
+    "dnf": "python3"
+  },
+  "NodeJSLTS": {
+    "name": "Node.js (LTS)",
+    "category": "Desenvolvimento",
+    "description": "Ambiente de execução JavaScript assíncrono baseado no motor V8 com npm incluso.",
+    "winget": "OpenJS.NodeJS.LTS",
+    "flatpak": null,
+    "apt": "nodejs",
+    "pacman": "nodejs-lts-iron",
+    "dnf": "nodejs"
+  }
+}

@@ -1,0 +1,89 @@
+﻿{
+  "GamerRecomendado": {
+    "name": "Gamer Recomendado",
+    "description": "Pós-formatação ideal para desktops gamers: desativa Game DVR, aceleração de mouse, busca Bing, Widgets, telemetria pesada e aplica plano de energia inteligente.",
+    "tweaks": [
+      "WPFTweaksDisableGameDVR",
+      "WPFTweaksMouseRawInput",
+      "WPFTweaksSmartPowerPlan",
+      "WPFTweaksDisableHibernation",
+      "WPFTweaksDisableFastStartup",
+      "WPFTweaksUsbPollingOptimization",
+      "WPFTweaksEnableGameMode",
+      "WPFTweaksEnableHAGS",
+      "WPFTweaksDisableTelemetry",
+      "WPFTweaksDisableTelemetryTasks",
+      "WPFTweaksDisableRecall",
+      "WPFTweaksClassicContextMenu",
+      "WPFTweaksDisableBingSearch",
+      "WPFTweaksDisableWidgets",
+      "WPFTweaksDisableCopilot",
+      "WPFTweaksShowFileExtensions",
+      "WPFTweaksDisableStartSuggestions",
+      "WPFTweaksDisableStickyKeys"
+    ],
+    "gameOptimizations": [
+      "Global_OptimizeUSB"
+    ],
+    "apps": [
+      "VCRedistX64",
+      "VCRedistX86",
+      "DirectXRuntime",
+      "SevenZip"
+    ]
+  },
+  "MinimoSeguro": {
+    "name": "Mínimo Seguro",
+    "description": "Apenas ajustes essenciais de privacidade, usabilidade e desativação de gravação em segundo plano, sem alterar planos de energia ou pacotes.",
+    "tweaks": [
+      "WPFTweaksDisableGameDVR",
+      "WPFTweaksDisableTelemetry",
+      "WPFTweaksDisableRecall",
+      "WPFTweaksDisableBingSearch",
+      "WPFTweaksDisableWidgets",
+      "WPFTweaksShowFileExtensions",
+      "WPFTweaksDisableStartSuggestions"
+    ],
+    "gameOptimizations": [],
+    "apps": []
+  },
+  "PerfilValorant": {
+    "name": "Perfil VALORANT",
+    "description": "Otimizações 100% compatíveis com o Riot Vanguard: Mouse 1:1, sem Game DVR, portas USB estáveis, GPU de alto desempenho e Riot Client sem iniciar sozinho.",
+    "tweaks": [
+      "WPFTweaksDisableGameDVR",
+      "WPFTweaksMouseRawInput",
+      "WPFTweaksSmartPowerPlan",
+      "WPFTweaksUsbPollingOptimization",
+      "WPFTweaksEnableGameMode",
+      "WPFTweaksDisableWidgets",
+      "WPFTweaksDisableStickyKeys"
+    ],
+    "gameOptimizations": [
+      "Val_DirectX_HighPerf",
+      "Val_RiotClient_Cleanup",
+      "Global_OptimizeUSB"
+    ],
+    "apps": []
+  },
+  "Notebook": {
+    "name": "Notebook",
+    "description": "Otimizações para notebooks: reduz processos em segundo plano (Widgets, Telemetria, Game DVR) preservando a bateria, o plano Equilibrado e a hibernação.",
+    "tweaks": [
+      "WPFTweaksDisableGameDVR",
+      "WPFTweaksMouseRawInput",
+      "WPFTweaksSmartPowerPlan",
+      "WPFTweaksEnableGameMode",
+      "WPFTweaksDisableTelemetry",
+      "WPFTweaksDisableTelemetryTasks",
+      "WPFTweaksDisableRecall",
+      "WPFTweaksDisableBingSearch",
+      "WPFTweaksDisableWidgets",
+      "WPFTweaksDisableCopilot",
+      "WPFTweaksShowFileExtensions",
+      "WPFTweaksDisableStartSuggestions"
+    ],
+    "gameOptimizations": [],
+    "apps": []
+  }
+}

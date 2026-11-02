@@ -1,0 +1,17 @@
+# Logs e Backups locais
+logs/
+backups/
+*.log
+*.bak
+
+# Artefatos temporários de teste
+TestResults.xml
+coverage.xml
+.pester/
+scratch/
+
+# Arquivos de sistema / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

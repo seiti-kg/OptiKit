@@ -1,0 +1,121 @@
+﻿{
+  "ProfileValorant": {
+    "gameName": "VALORANT",
+    "status": "active",
+    "engine": "Unreal Engine 4",
+    "antiCheat": "Riot Vanguard (Kernel)",
+    "warning": "O Riot Vanguard exige TPM 2.0 e Secure Boot ativos. Este perfil aplica apenas otimizações 100% seguras e compatíveis com o Vanguard.",
+    "executableDetection": {
+      "defaultPaths": [
+        "C:\\Riot Games\\VALORANT\\live\\ShooterGame\\Binaries\\Win64\\VALORANT-Win64-Shipping.exe",
+        "D:\\Riot Games\\VALORANT\\live\\ShooterGame\\Binaries\\Win64\\VALORANT-Win64-Shipping.exe"
+      ],
+      "registryFallback": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Riot Game valorant.live"
+    },
+    "optimizations": [
+      {
+        "id": "Val_FSO_HighDPI",
+        "title": "Aplicar Flags FSO e High DPI Bypass no Executável",
+        "description": "Configura DISABLEDXMAXIMIZEDWINDOWEDMODE e HIGHDPIAWARE diretamente no VALORANT-Win64-Shipping.exe para contornar dimensionamento de DPI do Windows.",
+        "rationale": "Define Application High DPI Scaling no executável Win64-Shipping para evitar escalonamento via DWM. Nota transparente: no Windows 11 com DXGI Flip Model moderno, a latência em janela sem bordas já equivale à tela cheia exclusiva; o ganho é situacional para setups com escala de tela > 100% ou Windows 10.",
+        "impact": "Situacional",
+        "riskLevel": "Safe",
+        "action": "Set-AppCompatFlags",
+        "flags": "~ DISABLEDXMAXIMIZEDWINDOWEDMODE HIGHDPIAWARE"
+      },
+      {
+        "id": "Val_DirectX_HighPerf",
+        "title": "Forçar GPU de Alto Desempenho no DirectX",
+        "description": "Registra o executável do VALORANT em UserGpuPreferences com GpuPreference=2.",
+        "rationale": "Garante que o DXGI selecione sempre a GPU dedicada (dGPU) e o perfil de alto desempenho gráfico, essencial em processadores com vídeo integrado (iGPU AMD/Intel) ativo.",
+        "impact": "Médio",
+        "riskLevel": "Safe",
+        "action": "Set-DirectXGpuPreference"
+      },
+      {
+        "id": "Val_Network_NoEEE",
+        "title": "Otimizar Placa de Rede para Servidores 128-Tick (Anti-Jitter)",
+        "description": "Desativa Energy Efficient Ethernet (EEE), Green Ethernet e Power Saving no adaptador de rede físico ativo.",
+        "rationale": "Adaptadores Ethernet com EEE (IEEE 802.3az) colocam o link físico em Low Power Idle entre rajadas de pacotes, adicionando micro-latência de despertar na transmissão UDP constante de servidores 128-tick. Causa reconexão rápida (~2s) ao aplicar.",
+        "impact": "Situacional",
+        "riskLevel": "Safe",
+        "action": "Optimize-NetworkAdapterGaming"
+      },
+      {
+        "id": "Val_RiotClient_Cleanup",
+        "title": "Desativar Inicialização Automática do Riot Client com o Windows",
+        "description": "Impede que o Riot Client consuma CPU/RAM em segundo plano quando você não está jogando (mantém o Vanguard intacto).",
+        "rationale": "Desabilita apenas o launcher RiotClientServices.exe na chave de inicialização (StartupApproved), sem alterar o serviço vgc nem o driver vgk.sys do Riot Vanguard.",
+        "impact": "Médio",
+        "riskLevel": "Safe",
+        "action": "Disable-RiotClientStartup"
+      }
+    ]
+  },
+  "ProfileCS2": {
+    "gameName": "Counter-Strike 2",
+    "status": "comingSoon",
+    "engine": "Source 2",
+    "antiCheat": "VAC / FACEIT Anti-Cheat",
+    "warning": "Em breve: detecção automática via biblioteca Steam, preferência de GPU DX11/Vulkan e limpeza de cache Source 2.",
+    "executableDetection": {
+      "defaultPaths": [
+        "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\game\\bin\\win64\\cs2.exe"
+      ],
+      "registryFallback": null
+    },
+    "optimizations": []
+  },
+  "ProfileUE5": {
+    "gameName": "Jogos Unreal Engine 5 / AAA",
+    "status": "comingSoon",
+    "engine": "Unreal Engine 5",
+    "antiCheat": "Easy Anti-Cheat / BattlEye",
+    "warning": "Em breve: otimização de compilação de shaders PSO, preferência de GPU por executável e ajustes de streaming.",
+    "executableDetection": {
+      "defaultPaths": [],
+      "registryFallback": null
+    },
+    "optimizations": []
+  },
+  "GlobalGamingTools": {
+    "gameName": "Ferramentas Globais de Gaming",
+    "status": "global",
+    "engine": "DirectX / Vulkan / Hardware",
+    "antiCheat": "Universal (Compatível)",
+    "warning": "Ferramentas aplicáveis a qualquer jogo instalado no sistema.",
+    "executableDetection": {
+      "defaultPaths": [],
+      "registryFallback": null
+    },
+    "optimizations": [
+      {
+        "id": "Global_ClearShaderCache",
+        "title": "Limpar Cache de Shaders (DirectX, NVIDIA e AMD)",
+        "description": "Limpa com segurança D3DSCache, NVIDIA DXCache/GLCache e AMD DxCache/DxcCache para eliminar stuttering pós-atualização de driver ou patch de jogo.",
+        "rationale": "Caches de shaders corrompidos ou antigos após múltiplos updates de driver causam frame drops severos. Arquivos em uso pelo sistema são ignorados com segurança.",
+        "impact": "Alto",
+        "riskLevel": "Safe",
+        "action": "Clear-ShaderCache"
+      },
+      {
+        "id": "Global_OptimizeNIC",
+        "title": "Otimizar Rede / NIC (Desativar Economia de Energia Ethernet)",
+        "description": "Desativa EEE, Green Ethernet e suspensão de energia no adaptador de rede físico ativo.",
+        "rationale": "Evita transições de estado de energia no controlador de rede durante sessões online competitivas.",
+        "impact": "Situacional",
+        "riskLevel": "Safe",
+        "action": "Optimize-NetworkAdapterGaming"
+      },
+      {
+        "id": "Global_OptimizeUSB",
+        "title": "Otimizar Portas USB (Desativar Suspensão Seletiva e Economia nos Hubs)",
+        "description": "Impede que o Windows desligue os controladores USB Root Hub e desativa a Suspensão Seletiva no plano de energia.",
+        "rationale": "Estabiliza a entrega de pacotes USB para periféricos de 1000Hz a 8000Hz.",
+        "impact": "Médio",
+        "riskLevel": "Safe",
+        "action": "Optimize-UsbPower"
+      }
+    ]
+  }
+}
