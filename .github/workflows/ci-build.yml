@@ -1,0 +1,92 @@
+name: CI Build & Verify (redimo)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  windows-ci:
+    name: Windows PowerShell 5.1 & Pester 5
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate JSON schemas with jq
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path config/*.json | ForEach-Object {
+            Write-Host "Validating $($_.Name)..."
+            jq empty $_.FullName
+            if ($LASTEXITCODE -ne 0) { throw "Invalid JSON in $($_.FullName)" }
+          }
+
+      - name: Install PSScriptAnalyzer and Pester 5
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Scope CurrentUser -Force | Out-Null
+          Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force -SkipPublisherCheck
+          Install-Module -Name Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force -SkipPublisherCheck
+
+      - name: Run PSScriptAnalyzer
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Import-Module PSScriptAnalyzer -Force
+          $issues = @(
+            Invoke-ScriptAnalyzer -Path .\src -Recurse -Settings .\PSScriptAnalyzerSettings.psd1
+            Invoke-ScriptAnalyzer -Path .\build.ps1 -Settings .\PSScriptAnalyzerSettings.psd1
+          )
+          if ($issues.Count -gt 0) {
+            $issues | Format-Table -AutoSize
+            throw "PSScriptAnalyzer found $($issues.Count) issue(s)."
+          }
+
+      - name: Run Pester Test Suite
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Import-Module Pester -RequiredVersion 5.7.1 -Force
+          $testFiles = @(
+            '.\tests\Config.Tests.ps1',
+            '.\tests\Backup.Tests.ps1',
+            '.\tests\TweakEngine.Tests.ps1',
+            '.\tests\GameEngine.Tests.ps1',
+            '.\tests\Build.Tests.ps1'
+          )
+          $res = Invoke-Pester -Path $testFiles -Output Detailed -PassThru
+          if ($res.FailedCount -gt 0) {
+            throw "$($res.FailedCount) Pester test(s) failed."
+          }
+
+      - name: Verify deterministic build (win.ps1 & docs/tweaks.md)
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          .\build.ps1 -Docs
+          git diff --exit-code win.ps1 docs/tweaks.md
+          if ($LASTEXITCODE -ne 0) {
+            throw "win.ps1 or docs/tweaks.md is out of date. Run './build.ps1 -Docs' and commit the changes."
+          }
+
+  linux-shellcheck:
+    name: Linux ShellCheck (When .sh present)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run ShellCheck if .sh files exist
+        shell: bash
+        run: |
+          shopt -s globstar nullglob
+          sh_files=(**/*.sh)
+          if [ ${#sh_files[@]} -eq 0 ]; then
+            echo "Nenhum script .sh encontrado ainda (Rodada 2 Linux pendente)."
+            exit 0
+          fi
+          shellcheck "${sh_files[@]}"
