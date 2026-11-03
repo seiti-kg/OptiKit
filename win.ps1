@@ -1791,8 +1791,8 @@ $script:EmbeddedThemeXaml = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="redimo &#x2014; System &amp; Gaming Optimizer"
-        Width="1180" Height="820"
-        MinWidth="980" MinHeight="680"
+        Width="1240" Height="850"
+        MinWidth="980" MinHeight="660"
         WindowStartupLocation="CenterScreen"
         Background="#121212"
         Foreground="#F3F4F6"
@@ -1813,8 +1813,8 @@ $script:EmbeddedThemeXaml = @'
             <Setter Property="Foreground" Value="#F3F4F6" />
             <Setter Property="BorderBrush" Value="#3F3F46" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="14,7" />
-            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Padding" Value="12,5" />
+            <Setter Property="FontSize" Value="12.5" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
@@ -1856,10 +1856,10 @@ $script:EmbeddedThemeXaml = @'
 
         <Style TargetType="TabItem">
             <Setter Property="Foreground" Value="#9CA3AF" />
-            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontSize" Value="13.5" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Padding" Value="16,10" />
-            <Setter Property="Margin" Value="0,0,6,0" />
+            <Setter Property="Padding" Value="14,7" />
+            <Setter Property="Margin" Value="0,0,5,0" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
                 <Setter.Value>
@@ -1895,19 +1895,19 @@ $script:EmbeddedThemeXaml = @'
             <Setter Property="BorderBrush" Value="#00E5FF" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="10,8" />
-            <Setter Property="MaxWidth" Value="460" />
+            <Setter Property="MaxWidth" Value="480" />
         </Style>
     </Window.Resources>
 
-    <Grid Margin="16">
+    <Grid Margin="10,8,10,10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Cabe&#x00E7;alho Superior -->
-        <Border Grid.Row="0" Background="#1E1E1E" BorderBrush="#2D2D32" BorderThickness="1" CornerRadius="8" Padding="16,12" Margin="0,0,0,12">
+        <!-- Cabe&#x00E7;alho Superior Compacto -->
+        <Border Grid.Row="0" Background="#1E1E1E" BorderBrush="#2D2D32" BorderThickness="1" CornerRadius="7" Padding="12,8" Margin="0,0,0,8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -1916,34 +1916,34 @@ $script:EmbeddedThemeXaml = @'
 
                 <StackPanel Grid.Column="0" Orientation="Vertical">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="redimo" FontSize="22" FontWeight="Bold" Foreground="#00E5FF" Margin="0,0,10,0" />
-                        <TextBlock Text="System &amp; Gaming Optimizer" FontSize="15" FontWeight="SemiBold" Foreground="#E4E4E7" VerticalAlignment="Bottom" Margin="0,0,12,2" />
-                        <Border Name="BadgeDryRun" Background="#3B2F0B" BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="4" Padding="8,2" Visibility="Collapsed" VerticalAlignment="Center">
-                            <TextBlock Text="MODO DRY-RUN (SIMULA&#x00C7;&#x00C3;O)" FontSize="11" FontWeight="Bold" Foreground="#FBBF24" />
+                        <TextBlock Text="redimo" FontSize="19" FontWeight="Bold" Foreground="#00E5FF" Margin="0,0,8,0" />
+                        <TextBlock Text="System &amp; Gaming Optimizer" FontSize="13.5" FontWeight="SemiBold" Foreground="#E4E4E7" VerticalAlignment="Bottom" Margin="0,0,10,1" />
+                        <Border Name="BadgeDryRun" Background="#3B2F0B" BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="4" Padding="7,1" Visibility="Collapsed" VerticalAlignment="Center">
+                            <TextBlock Text="MODO DRY-RUN (SIMULA&#x00C7;&#x00C3;O)" FontSize="10.5" FontWeight="Bold" Foreground="#FBBF24" />
                         </Border>
                     </StackPanel>
-                    <TextBlock Name="TxtHardwareSummary" Text="Detectando configura&#x00E7;&#x00E3;o de hardware..." FontSize="12" Foreground="#9CA3AF" Margin="0,4,0,0" />
+                    <TextBlock Name="TxtHardwareSummary" Text="Detectando configura&#x00E7;&#x00E3;o de hardware..." FontSize="11.5" Foreground="#9CA3AF" Margin="0,2,0,0" />
                 </StackPanel>
 
                 <!-- Barra de Busca R&#x00E1;pida -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Background="#121212" BorderBrush="#3F3F46" BorderThickness="1" CornerRadius="5" Padding="8,4" Width="280">
+                    <Border Background="#121212" BorderBrush="#3F3F46" BorderThickness="1" CornerRadius="5" Padding="8,3" Width="260">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="&#x1F50D;" Foreground="#9CA3AF" VerticalAlignment="Center" Margin="0,0,6,0" />
-                            <TextBox Name="TxtSearchBox" Grid.Column="1" Background="Transparent" Foreground="#F3F4F6" CaretBrush="#00E5FF" BorderThickness="0" FontSize="13" VerticalAlignment="Center" ToolTip="Filtrar aplicativos, tweaks ou otimiza&#x00E7;&#x00F5;es por nome ou descri&#x00E7;&#x00E3;o" />
+                            <TextBlock Grid.Column="0" Text="&#x1F50D;" Foreground="#9CA3AF" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12" />
+                            <TextBox Name="TxtSearchBox" Grid.Column="1" Background="Transparent" Foreground="#F3F4F6" CaretBrush="#00E5FF" BorderThickness="0" FontSize="12.5" VerticalAlignment="Center" ToolTip="Filtrar aplicativos, tweaks ou otimiza&#x00E7;&#x00F5;es por nome ou descri&#x00E7;&#x00E3;o" />
                         </Grid>
                     </Border>
-                    <Button Name="BtnClearSearch" Content="Limpar" Style="{StaticResource ActionButtonStyle}" Margin="8,0,0,0" Padding="10,5" />
+                    <Button Name="BtnClearSearch" Content="Limpar" Style="{StaticResource ActionButtonStyle}" Margin="6,0,0,0" Padding="9,4" />
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- &#x00C1;rea Central em Abas -->
-        <TabControl Name="MainTabControl" Grid.Row="1" Background="#18181B" BorderBrush="#2D2D32" BorderThickness="1" Padding="10">
+        <!-- &#x00C1;rea Central em Abas (Maximizada) -->
+        <TabControl Name="MainTabControl" Grid.Row="1" Background="#18181B" BorderBrush="#2D2D32" BorderThickness="1" Padding="8,6,8,6">
             <!-- Aba 1: Instalar Apps -->
             <TabItem Header="&#x1F4E6; Instalar Apps">
                 <Grid>
@@ -1951,14 +1951,14 @@ $script:EmbeddedThemeXaml = @'
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <Border Grid.Row="0" Background="#1E1E1E" BorderBrush="#2D2D32" BorderThickness="1" CornerRadius="6" Padding="12,8" Margin="0,0,0,10">
+                    <Border Grid.Row="0" Background="#1E1E1E" BorderBrush="#2D2D32" BorderThickness="1" CornerRadius="5" Padding="10,5" Margin="0,0,0,6">
                         <DockPanel LastChildFill="False">
-                            <TextBlock DockPanel.Dock="Left" Text="Selecione os aplicativos para instala&#x00E7;&#x00E3;o silenciosa via Winget. Pacotes j&#x00E1; instalados ser&#x00E3;o atualizados ou mantidos sem erro." Foreground="#D4D4D8" VerticalAlignment="Center" FontSize="12.5" />
-                            <Button Name="BtnUncheckAllApps" DockPanel.Dock="Right" Content="Desmarcar Apps" Style="{StaticResource ActionButtonStyle}" Padding="10,4" FontSize="12" />
+                            <TextBlock DockPanel.Dock="Left" Text="Selecione os pacotes para instala&#x00E7;&#x00E3;o silenciosa via Winget (passe o mouse no item para ver detalhes e ID)." Foreground="#D4D4D8" VerticalAlignment="Center" FontSize="12" />
+                            <Button Name="BtnUncheckAllApps" DockPanel.Dock="Right" Content="Desmarcar Apps" Style="{StaticResource ActionButtonStyle}" Padding="8,3" FontSize="11.5" />
                         </DockPanel>
                     </Border>
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel Name="AppsCategoriesHost" Orientation="Vertical" Margin="0,0,6,0" />
+                        <StackPanel Name="AppsCategoriesHost" Orientation="Vertical" Margin="0,0,4,0" />
                     </ScrollViewer>
                 </Grid>
             </TabItem>
@@ -1970,20 +1970,20 @@ $script:EmbeddedThemeXaml = @'
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <Border Grid.Row="0" Background="#1E1E1E" BorderBrush="#2D2D32" BorderThickness="1" CornerRadius="6" Padding="12,8" Margin="0,0,0,10">
+                    <Border Grid.Row="0" Background="#1E1E1E" BorderBrush="#2D2D32" BorderThickness="1" CornerRadius="5" Padding="10,5" Margin="0,0,0,6">
                         <DockPanel LastChildFill="False">
                             <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="Filosofia Anti-Placebo: passe o mouse sobre qualquer ajuste para ver a justificativa t&#x00E9;cnica e fonte." Foreground="#D4D4D8" FontSize="12.5" VerticalAlignment="Center" Margin="0,0,14,0" />
-                                <TextBlock Text="&#x25CF; Aplicado na m&#x00E1;quina" Foreground="#10B981" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                <TextBlock Text="Anti-Placebo: passe o mouse sobre qualquer item para ler a justificativa t&#x00E9;cnica e fonte." Foreground="#D4D4D8" FontSize="12" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                <TextBlock Text="&#x25CF; Aplicado na m&#x00E1;quina" Foreground="#10B981" FontSize="11.5" FontWeight="SemiBold" VerticalAlignment="Center" />
                             </StackPanel>
                             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                                <Button Name="BtnRefreshState" Content="Atualizar Estado" Style="{StaticResource ActionButtonStyle}" Padding="10,4" FontSize="12" Margin="0,0,6,0" />
-                                <Button Name="BtnUncheckAllTweaks" Content="Desmarcar Tweaks" Style="{StaticResource ActionButtonStyle}" Padding="10,4" FontSize="12" />
+                                <Button Name="BtnRefreshState" Content="Atualizar Estado" Style="{StaticResource ActionButtonStyle}" Padding="8,3" FontSize="11.5" Margin="0,0,6,0" />
+                                <Button Name="BtnUncheckAllTweaks" Content="Desmarcar Tweaks" Style="{StaticResource ActionButtonStyle}" Padding="8,3" FontSize="11.5" />
                             </StackPanel>
                         </DockPanel>
                     </Border>
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel Name="TweaksCategoriesHost" Orientation="Vertical" Margin="0,0,6,0" />
+                        <StackPanel Name="TweaksCategoriesHost" Orientation="Vertical" Margin="0,0,4,0" />
                     </ScrollViewer>
                 </Grid>
             </TabItem>
@@ -1991,7 +1991,7 @@ $script:EmbeddedThemeXaml = @'
             <!-- Aba 3: Perfis de Jogos -->
             <TabItem Header="&#x1F3AE; Perfis de Jogos (Game Optimizer)">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel Name="GameProfilesHost" Orientation="Vertical" Margin="0,0,6,0" />
+                    <StackPanel Name="GameProfilesHost" Orientation="Vertical" Margin="0,0,4,0" />
                 </ScrollViewer>
             </TabItem>
 
@@ -2004,36 +2004,36 @@ $script:EmbeddedThemeXaml = @'
                     </Grid.RowDefinitions>
 
                     <!-- A&#x00E7;&#x00F5;es R&#x00E1;pidas de Manuten&#x00E7;&#x00E3;o -->
-                    <Border Grid.Row="0" Background="#1E1E1E" BorderBrush="#2D2D32" BorderThickness="1" CornerRadius="6" Padding="14" Margin="0,0,0,12">
+                    <Border Grid.Row="0" Background="#1E1E1E" BorderBrush="#2D2D32" BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,0,0,8">
                         <StackPanel Orientation="Vertical">
-                            <TextBlock Text="Ferramentas de Diagn&#x00F3;stico, Limpeza e Reparo do Sistema" FontSize="15" FontWeight="Bold" Foreground="#00E5FF" Margin="0,0,0,10" />
+                            <TextBlock Text="Ferramentas de Diagn&#x00F3;stico, Limpeza e Reparo do Sistema" FontSize="14" FontWeight="Bold" Foreground="#00E5FF" Margin="0,0,0,8" />
                             <WrapPanel Orientation="Horizontal">
-                                <Button Name="BtnResetNetwork" Content="&#x1F310; Reset de Rede e DNS (Winsock / TCP-IP)" Style="{StaticResource ActionButtonStyle}" Margin="0,0,10,8" />
-                                <Button Name="BtnRunSfcDism" Content="&#x1FA7A; Executar SFC /scannow + DISM /RestoreHealth" Style="{StaticResource ActionButtonStyle}" Margin="0,0,10,8" />
-                                <Button Name="BtnCancelMaintenance" Content="&#x23F9; Cancelar SFC/DISM" Style="{StaticResource DangerRedButtonStyle}" Margin="0,0,10,8" IsEnabled="False" />
-                                <Button Name="BtnClearTemp" Content="&#x1F9F9; Limpar Arquivos Tempor&#x00E1;rios (%TEMP%)" Style="{StaticResource ActionButtonStyle}" Margin="0,0,10,8" />
-                                <Button Name="BtnOpenBackupsDir" Content="&#x1F4C2; Abrir Pasta de Backups e Logs" Style="{StaticResource ActionButtonStyle}" Margin="0,0,0,8" />
+                                <Button Name="BtnResetNetwork" Content="&#x1F310; Reset de Rede e DNS (Winsock / TCP-IP)" Style="{StaticResource ActionButtonStyle}" Margin="0,0,8,6" />
+                                <Button Name="BtnRunSfcDism" Content="&#x1FA7A; Executar SFC /scannow + DISM /RestoreHealth" Style="{StaticResource ActionButtonStyle}" Margin="0,0,8,6" />
+                                <Button Name="BtnCancelMaintenance" Content="&#x23F9; Cancelar SFC/DISM" Style="{StaticResource DangerRedButtonStyle}" Margin="0,0,8,6" IsEnabled="False" />
+                                <Button Name="BtnClearTemp" Content="&#x1F9F9; Limpar Arquivos Tempor&#x00E1;rios (%TEMP%)" Style="{StaticResource ActionButtonStyle}" Margin="0,0,8,6" />
+                                <Button Name="BtnOpenBackupsDir" Content="&#x1F4C2; Abrir Pasta de Backups e Logs" Style="{StaticResource ActionButtonStyle}" Margin="0,0,0,6" />
                             </WrapPanel>
                         </StackPanel>
                     </Border>
 
                     <!-- Gerenciador de Inicializa&#x00E7;&#x00E3;o -->
-                    <Border Grid.Row="1" Background="#1E1E1E" BorderBrush="#2D2D32" BorderThickness="1" CornerRadius="6" Padding="14">
+                    <Border Grid.Row="1" Background="#1E1E1E" BorderBrush="#2D2D32" BorderThickness="1" CornerRadius="6" Padding="12,10">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,10">
+                            <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,8">
                                 <StackPanel DockPanel.Dock="Left" Orientation="Vertical">
-                                    <TextBlock Text="Gerenciador de Inicializa&#x00E7;&#x00E3;o do Windows (StartupApproved)" FontSize="15" FontWeight="Bold" Foreground="#F3F4F6" />
-                                    <TextBlock Text="Controla programas que iniciam com o Windows usando o mesmo registro revers&#x00ED;vel do Gerenciador de Tarefas." FontSize="12" Foreground="#9CA3AF" />
+                                    <TextBlock Text="Gerenciador de Inicializa&#x00E7;&#x00E3;o do Windows (StartupApproved)" FontSize="14" FontWeight="Bold" Foreground="#F3F4F6" />
+                                    <TextBlock Text="Controla programas que iniciam com o Windows usando o mesmo registro revers&#x00ED;vel do Gerenciador de Tarefas." FontSize="11.5" Foreground="#9CA3AF" />
                                 </StackPanel>
                                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Name="BtnEnableStartup" Content="Ativar Selecionado" Style="{StaticResource ActionButtonStyle}" Padding="10,5" Margin="0,0,6,0" />
-                                    <Button Name="BtnDisableStartup" Content="Desativar Selecionado" Style="{StaticResource DangerRedButtonStyle}" Padding="10,5" Margin="0,0,6,0" />
-                                    <Button Name="BtnRefreshStartup" Content="Recarregar" Style="{StaticResource ActionButtonStyle}" Padding="10,5" />
+                                    <Button Name="BtnEnableStartup" Content="Ativar Selecionado" Style="{StaticResource ActionButtonStyle}" Padding="9,4" Margin="0,0,6,0" />
+                                    <Button Name="BtnDisableStartup" Content="Desativar Selecionado" Style="{StaticResource DangerRedButtonStyle}" Padding="9,4" Margin="0,0,6,0" />
+                                    <Button Name="BtnRefreshStartup" Content="Recarregar" Style="{StaticResource ActionButtonStyle}" Padding="9,4" />
                                 </StackPanel>
                             </DockPanel>
 
@@ -2055,7 +2055,7 @@ $script:EmbeddedThemeXaml = @'
                                         <Setter Property="Background" Value="#27272A" />
                                         <Setter Property="Foreground" Value="#00E5FF" />
                                         <Setter Property="FontWeight" Value="SemiBold" />
-                                        <Setter Property="Padding" Value="10,6" />
+                                        <Setter Property="Padding" Value="10,5" />
                                         <Setter Property="BorderBrush" Value="#3F3F46" />
                                         <Setter Property="BorderThickness" Value="0,0,1,1" />
                                     </Style>
@@ -2073,8 +2073,8 @@ $script:EmbeddedThemeXaml = @'
             </TabItem>
         </TabControl>
 
-        <!-- Barra Inferior Fixa -->
-        <Border Grid.Row="2" Background="#1E1E1E" BorderBrush="#2D2D32" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,12,0,0">
+        <!-- Barra Inferior Fixa Compacta -->
+        <Border Grid.Row="2" Background="#1E1E1E" BorderBrush="#2D2D32" BorderThickness="1" CornerRadius="7" Padding="12,8" Margin="0,8,0,0">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -2083,35 +2083,35 @@ $script:EmbeddedThemeXaml = @'
                 </Grid.RowDefinitions>
 
                 <!-- Controles de Preset e A&#x00E7;&#x00E3;o -->
-                <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,10">
+                <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,6">
                     <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Preset:" FontWeight="SemiBold" Foreground="#D4D4D8" VerticalAlignment="Center" Margin="0,0,8,0" />
-                        <ComboBox Name="CmbPresets" Width="210" Height="32" VerticalContentAlignment="Center" Background="#121212" Foreground="#121212" FontSize="13" Margin="0,0,8,0" />
-                        <Button Name="BtnClearSelection" Content="Limpar Sele&#x00E7;&#x00E3;o" Style="{StaticResource ActionButtonStyle}" Padding="10,5" Margin="0,0,8,0" />
-                        <TextBlock Name="TxtSelectionCounter" Text="0 itens selecionados" Foreground="#00E5FF" FontWeight="SemiBold" VerticalAlignment="Center" Margin="4,0,0,0" />
+                        <TextBlock Text="Preset:" FontWeight="SemiBold" Foreground="#D4D4D8" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12.5" />
+                        <ComboBox Name="CmbPresets" Width="200" Height="28" VerticalContentAlignment="Center" Background="#121212" Foreground="#121212" FontSize="12.5" Margin="0,0,8,0" />
+                        <Button Name="BtnClearSelection" Content="Limpar Sele&#x00E7;&#x00E3;o" Style="{StaticResource ActionButtonStyle}" Padding="9,4" Margin="0,0,8,0" />
+                        <TextBlock Name="TxtSelectionCounter" Text="0 itens selecionados" Foreground="#00E5FF" FontWeight="SemiBold" VerticalAlignment="Center" Margin="4,0,0,0" FontSize="12.5" />
                     </StackPanel>
 
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button Name="BtnViewApplied" Content="Ver Altera&#x00E7;&#x00F5;es Aplicadas" Style="{StaticResource ActionButtonStyle}" Margin="0,0,8,0" />
-                        <Button Name="BtnUndoSelected" Content="Reverter Selecionados (Undo)" Style="{StaticResource DangerRedButtonStyle}" Margin="0,0,8,0" />
+                        <Button Name="BtnViewApplied" Content="Ver Altera&#x00E7;&#x00F5;es Aplicadas" Style="{StaticResource ActionButtonStyle}" Margin="0,0,6,0" />
+                        <Button Name="BtnUndoSelected" Content="Reverter Selecionados (Undo)" Style="{StaticResource DangerRedButtonStyle}" Margin="0,0,6,0" />
                         <Button Name="BtnApplySelected" Content="Aplicar Selecionados" Style="{StaticResource PrimaryCyanButtonStyle}" />
                     </StackPanel>
                 </DockPanel>
 
                 <!-- Barra de Progresso + Status -->
-                <Grid Grid.Row="1" Margin="0,0,0,8">
+                <Grid Grid.Row="1" Margin="0,0,0,6">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="260" />
+                        <ColumnDefinition Width="240" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <ProgressBar Name="MainProgressBar" Grid.Column="0" Height="14" Minimum="0" Maximum="100" Value="0" Background="#121212" Foreground="#00E5FF" BorderBrush="#2D2D32" Margin="0,0,12,0" />
-                    <TextBlock Name="TxtStatusMessage" Grid.Column="1" Text="Pronto. Selecione um preset ou marque os itens desejados." Foreground="#9CA3AF" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                    <ProgressBar Name="MainProgressBar" Grid.Column="0" Height="10" Minimum="0" Maximum="100" Value="0" Background="#121212" Foreground="#00E5FF" BorderBrush="#2D2D32" Margin="0,0,10,0" />
+                    <TextBlock Name="TxtStatusMessage" Grid.Column="1" Text="Pronto. Selecione um preset ou marque os itens desejados." Foreground="#9CA3AF" FontSize="11.5" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                 </Grid>
 
                 <!-- Console em Tempo Real -->
-                <Border Grid.Row="2" Background="#0D0D10" BorderBrush="#27272A" BorderThickness="1" CornerRadius="5" Padding="6">
+                <Border Grid.Row="2" Background="#0D0D10" BorderBrush="#27272A" BorderThickness="1" CornerRadius="4" Padding="5">
                     <TextBox Name="TxtConsoleOutput"
-                             Height="92"
+                             Height="60"
                              IsReadOnly="True"
                              TextWrapping="Wrap"
                              VerticalScrollBarVisibility="Auto"
@@ -2119,7 +2119,7 @@ $script:EmbeddedThemeXaml = @'
                              Foreground="#A1A1AA"
                              BorderThickness="0"
                              FontFamily="Consolas"
-                             FontSize="11.5" />
+                             FontSize="11" />
                 </Border>
             </Grid>
         </Border>
@@ -4570,14 +4570,15 @@ function New-RedimoBadge {
     $border.BorderBrush = ConvertFrom-HexBrush $BorderHex
     $border.BorderThickness = New-Object System.Windows.Thickness(1)
     $border.CornerRadius = New-Object System.Windows.CornerRadius(4)
-    $border.Padding = New-Object System.Windows.Thickness(6, 1, 6, 1)
-    $border.Margin = New-Object System.Windows.Thickness(6, 0, 0, 0)
+    $border.Padding = New-Object System.Windows.Thickness(5, 1, 5, 1)
+    $border.Margin = New-Object System.Windows.Thickness(4, 0, 0, 0)
     $border.VerticalAlignment = 'Center'
+    $border.HorizontalAlignment = 'Right'
 
     $tb = New-Object System.Windows.Controls.TextBlock
     $tb.Text = $Text
     $tb.Foreground = ConvertFrom-HexBrush $FgHex
-    $tb.FontSize = 11
+    $tb.FontSize = 10.5
     $tb.FontWeight = 'SemiBold'
     $border.Child = $tb
 
@@ -4770,7 +4771,7 @@ function Initialize-RedimoUi {
         $ui.TxtHardwareSummary.Text = $Hardware.Summary
     }
 
-    # 1. Construir Aba de Apps
+    # 1. Construir Aba de Apps (Grade compacta de 4 colunas)
     $appCategoryOrder = @(
         'Navegadores',
         "Comunica$([char]0x00E7)$([char]0x00E3)o",
@@ -4786,14 +4787,14 @@ function Initialize-RedimoUi {
 
         $catHeader = New-Object System.Windows.Controls.TextBlock
         $catHeader.Text = $catName
-        $catHeader.FontSize = 15
+        $catHeader.FontSize = 13.5
         $catHeader.FontWeight = 'Bold'
         $catHeader.Foreground = ConvertFrom-HexBrush '#00E5FF'
-        $catHeader.Margin = New-Object System.Windows.Thickness(2, 10, 0, 6)
+        $catHeader.Margin = New-Object System.Windows.Thickness(2, 6, 0, 4)
         [void]$ui.AppsCategoriesHost.Children.Add($catHeader)
 
         $grid = New-Object System.Windows.Controls.Primitives.UniformGrid
-        $grid.Columns = 2
+        $grid.Columns = 4
 
         foreach ($ap in $catItems) {
             $appKey = $ap.Name
@@ -4803,37 +4804,38 @@ function Initialize-RedimoUi {
             $card.Background = ConvertFrom-HexBrush '#1E1E1E'
             $card.BorderBrush = ConvertFrom-HexBrush '#2D2D32'
             $card.BorderThickness = New-Object System.Windows.Thickness(1)
-            $card.CornerRadius = New-Object System.Windows.CornerRadius(6)
-            $card.Padding = New-Object System.Windows.Thickness(10, 8, 10, 8)
-            $card.Margin = New-Object System.Windows.Thickness(0, 0, 8, 8)
-            $card.ToolTip = ("{0}`r`nWinget ID: {1}`r`n{2}" -f $appVal.name, $appVal.winget, $appVal.description)
+            $card.CornerRadius = New-Object System.Windows.CornerRadius(5)
+            $card.Padding = New-Object System.Windows.Thickness(8, 5, 8, 5)
+            $card.Margin = New-Object System.Windows.Thickness(0, 0, 6, 5)
+            $card.VerticalAlignment = 'Top'
+            $card.ToolTip = ("{0}`r`nWinget ID: {1}`r`n`r`n{2}" -f $appVal.name, $appVal.winget, $appVal.description)
 
             $sp = New-Object System.Windows.Controls.StackPanel
             $sp.Orientation = 'Vertical'
 
-            $topRow = New-Object System.Windows.Controls.DockPanel
+            $cbLabel = New-Object System.Windows.Controls.TextBlock
+            $cbLabel.Text = $appVal.name
+            $cbLabel.Foreground = ConvertFrom-HexBrush '#F3F4F6'
+            $cbLabel.FontWeight = 'SemiBold'
+            $cbLabel.FontSize = 12.5
+            $cbLabel.TextTrimming = 'CharacterEllipsis'
+
             $cb = New-Object System.Windows.Controls.CheckBox
-            $cb.Content = $appVal.name
-            $cb.Foreground = ConvertFrom-HexBrush '#F3F4F6'
-            $cb.FontWeight = 'SemiBold'
-            $cb.FontSize = 13
+            $cb.Content = $cbLabel
+            $cb.VerticalContentAlignment = 'Center'
             $cb.Tag = $appKey
             $cb.Add_Checked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
             $cb.Add_Unchecked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
-            [void]$topRow.Children.Add($cb)
-
-            $wgBadge = New-RedimoBadge -Text $appVal.winget -BgHex '#121212' -BorderHex '#2D2D32' -FgHex '#9CA3AF'
-            [System.Windows.Controls.DockPanel]::SetDock($wgBadge, 'Right')
-            [void]$topRow.Children.Add($wgBadge)
 
             $descTb = New-Object System.Windows.Controls.TextBlock
             $descTb.Text = $appVal.description
             $descTb.Foreground = ConvertFrom-HexBrush '#9CA3AF'
-            $descTb.FontSize = 11.5
-            $descTb.TextWrapping = 'Wrap'
-            $descTb.Margin = New-Object System.Windows.Thickness(22, 3, 0, 0)
+            $descTb.FontSize = 11
+            $descTb.TextTrimming = 'CharacterEllipsis'
+            $descTb.TextWrapping = 'NoWrap'
+            $descTb.Margin = New-Object System.Windows.Thickness(20, 1, 0, 0)
 
-            [void]$sp.Children.Add($topRow)
+            [void]$sp.Children.Add($cb)
             [void]$sp.Children.Add($descTb)
             $card.Child = $sp
             [void]$grid.Children.Add($card)
@@ -4849,7 +4851,7 @@ function Initialize-RedimoUi {
         [void]$ui.AppsCategoriesHost.Children.Add($grid)
     }
 
-    # 2. Construir Aba de Tweaks
+    # 2. Construir Aba de Tweaks (Grade compacta de 2 colunas)
     $tweakCategoryOrder = @(
         'Desempenho & Energia',
         'Privacidade & Telemetria',
@@ -4871,11 +4873,14 @@ function Initialize-RedimoUi {
 
         $catHeader = New-Object System.Windows.Controls.TextBlock
         $catHeader.Text = $catName
-        $catHeader.FontSize = 15
+        $catHeader.FontSize = 13.5
         $catHeader.FontWeight = 'Bold'
         $catHeader.Foreground = if ($catName -eq "Avan$([char]0x00E7)ado") { ConvertFrom-HexBrush '#FF4655' } else { ConvertFrom-HexBrush '#00E5FF' }
-        $catHeader.Margin = New-Object System.Windows.Thickness(2, 10, 0, 6)
+        $catHeader.Margin = New-Object System.Windows.Thickness(2, 6, 0, 4)
         [void]$ui.TweaksCategoriesHost.Children.Add($catHeader)
+
+        $tweakGrid = New-Object System.Windows.Controls.Primitives.UniformGrid
+        $tweakGrid.Columns = 2
 
         foreach ($tp in $catItems) {
             $tweakKey = $tp.Name
@@ -4885,22 +4890,35 @@ function Initialize-RedimoUi {
             $card.Background = ConvertFrom-HexBrush '#1E1E1E'
             $card.BorderBrush = if ($tweakVal.riskLevel -eq 'Advanced') { ConvertFrom-HexBrush '#7F1D1D' } else { ConvertFrom-HexBrush '#2D2D32' }
             $card.BorderThickness = New-Object System.Windows.Thickness(1)
-            $card.CornerRadius = New-Object System.Windows.CornerRadius(6)
-            $card.Padding = New-Object System.Windows.Thickness(12, 9, 12, 9)
-            $card.Margin = New-Object System.Windows.Thickness(0, 0, 0, 7)
+            $card.CornerRadius = New-Object System.Windows.CornerRadius(5)
+            $card.Padding = New-Object System.Windows.Thickness(9, 6, 9, 6)
+            $card.Margin = New-Object System.Windows.Thickness(0, 0, 6, 5)
+            $card.VerticalAlignment = 'Top'
 
             $rebootNote = if ($tweakVal.requiresReboot) { "`r`n$([char]0x26A0)$([char]0xFE0F) Requer reinicializa$([char]0x00E7)$([char]0x00E3)o do sistema." } else { '' }
-            $card.ToolTip = ("{0}`r`n`r`n$([char]0xD83D)$([char]0xDD2C) Justificativa T$([char]0x00E9)cnica (Anti-Placebo):`r`n{1}`r`n`r`nImpacto: {2} | N$([char]0x00ED)vel de Risco: {3}{4}" -f $tweakVal.title, $tweakVal.rationale, $tweakVal.impact, $tweakVal.riskLevel, $rebootNote)
+            $card.ToolTip = ("{0}`r`n`r`n$([char]0xD83D)$([char]0xDCDD) Descri$([char]0x00E7)$([char]0x00E3)o:`r`n{1}`r`n`r`n$([char]0xD83D)$([char]0xDD2C) Justificativa T$([char]0x00E9)cnica (Anti-Placebo):`r`n{2}`r`n`r`nImpacto: {3} | N$([char]0x00ED)vel de Risco: {4}{5}" -f $tweakVal.title, $tweakVal.description, $tweakVal.rationale, $tweakVal.impact, $tweakVal.riskLevel, $rebootNote)
 
             $sp = New-Object System.Windows.Controls.StackPanel
             $sp.Orientation = 'Vertical'
 
-            $headerRow = New-Object System.Windows.Controls.DockPanel
+            $headerRow = New-Object System.Windows.Controls.Grid
+            $colLeft = New-Object System.Windows.Controls.ColumnDefinition
+            $colLeft.Width = New-Object System.Windows.GridLength(1, [System.Windows.GridUnitType]::Star)
+            $colRight = New-Object System.Windows.Controls.ColumnDefinition
+            $colRight.Width = [System.Windows.GridLength]::Auto
+            [void]$headerRow.ColumnDefinitions.Add($colLeft)
+            [void]$headerRow.ColumnDefinitions.Add($colRight)
+
+            $cbTitle = New-Object System.Windows.Controls.TextBlock
+            $cbTitle.Text = $tweakVal.title
+            $cbTitle.Foreground = ConvertFrom-HexBrush '#F3F4F6'
+            $cbTitle.FontWeight = 'SemiBold'
+            $cbTitle.FontSize = 12.5
+            $cbTitle.TextTrimming = 'CharacterEllipsis'
+
             $cb = New-Object System.Windows.Controls.CheckBox
-            $cb.Content = $tweakVal.title
-            $cb.Foreground = ConvertFrom-HexBrush '#F3F4F6'
-            $cb.FontWeight = 'SemiBold'
-            $cb.FontSize = 13.5
+            $cb.Content = $cbTitle
+            $cb.VerticalContentAlignment = 'Center'
             $cb.Tag = $tweakKey
 
             $confirmText = $tweakVal.confirmMessage
@@ -4915,27 +4933,26 @@ function Initialize-RedimoUi {
                 Update-SelectionCounter -Ui $ui
             }.GetNewClosure())
             $cb.Add_Unchecked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
+            [System.Windows.Controls.Grid]::SetColumn($cb, 0)
             [void]$headerRow.Children.Add($cb)
 
             $badgesPanel = New-Object System.Windows.Controls.StackPanel
             $badgesPanel.Orientation = 'Horizontal'
-            [System.Windows.Controls.DockPanel]::SetDock($badgesPanel, 'Right')
+            $badgesPanel.VerticalAlignment = 'Center'
+            [System.Windows.Controls.Grid]::SetColumn($badgesPanel, 1)
 
             $badgeApplied = New-RedimoBadge -Text "$([char]0x25CF) Aplicado" -BgHex '#052E16' -BorderHex '#10B981' -FgHex '#34D399'
             $badgeApplied.Visibility = 'Collapsed'
             [void]$badgesPanel.Children.Add($badgeApplied)
 
             $impColors = Get-ImpactColors -Impact $tweakVal.impact
-            $badgeImpact = New-RedimoBadge -Text ("Impacto: {0}" -f $tweakVal.impact) -BgHex $impColors.Bg -BorderHex $impColors.Border -FgHex $impColors.Fg
+            $badgeImpact = New-RedimoBadge -Text $tweakVal.impact -BgHex $impColors.Bg -BorderHex $impColors.Border -FgHex $impColors.Fg
             [void]$badgesPanel.Children.Add($badgeImpact)
 
-            $riskColors = Get-RiskColors -Risk $tweakVal.riskLevel
-            $badgeRisk = New-RedimoBadge -Text $tweakVal.riskLevel -BgHex $riskColors.Bg -BorderHex $riskColors.Border -FgHex $riskColors.Fg
-            [void]$badgesPanel.Children.Add($badgeRisk)
-
-            if ($tweakVal.requiresReboot) {
-                $badgeReboot = New-RedimoBadge -Text 'Reboot' -BgHex '#27272A' -BorderHex '#52525B' -FgHex '#D4D4D8'
-                [void]$badgesPanel.Children.Add($badgeReboot)
+            if ($tweakVal.riskLevel -ne 'Safe') {
+                $riskColors = Get-RiskColors -Risk $tweakVal.riskLevel
+                $badgeRisk = New-RedimoBadge -Text $tweakVal.riskLevel -BgHex $riskColors.Bg -BorderHex $riskColors.Border -FgHex $riskColors.Fg
+                [void]$badgesPanel.Children.Add($badgeRisk)
             }
 
             [void]$headerRow.Children.Add($badgesPanel)
@@ -4943,14 +4960,15 @@ function Initialize-RedimoUi {
             $descTb = New-Object System.Windows.Controls.TextBlock
             $descTb.Text = $tweakVal.description
             $descTb.Foreground = ConvertFrom-HexBrush '#9CA3AF'
-            $descTb.FontSize = 12
-            $descTb.TextWrapping = 'Wrap'
-            $descTb.Margin = New-Object System.Windows.Thickness(22, 4, 0, 0)
+            $descTb.FontSize = 11
+            $descTb.TextTrimming = 'CharacterEllipsis'
+            $descTb.TextWrapping = 'NoWrap'
+            $descTb.Margin = New-Object System.Windows.Thickness(20, 2, 0, 0)
 
             [void]$sp.Children.Add($headerRow)
             [void]$sp.Children.Add($descTb)
             $card.Child = $sp
-            [void]$ui.TweaksCategoriesHost.Children.Add($card)
+            [void]$tweakGrid.Children.Add($card)
 
             $ui.TweakCheckboxes[$tweakKey] = @{
                 CheckBox     = $cb
@@ -4960,6 +4978,8 @@ function Initialize-RedimoUi {
                 SearchText   = ("{0} {1} {2} {3}" -f $tweakVal.title, $tweakVal.description, $tweakVal.rationale, $tweakVal.category).ToLowerInvariant()
             }
         }
+
+        [void]$ui.TweaksCategoriesHost.Children.Add($tweakGrid)
     }
 
     # 3. Construir Aba de Perfis de Jogos
@@ -4971,19 +4991,21 @@ function Initialize-RedimoUi {
         $profBorder.Background = ConvertFrom-HexBrush '#1E1E1E'
         $profBorder.BorderBrush = if ($prof.status -eq 'active') { ConvertFrom-HexBrush '#FF4655' } elseif ($prof.status -eq 'global') { ConvertFrom-HexBrush '#00E5FF' } else { ConvertFrom-HexBrush '#2D2D32' }
         $profBorder.BorderThickness = New-Object System.Windows.Thickness(1)
-        $profBorder.CornerRadius = New-Object System.Windows.CornerRadius(8)
-        $profBorder.Padding = New-Object System.Windows.Thickness(14, 12, 14, 12)
-        $profBorder.Margin = New-Object System.Windows.Thickness(0, 0, 0, 12)
+        $profBorder.CornerRadius = New-Object System.Windows.CornerRadius(7)
+        $profBorder.Padding = New-Object System.Windows.Thickness(12, 9, 12, 9)
+        $profBorder.Margin = New-Object System.Windows.Thickness(0, 0, 0, 8)
 
         $profStack = New-Object System.Windows.Controls.StackPanel
         $profStack.Orientation = 'Vertical'
 
         $titleDock = New-Object System.Windows.Controls.DockPanel
+        $titleDock.LastChildFill = $false
         $titleTb = New-Object System.Windows.Controls.TextBlock
         $titleTb.Text = ("$([char]0xD83C)$([char]0xDFAE) {0}" -f $prof.gameName)
-        $titleTb.FontSize = 16
+        $titleTb.FontSize = 15
         $titleTb.FontWeight = 'Bold'
         $titleTb.Foreground = if ($prof.status -eq 'active') { ConvertFrom-HexBrush '#FF4655' } elseif ($prof.status -eq 'global') { ConvertFrom-HexBrush '#00E5FF' } else { ConvertFrom-HexBrush '#9CA3AF' }
+        [System.Windows.Controls.DockPanel]::SetDock($titleTb, 'Left')
         [void]$titleDock.Children.Add($titleTb)
 
         $metaPanel = New-Object System.Windows.Controls.StackPanel
@@ -5002,9 +5024,9 @@ function Initialize-RedimoUi {
         $warnTb = New-Object System.Windows.Controls.TextBlock
         $warnTb.Text = $prof.warning
         $warnTb.Foreground = ConvertFrom-HexBrush '#D4D4D8'
-        $warnTb.FontSize = 12
+        $warnTb.FontSize = 11.5
         $warnTb.TextWrapping = 'Wrap'
-        $warnTb.Margin = New-Object System.Windows.Thickness(0, 4, 0, 8)
+        $warnTb.Margin = New-Object System.Windows.Thickness(0, 3, 0, 6)
         [void]$profStack.Children.Add($warnTb)
 
         if ($prof.status -eq 'active') {
@@ -5014,19 +5036,21 @@ function Initialize-RedimoUi {
             }
 
             $exeDock = New-Object System.Windows.Controls.DockPanel
-            $exeDock.Margin = New-Object System.Windows.Thickness(0, 0, 0, 10)
+            $exeDock.LastChildFill = $false
+            $exeDock.Margin = New-Object System.Windows.Thickness(0, 0, 0, 6)
 
             $exeLabel = New-Object System.Windows.Controls.TextBlock
             $exeLabel.Text = if ($detectedExe) { "Execut$([char]0x00E1)vel detectado: $detectedExe" } else { "Execut$([char]0x00E1)vel n$([char]0x00E3)o encontrado no caminho padr$([char]0x00E3)o (voc$([char]0x00EA) pode selecion$([char]0x00E1)-lo manualmente)." }
             $exeLabel.Foreground = if ($detectedExe) { ConvertFrom-HexBrush '#34D399' } else { ConvertFrom-HexBrush '#FBBF24' }
-            $exeLabel.FontSize = 12
+            $exeLabel.FontSize = 11.5
             $exeLabel.VerticalAlignment = 'Center'
+            [System.Windows.Controls.DockPanel]::SetDock($exeLabel, 'Left')
             [void]$exeDock.Children.Add($exeLabel)
 
             $btnBrowse = New-Object System.Windows.Controls.Button
             $btnBrowse.Content = 'Selecionar .exe...'
             $btnBrowse.Style = $Window.FindResource('ActionButtonStyle')
-            $btnBrowse.Padding = New-Object System.Windows.Thickness(10, 4, 10, 4)
+            $btnBrowse.Padding = New-Object System.Windows.Thickness(10, 3, 10, 3)
             $btnBrowse.FontSize = 11.5
             [System.Windows.Controls.DockPanel]::SetDock($btnBrowse, 'Right')
             $btnBrowse.Add_Click({
@@ -5043,53 +5067,72 @@ function Initialize-RedimoUi {
             [void]$profStack.Children.Add($exeDock)
         }
 
+        $optGrid = New-Object System.Windows.Controls.Primitives.UniformGrid
+        $optGrid.Columns = 2
+
         foreach ($opt in @($prof.optimizations)) {
             $optCard = New-Object System.Windows.Controls.Border
             $optCard.Background = ConvertFrom-HexBrush '#141417'
             $optCard.BorderBrush = ConvertFrom-HexBrush '#27272A'
             $optCard.BorderThickness = New-Object System.Windows.Thickness(1)
             $optCard.CornerRadius = New-Object System.Windows.CornerRadius(5)
-            $optCard.Padding = New-Object System.Windows.Thickness(10, 7, 10, 7)
-            $optCard.Margin = New-Object System.Windows.Thickness(0, 0, 0, 6)
+            $optCard.Padding = New-Object System.Windows.Thickness(9, 6, 9, 6)
+            $optCard.Margin = New-Object System.Windows.Thickness(0, 0, 6, 5)
+            $optCard.VerticalAlignment = 'Top'
             $optCard.ToolTip = ("{0}`r`n`r`n$([char]0xD83D)$([char]0xDD2C) Justificativa T$([char]0x00E9)cnica:`r`n{1}`r`n`r`nAction: {2} | Impacto: {3}" -f $opt.title, $opt.rationale, $opt.action, $opt.impact)
 
             $optSp = New-Object System.Windows.Controls.StackPanel
             $optSp.Orientation = 'Vertical'
 
-            $optTop = New-Object System.Windows.Controls.DockPanel
+            $optTop = New-Object System.Windows.Controls.Grid
+            $c0 = New-Object System.Windows.Controls.ColumnDefinition
+            $c0.Width = New-Object System.Windows.GridLength(1, [System.Windows.GridUnitType]::Star)
+            $c1 = New-Object System.Windows.Controls.ColumnDefinition
+            $c1.Width = [System.Windows.GridLength]::Auto
+            [void]$optTop.ColumnDefinitions.Add($c0)
+            [void]$optTop.ColumnDefinitions.Add($c1)
+
+            $optCbTitle = New-Object System.Windows.Controls.TextBlock
+            $optCbTitle.Text = $opt.title
+            $optCbTitle.Foreground = ConvertFrom-HexBrush '#F3F4F6'
+            $optCbTitle.FontWeight = 'SemiBold'
+            $optCbTitle.FontSize = 12.5
+            $optCbTitle.TextTrimming = 'CharacterEllipsis'
+
             $optCb = New-Object System.Windows.Controls.CheckBox
-            $optCb.Content = $opt.title
-            $optCb.Foreground = ConvertFrom-HexBrush '#F3F4F6'
-            $optCb.FontWeight = 'SemiBold'
-            $optCb.FontSize = 13
+            $optCb.Content = $optCbTitle
+            $optCb.VerticalContentAlignment = 'Center'
             $optCb.Tag = $opt.id
             $optCb.Add_Checked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
             $optCb.Add_Unchecked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
+            [System.Windows.Controls.Grid]::SetColumn($optCb, 0)
             [void]$optTop.Children.Add($optCb)
 
             $optBadges = New-Object System.Windows.Controls.StackPanel
             $optBadges.Orientation = 'Horizontal'
-            [System.Windows.Controls.DockPanel]::SetDock($optBadges, 'Right')
+            $optBadges.VerticalAlignment = 'Center'
+            [System.Windows.Controls.Grid]::SetColumn($optBadges, 1)
 
             $optBadgeApp = New-RedimoBadge -Text "$([char]0x25CF) Aplicado" -BgHex '#052E16' -BorderHex '#10B981' -FgHex '#34D399'
             $optBadgeApp.Visibility = 'Collapsed'
             [void]$optBadges.Children.Add($optBadgeApp)
 
             $impCol = Get-ImpactColors -Impact $opt.impact
-            [void]$optBadges.Children.Add((New-RedimoBadge -Text ("Impacto: {0}" -f $opt.impact) -BgHex $impCol.Bg -BorderHex $impCol.Border -FgHex $impCol.Fg))
+            [void]$optBadges.Children.Add((New-RedimoBadge -Text $opt.impact -BgHex $impCol.Bg -BorderHex $impCol.Border -FgHex $impCol.Fg))
             [void]$optTop.Children.Add($optBadges)
 
             $optDesc = New-Object System.Windows.Controls.TextBlock
             $optDesc.Text = $opt.description
             $optDesc.Foreground = ConvertFrom-HexBrush '#9CA3AF'
-            $optDesc.FontSize = 11.5
-            $optDesc.TextWrapping = 'Wrap'
-            $optDesc.Margin = New-Object System.Windows.Thickness(22, 3, 0, 0)
+            $optDesc.FontSize = 11
+            $optDesc.TextTrimming = 'CharacterEllipsis'
+            $optDesc.TextWrapping = 'NoWrap'
+            $optDesc.Margin = New-Object System.Windows.Thickness(20, 2, 0, 0)
 
             [void]$optSp.Children.Add($optTop)
             [void]$optSp.Children.Add($optDesc)
             $optCard.Child = $optSp
-            [void]$profStack.Children.Add($optCard)
+            [void]$optGrid.Children.Add($optCard)
 
             $ui.GameOptCheckboxes[$opt.id] = @{
                 CheckBox     = $optCb
@@ -5102,6 +5145,9 @@ function Initialize-RedimoUi {
             }
         }
 
+        if (@($prof.optimizations).Count -gt 0) {
+            [void]$profStack.Children.Add($optGrid)
+        }
         $profBorder.Child = $profStack
         [void]$ui.GameProfilesHost.Children.Add($profBorder)
     }

@@ -30,14 +30,15 @@ function New-RedimoBadge {
     $border.BorderBrush = ConvertFrom-HexBrush $BorderHex
     $border.BorderThickness = New-Object System.Windows.Thickness(1)
     $border.CornerRadius = New-Object System.Windows.CornerRadius(4)
-    $border.Padding = New-Object System.Windows.Thickness(6, 1, 6, 1)
-    $border.Margin = New-Object System.Windows.Thickness(6, 0, 0, 0)
+    $border.Padding = New-Object System.Windows.Thickness(5, 1, 5, 1)
+    $border.Margin = New-Object System.Windows.Thickness(4, 0, 0, 0)
     $border.VerticalAlignment = 'Center'
+    $border.HorizontalAlignment = 'Right'
 
     $tb = New-Object System.Windows.Controls.TextBlock
     $tb.Text = $Text
     $tb.Foreground = ConvertFrom-HexBrush $FgHex
-    $tb.FontSize = 11
+    $tb.FontSize = 10.5
     $tb.FontWeight = 'SemiBold'
     $border.Child = $tb
 
@@ -230,7 +231,7 @@ function Initialize-RedimoUi {
         $ui.TxtHardwareSummary.Text = $Hardware.Summary
     }
 
-    # 1. Construir Aba de Apps
+    # 1. Construir Aba de Apps (Grade compacta de 4 colunas)
     $appCategoryOrder = @(
         'Navegadores',
         'Comunicação',
@@ -246,14 +247,14 @@ function Initialize-RedimoUi {
 
         $catHeader = New-Object System.Windows.Controls.TextBlock
         $catHeader.Text = $catName
-        $catHeader.FontSize = 15
+        $catHeader.FontSize = 13.5
         $catHeader.FontWeight = 'Bold'
         $catHeader.Foreground = ConvertFrom-HexBrush '#00E5FF'
-        $catHeader.Margin = New-Object System.Windows.Thickness(2, 10, 0, 6)
+        $catHeader.Margin = New-Object System.Windows.Thickness(2, 6, 0, 4)
         [void]$ui.AppsCategoriesHost.Children.Add($catHeader)
 
         $grid = New-Object System.Windows.Controls.Primitives.UniformGrid
-        $grid.Columns = 2
+        $grid.Columns = 4
 
         foreach ($ap in $catItems) {
             $appKey = $ap.Name
@@ -263,37 +264,38 @@ function Initialize-RedimoUi {
             $card.Background = ConvertFrom-HexBrush '#1E1E1E'
             $card.BorderBrush = ConvertFrom-HexBrush '#2D2D32'
             $card.BorderThickness = New-Object System.Windows.Thickness(1)
-            $card.CornerRadius = New-Object System.Windows.CornerRadius(6)
-            $card.Padding = New-Object System.Windows.Thickness(10, 8, 10, 8)
-            $card.Margin = New-Object System.Windows.Thickness(0, 0, 8, 8)
-            $card.ToolTip = ("{0}`r`nWinget ID: {1}`r`n{2}" -f $appVal.name, $appVal.winget, $appVal.description)
+            $card.CornerRadius = New-Object System.Windows.CornerRadius(5)
+            $card.Padding = New-Object System.Windows.Thickness(8, 5, 8, 5)
+            $card.Margin = New-Object System.Windows.Thickness(0, 0, 6, 5)
+            $card.VerticalAlignment = 'Top'
+            $card.ToolTip = ("{0}`r`nWinget ID: {1}`r`n`r`n{2}" -f $appVal.name, $appVal.winget, $appVal.description)
 
             $sp = New-Object System.Windows.Controls.StackPanel
             $sp.Orientation = 'Vertical'
 
-            $topRow = New-Object System.Windows.Controls.DockPanel
+            $cbLabel = New-Object System.Windows.Controls.TextBlock
+            $cbLabel.Text = $appVal.name
+            $cbLabel.Foreground = ConvertFrom-HexBrush '#F3F4F6'
+            $cbLabel.FontWeight = 'SemiBold'
+            $cbLabel.FontSize = 12.5
+            $cbLabel.TextTrimming = 'CharacterEllipsis'
+
             $cb = New-Object System.Windows.Controls.CheckBox
-            $cb.Content = $appVal.name
-            $cb.Foreground = ConvertFrom-HexBrush '#F3F4F6'
-            $cb.FontWeight = 'SemiBold'
-            $cb.FontSize = 13
+            $cb.Content = $cbLabel
+            $cb.VerticalContentAlignment = 'Center'
             $cb.Tag = $appKey
             $cb.Add_Checked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
             $cb.Add_Unchecked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
-            [void]$topRow.Children.Add($cb)
-
-            $wgBadge = New-RedimoBadge -Text $appVal.winget -BgHex '#121212' -BorderHex '#2D2D32' -FgHex '#9CA3AF'
-            [System.Windows.Controls.DockPanel]::SetDock($wgBadge, 'Right')
-            [void]$topRow.Children.Add($wgBadge)
 
             $descTb = New-Object System.Windows.Controls.TextBlock
             $descTb.Text = $appVal.description
             $descTb.Foreground = ConvertFrom-HexBrush '#9CA3AF'
-            $descTb.FontSize = 11.5
-            $descTb.TextWrapping = 'Wrap'
-            $descTb.Margin = New-Object System.Windows.Thickness(22, 3, 0, 0)
+            $descTb.FontSize = 11
+            $descTb.TextTrimming = 'CharacterEllipsis'
+            $descTb.TextWrapping = 'NoWrap'
+            $descTb.Margin = New-Object System.Windows.Thickness(20, 1, 0, 0)
 
-            [void]$sp.Children.Add($topRow)
+            [void]$sp.Children.Add($cb)
             [void]$sp.Children.Add($descTb)
             $card.Child = $sp
             [void]$grid.Children.Add($card)
@@ -309,7 +311,7 @@ function Initialize-RedimoUi {
         [void]$ui.AppsCategoriesHost.Children.Add($grid)
     }
 
-    # 2. Construir Aba de Tweaks
+    # 2. Construir Aba de Tweaks (Grade compacta de 2 colunas)
     $tweakCategoryOrder = @(
         'Desempenho & Energia',
         'Privacidade & Telemetria',
@@ -331,11 +333,14 @@ function Initialize-RedimoUi {
 
         $catHeader = New-Object System.Windows.Controls.TextBlock
         $catHeader.Text = $catName
-        $catHeader.FontSize = 15
+        $catHeader.FontSize = 13.5
         $catHeader.FontWeight = 'Bold'
         $catHeader.Foreground = if ($catName -eq 'Avançado') { ConvertFrom-HexBrush '#FF4655' } else { ConvertFrom-HexBrush '#00E5FF' }
-        $catHeader.Margin = New-Object System.Windows.Thickness(2, 10, 0, 6)
+        $catHeader.Margin = New-Object System.Windows.Thickness(2, 6, 0, 4)
         [void]$ui.TweaksCategoriesHost.Children.Add($catHeader)
+
+        $tweakGrid = New-Object System.Windows.Controls.Primitives.UniformGrid
+        $tweakGrid.Columns = 2
 
         foreach ($tp in $catItems) {
             $tweakKey = $tp.Name
@@ -345,22 +350,35 @@ function Initialize-RedimoUi {
             $card.Background = ConvertFrom-HexBrush '#1E1E1E'
             $card.BorderBrush = if ($tweakVal.riskLevel -eq 'Advanced') { ConvertFrom-HexBrush '#7F1D1D' } else { ConvertFrom-HexBrush '#2D2D32' }
             $card.BorderThickness = New-Object System.Windows.Thickness(1)
-            $card.CornerRadius = New-Object System.Windows.CornerRadius(6)
-            $card.Padding = New-Object System.Windows.Thickness(12, 9, 12, 9)
-            $card.Margin = New-Object System.Windows.Thickness(0, 0, 0, 7)
+            $card.CornerRadius = New-Object System.Windows.CornerRadius(5)
+            $card.Padding = New-Object System.Windows.Thickness(9, 6, 9, 6)
+            $card.Margin = New-Object System.Windows.Thickness(0, 0, 6, 5)
+            $card.VerticalAlignment = 'Top'
 
             $rebootNote = if ($tweakVal.requiresReboot) { "`r`n⚠️ Requer reinicialização do sistema." } else { '' }
-            $card.ToolTip = ("{0}`r`n`r`n🔬 Justificativa Técnica (Anti-Placebo):`r`n{1}`r`n`r`nImpacto: {2} | Nível de Risco: {3}{4}" -f $tweakVal.title, $tweakVal.rationale, $tweakVal.impact, $tweakVal.riskLevel, $rebootNote)
+            $card.ToolTip = ("{0}`r`n`r`n📝 Descrição:`r`n{1}`r`n`r`n🔬 Justificativa Técnica (Anti-Placebo):`r`n{2}`r`n`r`nImpacto: {3} | Nível de Risco: {4}{5}" -f $tweakVal.title, $tweakVal.description, $tweakVal.rationale, $tweakVal.impact, $tweakVal.riskLevel, $rebootNote)
 
             $sp = New-Object System.Windows.Controls.StackPanel
             $sp.Orientation = 'Vertical'
 
-            $headerRow = New-Object System.Windows.Controls.DockPanel
+            $headerRow = New-Object System.Windows.Controls.Grid
+            $colLeft = New-Object System.Windows.Controls.ColumnDefinition
+            $colLeft.Width = New-Object System.Windows.GridLength(1, [System.Windows.GridUnitType]::Star)
+            $colRight = New-Object System.Windows.Controls.ColumnDefinition
+            $colRight.Width = [System.Windows.GridLength]::Auto
+            [void]$headerRow.ColumnDefinitions.Add($colLeft)
+            [void]$headerRow.ColumnDefinitions.Add($colRight)
+
+            $cbTitle = New-Object System.Windows.Controls.TextBlock
+            $cbTitle.Text = $tweakVal.title
+            $cbTitle.Foreground = ConvertFrom-HexBrush '#F3F4F6'
+            $cbTitle.FontWeight = 'SemiBold'
+            $cbTitle.FontSize = 12.5
+            $cbTitle.TextTrimming = 'CharacterEllipsis'
+
             $cb = New-Object System.Windows.Controls.CheckBox
-            $cb.Content = $tweakVal.title
-            $cb.Foreground = ConvertFrom-HexBrush '#F3F4F6'
-            $cb.FontWeight = 'SemiBold'
-            $cb.FontSize = 13.5
+            $cb.Content = $cbTitle
+            $cb.VerticalContentAlignment = 'Center'
             $cb.Tag = $tweakKey
 
             $confirmText = $tweakVal.confirmMessage
@@ -375,27 +393,26 @@ function Initialize-RedimoUi {
                 Update-SelectionCounter -Ui $ui
             }.GetNewClosure())
             $cb.Add_Unchecked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
+            [System.Windows.Controls.Grid]::SetColumn($cb, 0)
             [void]$headerRow.Children.Add($cb)
 
             $badgesPanel = New-Object System.Windows.Controls.StackPanel
             $badgesPanel.Orientation = 'Horizontal'
-            [System.Windows.Controls.DockPanel]::SetDock($badgesPanel, 'Right')
+            $badgesPanel.VerticalAlignment = 'Center'
+            [System.Windows.Controls.Grid]::SetColumn($badgesPanel, 1)
 
             $badgeApplied = New-RedimoBadge -Text '● Aplicado' -BgHex '#052E16' -BorderHex '#10B981' -FgHex '#34D399'
             $badgeApplied.Visibility = 'Collapsed'
             [void]$badgesPanel.Children.Add($badgeApplied)
 
             $impColors = Get-ImpactColors -Impact $tweakVal.impact
-            $badgeImpact = New-RedimoBadge -Text ("Impacto: {0}" -f $tweakVal.impact) -BgHex $impColors.Bg -BorderHex $impColors.Border -FgHex $impColors.Fg
+            $badgeImpact = New-RedimoBadge -Text $tweakVal.impact -BgHex $impColors.Bg -BorderHex $impColors.Border -FgHex $impColors.Fg
             [void]$badgesPanel.Children.Add($badgeImpact)
 
-            $riskColors = Get-RiskColors -Risk $tweakVal.riskLevel
-            $badgeRisk = New-RedimoBadge -Text $tweakVal.riskLevel -BgHex $riskColors.Bg -BorderHex $riskColors.Border -FgHex $riskColors.Fg
-            [void]$badgesPanel.Children.Add($badgeRisk)
-
-            if ($tweakVal.requiresReboot) {
-                $badgeReboot = New-RedimoBadge -Text 'Reboot' -BgHex '#27272A' -BorderHex '#52525B' -FgHex '#D4D4D8'
-                [void]$badgesPanel.Children.Add($badgeReboot)
+            if ($tweakVal.riskLevel -ne 'Safe') {
+                $riskColors = Get-RiskColors -Risk $tweakVal.riskLevel
+                $badgeRisk = New-RedimoBadge -Text $tweakVal.riskLevel -BgHex $riskColors.Bg -BorderHex $riskColors.Border -FgHex $riskColors.Fg
+                [void]$badgesPanel.Children.Add($badgeRisk)
             }
 
             [void]$headerRow.Children.Add($badgesPanel)
@@ -403,14 +420,15 @@ function Initialize-RedimoUi {
             $descTb = New-Object System.Windows.Controls.TextBlock
             $descTb.Text = $tweakVal.description
             $descTb.Foreground = ConvertFrom-HexBrush '#9CA3AF'
-            $descTb.FontSize = 12
-            $descTb.TextWrapping = 'Wrap'
-            $descTb.Margin = New-Object System.Windows.Thickness(22, 4, 0, 0)
+            $descTb.FontSize = 11
+            $descTb.TextTrimming = 'CharacterEllipsis'
+            $descTb.TextWrapping = 'NoWrap'
+            $descTb.Margin = New-Object System.Windows.Thickness(20, 2, 0, 0)
 
             [void]$sp.Children.Add($headerRow)
             [void]$sp.Children.Add($descTb)
             $card.Child = $sp
-            [void]$ui.TweaksCategoriesHost.Children.Add($card)
+            [void]$tweakGrid.Children.Add($card)
 
             $ui.TweakCheckboxes[$tweakKey] = @{
                 CheckBox     = $cb
@@ -420,6 +438,8 @@ function Initialize-RedimoUi {
                 SearchText   = ("{0} {1} {2} {3}" -f $tweakVal.title, $tweakVal.description, $tweakVal.rationale, $tweakVal.category).ToLowerInvariant()
             }
         }
+
+        [void]$ui.TweaksCategoriesHost.Children.Add($tweakGrid)
     }
 
     # 3. Construir Aba de Perfis de Jogos
@@ -431,19 +451,21 @@ function Initialize-RedimoUi {
         $profBorder.Background = ConvertFrom-HexBrush '#1E1E1E'
         $profBorder.BorderBrush = if ($prof.status -eq 'active') { ConvertFrom-HexBrush '#FF4655' } elseif ($prof.status -eq 'global') { ConvertFrom-HexBrush '#00E5FF' } else { ConvertFrom-HexBrush '#2D2D32' }
         $profBorder.BorderThickness = New-Object System.Windows.Thickness(1)
-        $profBorder.CornerRadius = New-Object System.Windows.CornerRadius(8)
-        $profBorder.Padding = New-Object System.Windows.Thickness(14, 12, 14, 12)
-        $profBorder.Margin = New-Object System.Windows.Thickness(0, 0, 0, 12)
+        $profBorder.CornerRadius = New-Object System.Windows.CornerRadius(7)
+        $profBorder.Padding = New-Object System.Windows.Thickness(12, 9, 12, 9)
+        $profBorder.Margin = New-Object System.Windows.Thickness(0, 0, 0, 8)
 
         $profStack = New-Object System.Windows.Controls.StackPanel
         $profStack.Orientation = 'Vertical'
 
         $titleDock = New-Object System.Windows.Controls.DockPanel
+        $titleDock.LastChildFill = $false
         $titleTb = New-Object System.Windows.Controls.TextBlock
         $titleTb.Text = ("🎮 {0}" -f $prof.gameName)
-        $titleTb.FontSize = 16
+        $titleTb.FontSize = 15
         $titleTb.FontWeight = 'Bold'
         $titleTb.Foreground = if ($prof.status -eq 'active') { ConvertFrom-HexBrush '#FF4655' } elseif ($prof.status -eq 'global') { ConvertFrom-HexBrush '#00E5FF' } else { ConvertFrom-HexBrush '#9CA3AF' }
+        [System.Windows.Controls.DockPanel]::SetDock($titleTb, 'Left')
         [void]$titleDock.Children.Add($titleTb)
 
         $metaPanel = New-Object System.Windows.Controls.StackPanel
@@ -462,9 +484,9 @@ function Initialize-RedimoUi {
         $warnTb = New-Object System.Windows.Controls.TextBlock
         $warnTb.Text = $prof.warning
         $warnTb.Foreground = ConvertFrom-HexBrush '#D4D4D8'
-        $warnTb.FontSize = 12
+        $warnTb.FontSize = 11.5
         $warnTb.TextWrapping = 'Wrap'
-        $warnTb.Margin = New-Object System.Windows.Thickness(0, 4, 0, 8)
+        $warnTb.Margin = New-Object System.Windows.Thickness(0, 3, 0, 6)
         [void]$profStack.Children.Add($warnTb)
 
         if ($prof.status -eq 'active') {
@@ -474,19 +496,21 @@ function Initialize-RedimoUi {
             }
 
             $exeDock = New-Object System.Windows.Controls.DockPanel
-            $exeDock.Margin = New-Object System.Windows.Thickness(0, 0, 0, 10)
+            $exeDock.LastChildFill = $false
+            $exeDock.Margin = New-Object System.Windows.Thickness(0, 0, 0, 6)
 
             $exeLabel = New-Object System.Windows.Controls.TextBlock
             $exeLabel.Text = if ($detectedExe) { "Executável detectado: $detectedExe" } else { "Executável não encontrado no caminho padrão (você pode selecioná-lo manualmente)." }
             $exeLabel.Foreground = if ($detectedExe) { ConvertFrom-HexBrush '#34D399' } else { ConvertFrom-HexBrush '#FBBF24' }
-            $exeLabel.FontSize = 12
+            $exeLabel.FontSize = 11.5
             $exeLabel.VerticalAlignment = 'Center'
+            [System.Windows.Controls.DockPanel]::SetDock($exeLabel, 'Left')
             [void]$exeDock.Children.Add($exeLabel)
 
             $btnBrowse = New-Object System.Windows.Controls.Button
             $btnBrowse.Content = 'Selecionar .exe...'
             $btnBrowse.Style = $Window.FindResource('ActionButtonStyle')
-            $btnBrowse.Padding = New-Object System.Windows.Thickness(10, 4, 10, 4)
+            $btnBrowse.Padding = New-Object System.Windows.Thickness(10, 3, 10, 3)
             $btnBrowse.FontSize = 11.5
             [System.Windows.Controls.DockPanel]::SetDock($btnBrowse, 'Right')
             $btnBrowse.Add_Click({
@@ -503,53 +527,72 @@ function Initialize-RedimoUi {
             [void]$profStack.Children.Add($exeDock)
         }
 
+        $optGrid = New-Object System.Windows.Controls.Primitives.UniformGrid
+        $optGrid.Columns = 2
+
         foreach ($opt in @($prof.optimizations)) {
             $optCard = New-Object System.Windows.Controls.Border
             $optCard.Background = ConvertFrom-HexBrush '#141417'
             $optCard.BorderBrush = ConvertFrom-HexBrush '#27272A'
             $optCard.BorderThickness = New-Object System.Windows.Thickness(1)
             $optCard.CornerRadius = New-Object System.Windows.CornerRadius(5)
-            $optCard.Padding = New-Object System.Windows.Thickness(10, 7, 10, 7)
-            $optCard.Margin = New-Object System.Windows.Thickness(0, 0, 0, 6)
+            $optCard.Padding = New-Object System.Windows.Thickness(9, 6, 9, 6)
+            $optCard.Margin = New-Object System.Windows.Thickness(0, 0, 6, 5)
+            $optCard.VerticalAlignment = 'Top'
             $optCard.ToolTip = ("{0}`r`n`r`n🔬 Justificativa Técnica:`r`n{1}`r`n`r`nAction: {2} | Impacto: {3}" -f $opt.title, $opt.rationale, $opt.action, $opt.impact)
 
             $optSp = New-Object System.Windows.Controls.StackPanel
             $optSp.Orientation = 'Vertical'
 
-            $optTop = New-Object System.Windows.Controls.DockPanel
+            $optTop = New-Object System.Windows.Controls.Grid
+            $c0 = New-Object System.Windows.Controls.ColumnDefinition
+            $c0.Width = New-Object System.Windows.GridLength(1, [System.Windows.GridUnitType]::Star)
+            $c1 = New-Object System.Windows.Controls.ColumnDefinition
+            $c1.Width = [System.Windows.GridLength]::Auto
+            [void]$optTop.ColumnDefinitions.Add($c0)
+            [void]$optTop.ColumnDefinitions.Add($c1)
+
+            $optCbTitle = New-Object System.Windows.Controls.TextBlock
+            $optCbTitle.Text = $opt.title
+            $optCbTitle.Foreground = ConvertFrom-HexBrush '#F3F4F6'
+            $optCbTitle.FontWeight = 'SemiBold'
+            $optCbTitle.FontSize = 12.5
+            $optCbTitle.TextTrimming = 'CharacterEllipsis'
+
             $optCb = New-Object System.Windows.Controls.CheckBox
-            $optCb.Content = $opt.title
-            $optCb.Foreground = ConvertFrom-HexBrush '#F3F4F6'
-            $optCb.FontWeight = 'SemiBold'
-            $optCb.FontSize = 13
+            $optCb.Content = $optCbTitle
+            $optCb.VerticalContentAlignment = 'Center'
             $optCb.Tag = $opt.id
             $optCb.Add_Checked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
             $optCb.Add_Unchecked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
+            [System.Windows.Controls.Grid]::SetColumn($optCb, 0)
             [void]$optTop.Children.Add($optCb)
 
             $optBadges = New-Object System.Windows.Controls.StackPanel
             $optBadges.Orientation = 'Horizontal'
-            [System.Windows.Controls.DockPanel]::SetDock($optBadges, 'Right')
+            $optBadges.VerticalAlignment = 'Center'
+            [System.Windows.Controls.Grid]::SetColumn($optBadges, 1)
 
             $optBadgeApp = New-RedimoBadge -Text '● Aplicado' -BgHex '#052E16' -BorderHex '#10B981' -FgHex '#34D399'
             $optBadgeApp.Visibility = 'Collapsed'
             [void]$optBadges.Children.Add($optBadgeApp)
 
             $impCol = Get-ImpactColors -Impact $opt.impact
-            [void]$optBadges.Children.Add((New-RedimoBadge -Text ("Impacto: {0}" -f $opt.impact) -BgHex $impCol.Bg -BorderHex $impCol.Border -FgHex $impCol.Fg))
+            [void]$optBadges.Children.Add((New-RedimoBadge -Text $opt.impact -BgHex $impCol.Bg -BorderHex $impCol.Border -FgHex $impCol.Fg))
             [void]$optTop.Children.Add($optBadges)
 
             $optDesc = New-Object System.Windows.Controls.TextBlock
             $optDesc.Text = $opt.description
             $optDesc.Foreground = ConvertFrom-HexBrush '#9CA3AF'
-            $optDesc.FontSize = 11.5
-            $optDesc.TextWrapping = 'Wrap'
-            $optDesc.Margin = New-Object System.Windows.Thickness(22, 3, 0, 0)
+            $optDesc.FontSize = 11
+            $optDesc.TextTrimming = 'CharacterEllipsis'
+            $optDesc.TextWrapping = 'NoWrap'
+            $optDesc.Margin = New-Object System.Windows.Thickness(20, 2, 0, 0)
 
             [void]$optSp.Children.Add($optTop)
             [void]$optSp.Children.Add($optDesc)
             $optCard.Child = $optSp
-            [void]$profStack.Children.Add($optCard)
+            [void]$optGrid.Children.Add($optCard)
 
             $ui.GameOptCheckboxes[$opt.id] = @{
                 CheckBox     = $optCb
@@ -562,6 +605,9 @@ function Initialize-RedimoUi {
             }
         }
 
+        if (@($prof.optimizations).Count -gt 0) {
+            [void]$profStack.Children.Add($optGrid)
+        }
         $profBorder.Child = $profStack
         [void]$ui.GameProfilesHost.Children.Add($profBorder)
     }
