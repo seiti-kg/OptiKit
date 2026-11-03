@@ -236,14 +236,14 @@
         "name": "AllowAutoGameMode",
         "type": "DWord",
         "value": 1,
-        "originalValue": 1
+        "originalValue": 0
       },
       {
         "path": "HKCU:\\Software\\Microsoft\\GameBar",
         "name": "AutoGameModeEnabled",
         "type": "DWord",
         "value": 1,
-        "originalValue": 1
+        "originalValue": 0
       }
     ],
     "services": [],

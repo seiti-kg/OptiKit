@@ -389,6 +389,9 @@ function Start-RedimoMain {
             if ($rebootItems.Count -gt 0) {
                 $summaryText += "`r`n`r`n⚠️ Itens que exigem reinicialização:`r`n- " + ($rebootItems -join "`r`n- ")
             }
+            if ($script:Redimo -and $script:Redimo.DryRun) {
+                $summaryText += "`r`n`r`n⚠️ MODO DRY-RUN (SIMULAÇÃO) ATIVO:`r`nNenhuma alteração real será gravada no Windows. Para aplicar de verdade, execute o win.ps1 sem a flag -DryRun."
+            }
             $summaryText += "`r`n`r`nDeseja prosseguir?"
             $confirm = [System.Windows.MessageBox]::Show($window, $summaryText, "Confirmar Execução (redimo)", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
             if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) {

@@ -719,14 +719,14 @@ $script:EmbeddedWinTweaksJson = @'
         "name": "AllowAutoGameMode",
         "type": "DWord",
         "value": 1,
-        "originalValue": 1
+        "originalValue": 0
       },
       {
         "path": "HKCU:\\Software\\Microsoft\\GameBar",
         "name": "AutoGameModeEnabled",
         "type": "DWord",
         "value": 1,
-        "originalValue": 1
+        "originalValue": 0
       }
     ],
     "services": [],
@@ -5625,6 +5625,9 @@ function Start-RedimoMain {
             }
             if ($rebootItems.Count -gt 0) {
                 $summaryText += "`r`n`r`n$([char]0x26A0)$([char]0xFE0F) Itens que exigem reinicializa$([char]0x00E7)$([char]0x00E3)o:`r`n- " + ($rebootItems -join "`r`n- ")
+            }
+            if ($script:Redimo -and $script:Redimo.DryRun) {
+                $summaryText += "`r`n`r`n$([char]0x26A0)$([char]0xFE0F) MODO DRY-RUN (SIMULA$([char]0x00C7)$([char]0x00C3)O) ATIVO:`r`nNenhuma altera$([char]0x00E7)$([char]0x00E3)o real ser$([char]0x00E1) gravada no Windows. Para aplicar de verdade, execute o win.ps1 sem a flag -DryRun."
             }
             $summaryText += "`r`n`r`nDeseja prosseguir?"
             $confirm = [System.Windows.MessageBox]::Show($window, $summaryText, "Confirmar Execu$([char]0x00E7)$([char]0x00E3)o (redimo)", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
