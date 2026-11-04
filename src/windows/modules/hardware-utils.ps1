@@ -152,14 +152,18 @@ function Set-RedimoSmartPowerPlan {
 
     if ($hw.IsX3D) {
         Write-OptimizerLog -Level INFO -Message ("CPU AMD Ryzen X3D detectada ({0}): recomendando e ativando plano Equilibrado (exigido pelo Core Parking do 3D V-Cache)." -f $hw.CpuName)
-        Invoke-Mutation -Description 'Ativar plano Equilibrado para AMD Ryzen X3D' -Action {
+        Invoke-Mutation -Description 'Ativar plano Equilibrado para AMD Ryzen X3D (sem suspensão automática em Desktop)' -Action {
             & powercfg.exe /setactive $balancedGuid | Out-Null
+            & powercfg.exe /change standby-timeout-ac 0 | Out-Null
         } | Out-Null
         return
     }
 
-    Invoke-Mutation -Description 'Ativar plano de energia Alto Desempenho (Desktop)' -Action {
-        & powercfg.exe /setactive $highPerfGuid | Out-Null
+    Invoke-Mutation -Description 'Ativar plano de energia Alto Desempenho (Desktop) e desativar suspensão automática' -Action {
+        if (-not (Test-RedimoUltimatePowerPlan)) {
+            & powercfg.exe /setactive $highPerfGuid | Out-Null
+        }
+        & powercfg.exe /change standby-timeout-ac 0 | Out-Null
     } | Out-Null
 }
 
@@ -196,6 +200,7 @@ function Enable-RedimoUltimatePowerPlan {
         }
 
         & powercfg.exe /setactive $targetGuid | Out-Null
+        & powercfg.exe /change standby-timeout-ac 0 | Out-Null
     } | Out-Null
 }
 
@@ -225,7 +230,7 @@ function Test-RedimoSmartPowerPlan {
     if ($hw.IsLaptop -or $hw.IsX3D) {
         return ($active -eq '381b4222-f694-41f0-9685-ff5bb260df2e')
     }
-    return ($active -eq '8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c')
+    return (($active -eq '8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c') -or (Test-RedimoUltimatePowerPlan))
 }
 
 function Test-RedimoUltimatePowerPlan {
