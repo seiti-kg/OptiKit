@@ -5,7 +5,7 @@
 [![PowerShell 5.1+](https://img.shields.io/badge/PowerShell-5.1%20%7C%207%2B-5391FE?style=flat-square&logo=powershell)](win.ps1)
 [![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?style=flat-square&logo=windows)](win.ps1)
 
-Utilitário open-source de pós-formatação, debloat e otimização de sistema e jogos para Windows 10/11. Construído com foco em ajustes reais (zero efeito placebo), reversibilidade completa e compatibilidade com anti-cheats de nível de kernel.
+Utilitário open-source de pós-formatação, debloat e otimização de sistema e jogos para Windows 10/11. Construído com foco em ajustes reais (zero efeito placebo), reversão via `state.json`/Undo (com limitações documentadas para pacotes Appx) e compatibilidade com anti-cheats de nível de kernel.
 
 <!-- Screenshot da interface (descomente quando adicionar a imagem):
 ![Interface do OptiKit](docs/screenshot.png)
@@ -54,6 +54,7 @@ Consulte a lista técnica de todos os ajustes e justificativas em [`docs/tweaks.
 
 - **Zero Placebo:** Todos os ajustes possuem classificação de impacto, nível de risco e justificativa técnica documentada nos arquivos JSON. Ajustes situacionais ficam desmarcados por padrão nos presets.
 - **Reversibilidade (Undo Engine):** Antes de qualquer alteração, o estado original da máquina é salvo em `%ProgramData%\optikit\state.json`, as chaves de registro afetadas são exportadas (`.reg`) em `%ProgramData%\optikit\backups\` e um Ponto de Restauração é criado.
+- **Suporte a Windows:** Windows 11 é o alvo principal; Windows 10 22H2 é suportado em melhor esforço. Ajustes exclusivos de Windows 11 são ocultados na interface e ignorados automaticamente no modo desatendido quando o sistema não atende aos requisitos.
 - **Segurança Anti-Cheat:** Bloqueio estático e em runtime contra modificações nos serviços `vgc`/`vgk.sys`, TPM 2.0, Secure Boot ou desativação global de VBS. Ajustes avançados como HVCI exigem confirmação manual explícita.
 - **Orientado a Dados:** A interface WPF e os catálogos são gerados dinamicamente a partir dos arquivos em `config/`.
 

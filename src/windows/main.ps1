@@ -174,7 +174,7 @@ function Start-OptiKitWorkerTask {
         'Test-OptiKitSmartPowerPlan', 'Test-OptiKitUltimatePowerPlan',
         'Disable-OptiKitHibernation', 'Enable-OptiKitHibernation',
         'Optimize-UsbPower', 'Restore-UsbPower', 'Test-UsbPowerOptimized',
-        'Test-OptiKitTweakBlocked', 'Enable-OptiKitWindowedGameOptimizations',
+        'Test-OptiKitTweakBlocked', 'Test-OptiKitTweakSupported', 'Enable-OptiKitWindowedGameOptimizations',
         'Disable-OptiKitWindowedGameOptimizations', 'Test-OptiKitWindowedGameOptimizations',
         'Set-OptiKitTargetRelease', 'Restore-OptiKitTargetRelease', 'Test-OptiKitTargetRelease',
         'Disable-OptiKitReservedStorage', 'Enable-OptiKitReservedStorage', 'Test-OptiKitReservedStorage',
@@ -192,7 +192,7 @@ function Start-OptiKitWorkerTask {
         'Find-GameExecutable', 'Set-AppCompatFlags', 'Set-DirectXGpuPreference',
         'Optimize-NetworkAdapterGaming', 'Disable-RiotClientStartup', 'Clear-ShaderCache',
         'Invoke-GameOptimization', 'Test-GameOptimizationApplied',
-        'Invoke-NetworkReset', 'Invoke-CancelableProcess', 'Invoke-SystemIntegrityRepair', 'Clear-TemporaryFiles',
+        'Invoke-NetworkReset', 'Invoke-NativeStep', 'Invoke-CancelableProcess', 'Invoke-SystemIntegrityRepair', 'Clear-TemporaryFiles',
         'Get-OptiKitStartupItems', 'Set-OptiKitStartupItemState',
         'Test-TweakApplied', 'Get-AllTweaksState'
     )
@@ -318,8 +318,14 @@ function Invoke-OptiKitSilentMode {
         }
 
         try {
-            Invoke-GameOptimization -ProfileConfig $profileConfig -Optimization $optimization -Mode 'Apply' | Out-Null
-            $executed++
+            $applied = Invoke-GameOptimization -ProfileConfig $profileConfig -Optimization $optimization -Mode 'Apply'
+            if ($applied) {
+                $executed++
+            }
+            else {
+                $skipped++
+                Write-OptimizerLog -Level WARN -Message ("Otimização '{0}' ignorada (executável não encontrado ou ação indisponível)." -f $gameOptId)
+            }
         }
         catch {
             $failures++
@@ -407,6 +413,7 @@ function Start-OptiKitMain {
         ActivePowerShell     = $null
         ActiveRunspace       = $null
         AsyncResult          = $null
+        SessionCounts        = @{ Applied = 0; Skipped = 0; Failed = 0 }
     })
 
     if ($IsSmokeTest) {
@@ -519,7 +526,8 @@ function Start-OptiKitMain {
 
     $ui.BtnExportReport.Add_Click({
         Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
-            $path = Export-OptiKitReport
+            $diagnostics = @(Get-OptiKitHardwareDiagnostics)
+            $path = Export-OptiKitReport -Diagnostics $diagnostics -Counts $SyncHash.SessionCounts
             if ($path -and (Test-Path -LiteralPath $path)) {
                 Start-Process -FilePath $path
             }
@@ -702,9 +710,16 @@ function Start-OptiKitMain {
 
             foreach ($tw in $tweaks) {
                 try {
-                    Invoke-Tweak -Id $tw.Id -Tweak $tw.Config -Mode $mode | Out-Null
+                    $ok = Invoke-Tweak -Id $tw.Id -Tweak $tw.Config -Mode $mode
+                    if ($ok) {
+                        $SyncHash.SessionCounts.Applied++
+                    }
+                    else {
+                        $SyncHash.SessionCounts.Skipped++
+                    }
                 }
                 catch {
+                    $SyncHash.SessionCounts.Failed++
                     Write-OptimizerLog -Level WARN -Message ("Falha no tweak '{0}': {1}" -f $tw.Id, $_.Exception.Message)
                 }
                 $done++
@@ -713,9 +728,16 @@ function Start-OptiKitMain {
 
             foreach ($go in $gameOpts) {
                 try {
-                    Invoke-GameOptimization -ProfileConfig $go.Profile -Optimization $go.Config -Mode $mode -CustomExePath $go.CustomExe | Out-Null
+                    $ok = Invoke-GameOptimization -ProfileConfig $go.Profile -Optimization $go.Config -Mode $mode -CustomExePath $go.CustomExe
+                    if ($ok) {
+                        $SyncHash.SessionCounts.Applied++
+                    }
+                    else {
+                        $SyncHash.SessionCounts.Skipped++
+                    }
                 }
                 catch {
+                    $SyncHash.SessionCounts.Failed++
                     Write-OptimizerLog -Level WARN -Message ("Falha na otimização '{0}': {1}" -f $go.Id, $_.Exception.Message)
                 }
                 $done++
@@ -725,9 +747,16 @@ function Start-OptiKitMain {
             if ($mode -eq 'Apply') {
                 foreach ($ap in $apps) {
                     try {
-                        Install-OptiKitApp -AppKey $ap.Id -AppConfig $ap.Config | Out-Null
+                        $ok = Install-OptiKitApp -AppKey $ap.Id -AppConfig $ap.Config
+                        if ($ok) {
+                            $SyncHash.SessionCounts.Applied++
+                        }
+                        else {
+                            $SyncHash.SessionCounts.Failed++
+                        }
                     }
                     catch {
+                        $SyncHash.SessionCounts.Failed++
                         Write-OptimizerLog -Level WARN -Message ("Falha ao instalar '{0}': {1}" -f $ap.Id, $_.Exception.Message)
                     }
                     $done++

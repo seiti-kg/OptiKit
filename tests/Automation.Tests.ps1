@@ -11,7 +11,7 @@ BeforeAll {
     . (Join-Path $script:RepoRoot 'src\windows\modules\maintenance.ps1')
     . (Join-Path $script:RepoRoot 'src\windows\core\state-checker.ps1')
 
-    $script:OptiKitVersion = '0.2.0'
+    $script:OptiKitVersion = '0.2.1'
     $script:Configs = @{
         Apps         = [System.IO.File]::ReadAllText((Join-Path $script:RepoRoot 'config\apps.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         WinTweaks    = [System.IO.File]::ReadAllText((Join-Path $script:RepoRoot 'config\win-tweaks.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
@@ -104,16 +104,55 @@ Describe 'Automação v0.2' {
         Remove-Item -LiteralPath $regKey -Recurse -Force -ErrorAction SilentlyContinue
     }
 
-    It 'Deve gerar relatório HTML com hardware, estado e log' {
+    It 'Deve gerar relatório HTML com hardware, estado, diagnóstico, contagens e log' {
         $testRoot = Join-Path $TestDrive ("report_test_" + [Guid]::NewGuid().ToString('N'))
         Initialize-OptiKitEnvironment -DataRoot $testRoot -DryRun:$false | Out-Null
         Write-OptimizerLog -Level INFO -Message 'linha de teste do relatório'
+        Save-CapturedState -Id 'ReportTweak' -CapturedItems @(
+            @{ kind = 'registry'; path = 'HKCU:\Software\Teste'; name = 'Value'; existed = $true; value = 42 }
+        )
 
-        $reportPath = Export-OptiKitReport -OutputDirectory (Join-Path $testRoot 'reports')
+        $diagnostics = @(
+            [pscustomobject]@{
+                Status     = 'Warn'
+                Title      = 'Teste Diagnóstico'
+                Summary    = 'Resumo do teste'
+                Detail     = 'Detalhe do teste'
+                ActionText = 'Ação do teste'
+            }
+        )
+        $counts = @{ Applied = 3; Skipped = 2; Failed = 1 }
+
+        $reportPath = Export-OptiKitReport -OutputDirectory (Join-Path $testRoot 'reports') -Diagnostics $diagnostics -Counts $counts
         Test-Path -LiteralPath $reportPath | Should -BeTrue
         $content = [System.IO.File]::ReadAllText($reportPath, [System.Text.Encoding]::UTF8)
-        $content | Should -Match 'OptiKit v0\.2\.0'
+        $content | Should -Match 'OptiKit v0\.2\.1'
         $content | Should -Match 'linha de teste do relatório'
+        $content | Should -Match 'Resumo da sessão'
+        $content | Should -Match 'Operações OK'
+        $content | Should -Match 'Teste Diagnóstico'
+        $content | Should -Match 'Ação do teste'
+        $content | Should -Match 'Valores capturados'
+        $content | Should -Match 'ReportTweak'
+        $content | Should -Match '"value":42'
+    }
+
+    It 'Deve avisar ao importar perfil criado por uma versão mais nova' {
+        $profile = [pscustomobject]@{
+            schemaVersion     = 1
+            optikitVersion    = '9.9.9'
+            preset            = 'Futuro'
+            tweaks            = @('WPFTweaksDisableGameDVR')
+            gameOptimizations = @()
+            apps              = @()
+        }
+        $path = Join-Path $TestDrive 'perfil_versao_futura.json'
+        [System.IO.File]::WriteAllText($path, ($profile | ConvertTo-Json -Depth 5), (New-Object System.Text.UTF8Encoding($false)))
+
+        $script:OptiKit.LogHistory.Clear()
+        $selection = ConvertFrom-OptiKitProfile -Path $path -Configs $script:Configs
+        @($selection.Tweaks).Count | Should -Be 1
+        ($script:OptiKit.LogHistory -join "`n") | Should -Match 'v9\.9\.9'
     }
 
     It 'Deve executar o modo desatendido em dry-run sem GUI e sair com código 0' {

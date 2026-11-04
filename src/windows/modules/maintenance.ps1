@@ -12,19 +12,33 @@ if (-not (Get-Command Read-OptiKitStateFile -ErrorAction SilentlyContinue)) {
 }
 #endregion
 
+function Invoke-NativeStep {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$FilePath,
+
+        [string[]]$ArgumentList = @(),
+
+        [Parameter(Mandatory = $true)]
+        [string]$StepName
+    )
+
+    Write-OptimizerLog -Level INFO -Message ("Executando {0}..." -f $StepName)
+    $proc = Start-Process -FilePath $FilePath -ArgumentList $ArgumentList -NoNewWindow -Wait -PassThru
+    if ($proc.ExitCode -ne 0) {
+        throw ("{0} falhou (código de saída {1})." -f $StepName, $proc.ExitCode)
+    }
+}
+
 function Invoke-NetworkReset {
     [CmdletBinding()]
     param()
 
     Invoke-Mutation -Description 'Resetar pilha de rede (Winsock, TCP/IP e Cache DNS)' -Action {
-        Write-OptimizerLog -Level INFO -Message 'Limpando cache de resolução DNS (ipconfig /flushdns)...'
-        Start-Process -FilePath 'ipconfig.exe' -ArgumentList '/flushdns' -NoNewWindow -Wait | Out-Null
-
-        Write-OptimizerLog -Level INFO -Message 'Redefinindo catálogo Winsock (netsh winsock reset)...'
-        Start-Process -FilePath 'netsh.exe' -ArgumentList @('winsock', 'reset') -NoNewWindow -Wait | Out-Null
-
-        Write-OptimizerLog -Level INFO -Message 'Redefinindo pilha TCP/IP (netsh int ip reset)...'
-        Start-Process -FilePath 'netsh.exe' -ArgumentList @('int', 'ip', 'reset') -NoNewWindow -Wait | Out-Null
+        Invoke-NativeStep -FilePath 'ipconfig.exe' -ArgumentList @('/flushdns') -StepName 'Limpeza do cache DNS'
+        Invoke-NativeStep -FilePath 'netsh.exe' -ArgumentList @('winsock', 'reset') -StepName 'Reset do Winsock'
+        Invoke-NativeStep -FilePath 'netsh.exe' -ArgumentList @('int', 'ip', 'reset') -StepName 'Reset do TCP/IP'
 
         Write-OptimizerLog -Level OK -Message 'Pilha de rede e DNS redefinidos com sucesso. Reinicie o computador para concluir.'
     } | Out-Null
@@ -40,7 +54,9 @@ function Invoke-CancelableProcess {
         [string]$Arguments,
 
         [Parameter(Mandatory = $true)]
-        [string]$StepName
+        [string]$StepName,
+
+        [int[]]$SuccessExitCodes = @(0)
     )
 
     $psi = New-Object System.Diagnostics.ProcessStartInfo
@@ -81,7 +97,7 @@ function Invoke-CancelableProcess {
         Start-Sleep -Milliseconds 200
     }
 
-    return ($proc.ExitCode -eq 0)
+    return ($SuccessExitCodes -contains $proc.ExitCode)
 }
 
 function Invoke-SystemIntegrityRepair {
@@ -96,14 +112,29 @@ function Invoke-SystemIntegrityRepair {
     }
 
     Invoke-Mutation -Description 'Executar verificação e reparo de imagem do sistema (DISM /RestoreHealth + SFC /scannow)' -Action {
+        $canceled = {
+            ($script:OptiKit -and $script:OptiKit.CancelRequest) -or
+            ($script:OptiKit -and $script:OptiKit.SyncHash -and $script:OptiKit.SyncHash.CancelRequest)
+        }
+
         Write-OptimizerLog -Level INFO -Message 'Etapa 1/2: Executando DISM /Online /Cleanup-Image /RestoreHealth (pode levar de 5 a 15 minutos)...'
-        $dismOk = Invoke-CancelableProcess -FilePath 'DISM.exe' -Arguments '/Online /Cleanup-Image /RestoreHealth' -StepName 'DISM'
+        $dismOk = Invoke-CancelableProcess -FilePath 'DISM.exe' -Arguments '/Online /Cleanup-Image /RestoreHealth' -StepName 'DISM' -SuccessExitCodes @(0, 3010)
         if (-not $dismOk) {
-            return
+            if (& $canceled) {
+                throw 'Execução cancelada pelo usuário durante o DISM; SFC não foi executado.'
+            }
+            throw 'DISM /RestoreHealth falhou; SFC não foi executado.'
         }
 
         Write-OptimizerLog -Level INFO -Message 'Etapa 2/2: Executando SFC /scannow...'
-        [void](Invoke-CancelableProcess -FilePath 'sfc.exe' -Arguments '/scannow' -StepName 'SFC')
+        $sfcOk = Invoke-CancelableProcess -FilePath 'sfc.exe' -Arguments '/scannow' -StepName 'SFC'
+        if (-not $sfcOk) {
+            if (& $canceled) {
+                throw 'Execução cancelada pelo usuário durante o SFC.'
+            }
+            throw 'SFC /scannow retornou código de falha.'
+        }
+
         Write-OptimizerLog -Level OK -Message 'Verificação de integridade SFC/DISM finalizada.'
     } | Out-Null
 }
@@ -374,7 +405,11 @@ function Test-OptiKitUpdateAvailable {
 function Export-OptiKitReport {
     [CmdletBinding()]
     param(
-        [string]$OutputDirectory
+        [string]$OutputDirectory,
+
+        [object[]]$Diagnostics,
+
+        [hashtable]$Counts
     )
 
     if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {
@@ -390,6 +425,37 @@ function Export-OptiKitReport {
     $state = Read-OptiKitStateFile
     $logLines = @($script:OptiKit.LogHistory)
 
+    if ($null -eq $Diagnostics) {
+        try {
+            $Diagnostics = @(Get-OptiKitHardwareDiagnostics)
+        }
+        catch {
+            $Diagnostics = @()
+            Write-OptimizerLog -Level WARN -Message ("Diagnóstico indisponível no relatório: {0}" -f $_.Exception.Message)
+        }
+    }
+    else {
+        $Diagnostics = @($Diagnostics)
+    }
+
+    $summaryCounts = if ($Counts) {
+        $Counts
+    }
+    elseif ($script:OptiKit -and $script:OptiKit.SessionCounts) {
+        $script:OptiKit.SessionCounts
+    }
+    else {
+        @{}
+    }
+
+    $applied = if ($summaryCounts.ContainsKey('Applied')) { [int]$summaryCounts['Applied'] } else { 0 }
+    $skipped = if ($summaryCounts.ContainsKey('Skipped')) { [int]$summaryCounts['Skipped'] } else { 0 }
+    $failed = if ($summaryCounts.ContainsKey('Failed')) { [int]$summaryCounts['Failed'] } else { 0 }
+    $diagOk = @($Diagnostics | Where-Object { $_.Status -eq 'OK' }).Count
+    $diagWarn = @($Diagnostics | Where-Object { $_.Status -eq 'Warn' }).Count
+    $diagErr = @($Diagnostics | Where-Object { $_.Status -eq 'Error' }).Count
+    $diagInfo = @($Diagnostics | Where-Object { $_.Status -notin @('OK', 'Warn', 'Error') }).Count
+
     $encode = {
         param([string]$text)
         if ($null -eq $text) { return '' }
@@ -398,18 +464,52 @@ function Export-OptiKitReport {
 
     $sb = New-Object System.Text.StringBuilder
     [void]$sb.AppendLine('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>OptiKit Report</title>')
-    [void]$sb.AppendLine('<style>body{font-family:Segoe UI,Arial,sans-serif;background:#121212;color:#e4e4e7;padding:24px}table{border-collapse:collapse;width:100%;margin:12px 0}td,th{border:1px solid #3f3f46;padding:6px;text-align:left}th{background:#27272a;color:#00e5ff}pre{background:#0d0d10;padding:12px;overflow:auto;font-size:12px}h1,h2{color:#00e5ff}</style></head><body>')
+    [void]$sb.AppendLine('<style>body{font-family:Segoe UI,Arial,sans-serif;background:#121212;color:#e4e4e7;padding:24px}table{border-collapse:collapse;width:100%;margin:12px 0}td,th{border:1px solid #3f3f46;padding:6px;text-align:left;vertical-align:top}th{background:#27272a;color:#00e5ff}pre{background:#0d0d10;padding:12px;overflow:auto;font-size:12px;white-space:pre-wrap}h1,h2{color:#00e5ff}summary{cursor:pointer;color:#00e5ff}</style></head><body>')
     [void]$sb.AppendLine(("<h1>OptiKit v{0} — Relatório</h1>" -f (& $encode ([string]$script:OptiKitVersion))))
     [void]$sb.AppendLine(("<p><b>Data:</b> {0}<br><b>Hardware:</b> {1}</p>" -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), (& $encode ([string]$hardware.Summary))))
-    [void]$sb.AppendLine('<h2>Ajustes com estado capturado</h2><table><tr><th>ID</th><th>Aplicado em</th><th>Sessão</th></tr>')
 
+    [void]$sb.AppendLine('<h2>Resumo da sessão</h2><table><tr><th>Operações OK</th><th>Ignoradas</th><th>Falhas</th><th>Estados capturados</th><th>Diagnósticos</th></tr>')
+    [void]$sb.AppendLine(("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4} ok | {5} avisos | {6} erros | {7} info</td></tr>" -f $applied, $skipped, $failed, $state.Count, $diagOk, $diagWarn, $diagErr, $diagInfo))
+    [void]$sb.AppendLine('</table>')
+
+    [void]$sb.AppendLine('<h2>Diagnóstico de hardware</h2><table><tr><th>Status</th><th>Item</th><th>Resumo</th><th>Detalhe</th></tr>')
+    if ($Diagnostics.Count -eq 0) {
+        [void]$sb.AppendLine('<tr><td colspan="4">Nenhum diagnóstico disponível.</td></tr>')
+    }
+    else {
+        foreach ($diag in $Diagnostics) {
+            $detail = [string]$diag.Detail
+            if (-not [string]::IsNullOrWhiteSpace([string]$diag.ActionText)) {
+                $detail = ("{0} Ação sugerida: {1}" -f $detail, $diag.ActionText).Trim()
+            }
+            [void]$sb.AppendLine(("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td></tr>" -f (& $encode ([string]$diag.Status)), (& $encode ([string]$diag.Title)), (& $encode ([string]$diag.Summary)), (& $encode $detail)))
+        }
+    }
+    [void]$sb.AppendLine('</table>')
+
+    [void]$sb.AppendLine('<h2>Ajustes com estado capturado</h2><table><tr><th>ID</th><th>Aplicado em</th><th>Sessão</th><th>Valores capturados</th></tr>')
     if ($state.Count -eq 0) {
-        [void]$sb.AppendLine('<tr><td colspan="3">Nenhum estado capturado.</td></tr>')
+        [void]$sb.AppendLine('<tr><td colspan="4">Nenhum estado capturado.</td></tr>')
     }
     else {
         foreach ($key in $state.Keys) {
             $record = $state[$key]
-            [void]$sb.AppendLine(("<tr><td>{0}</td><td>{1}</td><td>{2}</td></tr>" -f (& $encode ([string]$key)), (& $encode ([string]$record.appliedAt)), (& $encode ([string]$record.session))))
+            $capturedJson = ''
+            if ($record -and @($record.captured).Count -gt 0) {
+                try {
+                    $capturedJson = ($record.captured | ConvertTo-Json -Depth 8 -Compress)
+                }
+                catch {
+                    $capturedJson = [string]$_.Exception.Message
+                }
+            }
+            $capturedCell = if ([string]::IsNullOrWhiteSpace($capturedJson)) {
+                '—'
+            }
+            else {
+                ("<details><summary>ver</summary><pre>{0}</pre></details>" -f (& $encode $capturedJson))
+            }
+            [void]$sb.AppendLine(("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td></tr>" -f (& $encode ([string]$key)), (& $encode ([string]$record.appliedAt)), (& $encode ([string]$record.session)), $capturedCell))
         }
     }
 

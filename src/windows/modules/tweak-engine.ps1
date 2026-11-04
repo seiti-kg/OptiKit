@@ -379,9 +379,19 @@ function Invoke-Tweak {
     Test-AntiCheatGuardrail -Id $Id -Tweak $Tweak
 
     if ($Mode -eq 'Apply') {
-        $blockReason = Test-OptiKitTweakBlocked -Tweak $Tweak
+        $hardware = Get-OptiKitHardware
+        $blockReason = Test-OptiKitTweakBlocked -Tweak $Tweak -Hardware $hardware
         if ($blockReason) {
             Write-OptimizerLog -Level WARN -Message ("Tweak '{0}' ignorado neste hardware: {1}" -f $Id, $blockReason)
+            return $false
+        }
+
+        if (-not (Test-OptiKitTweakSupported -Tweak $Tweak -Hardware $hardware)) {
+            $osTag = if ($hardware.IsWin11) { 'Win11' } else { 'Win10' }
+            $supportedOs = if ($null -ne $Tweak.osSupport) { @($Tweak.osSupport | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) }) } else { @() }
+            $osText = if ($supportedOs.Count -gt 0) { $supportedOs -join '/' } else { $osTag }
+            $buildText = if ($null -ne $Tweak.minBuild) { " build $($Tweak.minBuild)+" } else { '' }
+            Write-OptimizerLog -Level WARN -Message ("Tweak '{0}' ignorado: requer {1}{2}; sistema atual: {3} (build {4})." -f $Id, $osText, $buildText, $osTag, $hardware.OsBuild)
             return $false
         }
 
@@ -611,7 +621,7 @@ function ConvertTo-OptiKitProfile {
         [string]$Preset = ''
     )
 
-    $version = if ($script:OptiKitVersion) { [string]$script:OptiKitVersion } else { '0.2.0' }
+    $version = if ($script:OptiKitVersion) { [string]$script:OptiKitVersion } else { '0.2.1' }
     return [pscustomobject]@{
         schemaVersion     = 1
         optikitVersion    = $version
@@ -687,6 +697,22 @@ function ConvertFrom-OptiKitProfile {
     $schema = if ($null -ne $profileData.schemaVersion) { [int]$profileData.schemaVersion } else { 1 }
     if ($schema -gt 1) {
         throw ("Perfil com schemaVersion {0} não é suportado por esta versão do OptiKit." -f $schema)
+    }
+
+    $profileVersionRaw = [string]$profileData.optikitVersion
+    if (-not [string]::IsNullOrWhiteSpace($profileVersionRaw)) {
+        try {
+            $profileVersion = [version]$profileVersionRaw
+            if ($script:OptiKitVersion) {
+                $localVersion = [version]$script:OptiKitVersion
+                if ($profileVersion -gt $localVersion) {
+                    Write-OptimizerLog -Level WARN -Message ("Perfil criado pelo OptiKit v{0}; esta versão é v{1}. IDs desconhecidos serão rejeitados." -f $profileVersion, $localVersion)
+                }
+            }
+        }
+        catch {
+            Write-Verbose ("optikitVersion inválido no perfil: {0}" -f $profileVersionRaw)
+        }
     }
 
     $selection = [pscustomobject]@{

@@ -62,6 +62,25 @@ Describe 'Game Engine (game-engine.ps1)' {
         { Invoke-GameOptimization -ProfileConfig $dummyProfile -Optimization $badOpt -Mode 'Apply' } | Should -Throw '*whitelist*'
     }
 
+    It 'Deve retornar falso quando o executável do jogo não é encontrado' {
+        $profile = [pscustomobject]@{
+            gameName            = 'Jogo Ausente'
+            executableDetection = [pscustomobject]@{
+                defaultPaths     = @('C:\Caminho\Inexistente\Jogo.exe')
+                registryFallback = $null
+            }
+        }
+        $opt = [pscustomobject]@{
+            id     = 'Missing_Opt'
+            title  = 'Otimização de jogo ausente'
+            action = 'Set-AppCompatFlags'
+            flags  = '~ HIGHDPIAWARE'
+        }
+
+        Mock Find-GameExecutable { $null }
+        (Invoke-GameOptimization -ProfileConfig $profile -Optimization $opt -Mode 'Apply') | Should -BeFalse
+    }
+
     It 'Deve limpar diretórios de Cache de Shaders com segurança e contabilizar arquivos removidos' {
         $fakeCache1 = Join-Path $TestDrive 'FakeShaderCache\DXCache'
         $fakeCache2 = Join-Path $TestDrive 'FakeShaderCache\D3DSCache'

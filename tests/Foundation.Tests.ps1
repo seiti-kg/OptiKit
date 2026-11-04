@@ -97,6 +97,58 @@ Describe 'Fundação v0.2 (hardware guard + DirectX)' {
         (Test-Path -LiteralPath $subKey) | Should -BeFalse
     }
 
+    It 'Deve classificar suporte de OS e build via Test-OptiKitTweakSupported' {
+        $win10 = [pscustomobject]@{ IsWin11 = $false; OsBuild = 19045 }
+        $win11 = [pscustomobject]@{ IsWin11 = $true; OsBuild = 26100 }
+        $win11Old = [pscustomobject]@{ IsWin11 = $true; OsBuild = 22000 }
+
+        $win11Only = [pscustomobject]@{ osSupport = @('Win11'); minBuild = 22621 }
+        $both = [pscustomobject]@{ osSupport = @('Win10', 'Win11'); minBuild = $null }
+        $legacy = [pscustomobject]@{ osSupport = @(); minBuild = $null }
+
+        (Test-OptiKitTweakSupported -Tweak $win11Only -Hardware $win10) | Should -BeFalse
+        (Test-OptiKitTweakSupported -Tweak $win11Only -Hardware $win11Old) | Should -BeFalse
+        (Test-OptiKitTweakSupported -Tweak $win11Only -Hardware $win11) | Should -BeTrue
+        (Test-OptiKitTweakSupported -Tweak $both -Hardware $win10) | Should -BeTrue
+        (Test-OptiKitTweakSupported -Tweak $legacy -Hardware $win10) | Should -BeTrue
+    }
+
+    It 'Deve ignorar Apply de tweak exclusivo de Win11 em Windows 10 sem gravar no registro' {
+        $subKey = "$script:TestRegRoot\Win11Only"
+        $mockTweak = [pscustomobject]@{
+            title          = 'Exclusivo Win11'
+            osSupport      = @('Win11')
+            minBuild       = 22621
+            registry       = @(
+                [pscustomobject]@{ path = $subKey; name = 'Value'; type = 'DWord'; value = 1; originalValue = 0 }
+            )
+            services       = @()
+            scheduledTasks = @()
+            appx           = @()
+            invokeScript   = @()
+            undoScript     = @()
+            checkScript    = $null
+        }
+
+        $script:OptiKitHardwareCache = [pscustomobject]@{
+            CpuName         = 'Fake Win10'
+            CpuCores        = 4
+            IsX3D           = $false
+            IsX3DDualCcd    = $false
+            IsLaptop        = $false
+            GpuNames        = @()
+            GpuVendors      = @()
+            SystemDiskIsSSD = $true
+            OsBuild         = 19045
+            IsWin11         = $false
+            Summary         = 'fake'
+        }
+
+        $result = Invoke-Tweak -Id 'Win11OnlyTest' -Tweak $mockTweak -Mode 'Apply'
+        $result | Should -BeFalse
+        (Test-Path -LiteralPath $subKey) | Should -BeFalse
+    }
+
     It 'Deve fazer merge e restaurar a string DirectXUserGlobalSettings preservando AutoHDR e VRR' {
         $key = "$script:TestRegRoot\DirectX"
         New-Item -Path $key -Force | Out-Null

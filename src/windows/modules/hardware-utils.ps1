@@ -182,6 +182,38 @@ function Test-OptiKitTweakBlocked {
     return $null
 }
 
+function Test-OptiKitTweakSupported {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [pscustomobject]$Tweak,
+
+        [pscustomobject]$Hardware
+    )
+
+    if (-not $Hardware) {
+        $Hardware = Get-OptiKitHardware
+    }
+
+    $supportedOs = @()
+    if ($null -ne $Tweak.osSupport) {
+        $supportedOs = @($Tweak.osSupport | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
+    }
+
+    if ($supportedOs.Count -gt 0) {
+        $osTag = if ($Hardware.IsWin11) { 'Win11' } else { 'Win10' }
+        if ($supportedOs -notcontains $osTag) {
+            return $false
+        }
+    }
+
+    if ($null -ne $Tweak.minBuild -and [int]$Hardware.OsBuild -lt [int]$Tweak.minBuild) {
+        return $false
+    }
+
+    return $true
+}
+
 function Get-ActivePowerPlanGuid {
     [CmdletBinding()]
     param()

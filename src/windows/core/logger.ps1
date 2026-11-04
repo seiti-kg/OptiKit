@@ -15,6 +15,7 @@ if (-not $script:OptiKit) {
         LogHistory    = New-Object 'System.Collections.Generic.List[string]'
         CancelRequest = $false
         ConsoleOutput = $false
+        SessionCounts = @{ Applied = 0; Skipped = 0; Failed = 0 }
     }
 }
 
@@ -32,6 +33,8 @@ function Initialize-OptiKitEnvironment {
         $script:OptiKit.BackupsDir = Join-Path $DataRoot 'backups'
         $script:OptiKit.StateFile  = Join-Path $DataRoot 'state.json'
     }
+
+    $script:OptiKit.SessionCounts = @{ Applied = 0; Skipped = 0; Failed = 0 }
 
     if ($PSBoundParameters.ContainsKey('DryRun')) {
         $script:OptiKit.DryRun = [bool]$DryRun
