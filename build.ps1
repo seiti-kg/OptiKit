@@ -327,5 +327,5 @@ if ($Docs) {
     }
 
     $docsFile = Join-Path $docsDir 'tweaks.md'
-    Save-FileUtf8Bom -Path $docsFile -Content $docSb.ToString()
+    $normalizedDocs = ($docSb.ToString() -replace "\r?\n", "`n"); [System.IO.File]::WriteAllText($docsFile, $normalizedDocs, (New-Object System.Text.UTF8Encoding($false)))
 }
