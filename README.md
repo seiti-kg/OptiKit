@@ -1,7 +1,7 @@
 # OptiKit
 
 [![CI Build & Verify](https://img.shields.io/github/actions/workflow/status/seiti-kg/OptiKit/ci-build.yml?branch=main&label=CI%20Build&style=flat-square)](https://github.com/seiti-kg/OptiKit/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-00E5FF.svg?style=flat-square)](LICENSE)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-00E5FF.svg?style=flat-square)](LICENSE)
 [![PowerShell 5.1+](https://img.shields.io/badge/PowerShell-5.1%20%7C%207%2B-5391FE?style=flat-square&logo=powershell)](win.ps1)
 [![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?style=flat-square&logo=windows)](win.ps1)
 
@@ -66,4 +66,4 @@ Invoke-Pester -Path .\tests -Output Detailed
 
 ## Licença
 
-Distribuído sob a licença [MIT](LICENSE).
+Distribuído sob a licença [Apache 2.0](LICENSE).
