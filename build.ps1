@@ -7,7 +7,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = $PSScriptRoot
-$repoSlug = 'SEU_USUARIO/optikit'
+$repoSlug = 'seiti-kg/OptiKit'
 
 function Save-FileUtf8Bom {
     param(

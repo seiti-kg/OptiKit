@@ -1,8 +1,15 @@
-# Logs e Backups locais
+# Logs, Backups e Estado local
 logs/
 backups/
 *.log
 *.bak
+*.reg
+state.json
+*.tmp
+
+# Variáveis de ambiente e credenciais
+.env
+.env.*
 
 # Artefatos temporários de teste
 TestResults.xml
@@ -10,8 +17,12 @@ coverage.xml
 .pester/
 scratch/
 
-# Arquivos de sistema / IDE
+# Arquivos de sistema / IDE / Agentes
 .DS_Store
 Thumbs.db
+Desktop.ini
 .vscode/
 .idea/
+.planning/
+.claude/
+.gemini/
