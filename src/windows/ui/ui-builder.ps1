@@ -10,6 +10,9 @@ if (-not (Get-Command Find-GameExecutable -ErrorAction SilentlyContinue)) {
 if (-not (Get-Command Test-OptiKitTweakBlocked -ErrorAction SilentlyContinue)) {
     . (Join-Path $PSScriptRoot '..\modules\hardware-utils.ps1')
 }
+if (-not (Get-Command Test-OptiKitDohSupported -ErrorAction SilentlyContinue)) {
+    . (Join-Path $PSScriptRoot '..\modules\network-engine.ps1')
+}
 #endregion
 
 Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase, System.Windows.Forms
@@ -409,6 +412,7 @@ function Initialize-OptiKitUi {
         'BtnRefreshDiagnostics', 'TxtDiagnosticsSummary', 'DiagnosticsHost',
         'BtnResetNetwork', 'BtnRunSfcDism', 'BtnCancelMaintenance', 'BtnClearTemp', 'BtnOpenBackupsDir',
         'BtnExportProfile', 'BtnImportProfile', 'BtnExportReport',
+        'CmbDohProvider', 'BtnApplyDoh', 'BtnUndoDoh', 'BtnWingetUpgrade', 'BtnAdvancedCleanup',
         'GridStartupItems', 'BtnEnableStartup', 'BtnDisableStartup', 'BtnRefreshStartup',
         'CmbPresets', 'BtnClearSelection', 'TxtSelectionCounter',
         'BtnViewApplied', 'BtnUndoSelected', 'BtnUndoAll', 'BtnApplySelected',
@@ -416,6 +420,33 @@ function Initialize-OptiKitUi {
     )
     foreach ($name in $controlNames) {
         $ui[$name] = $Window.FindName($name)
+    }
+
+    $ui.DohSupported = Test-OptiKitDohSupported -Hardware $Hardware
+    if ($ui.CmbDohProvider) {
+        foreach ($provider in Get-OptiKitDohProviders) {
+            $item = New-Object System.Windows.Controls.ComboBoxItem
+            $item.Content = $provider.Name
+            $item.Tag = $provider.Key
+            [void]$ui.CmbDohProvider.Items.Add($item)
+        }
+        if ($ui.CmbDohProvider.Items.Count -gt 0) {
+            $ui.CmbDohProvider.SelectedIndex = 0
+        }
+        if (-not $ui.DohSupported) {
+            $ui.CmbDohProvider.IsEnabled = $false
+            $ui.CmbDohProvider.ToolTip = 'DNS over HTTPS nativo requer Windows 11 (build 22000+).'
+        }
+    }
+    if (-not $ui.DohSupported) {
+        if ($ui.BtnApplyDoh) {
+            $ui.BtnApplyDoh.IsEnabled = $false
+            $ui.BtnApplyDoh.ToolTip = 'DNS over HTTPS nativo requer Windows 11 (build 22000+).'
+        }
+        if ($ui.BtnUndoDoh) {
+            $ui.BtnUndoDoh.IsEnabled = $false
+            $ui.BtnUndoDoh.ToolTip = 'DNS over HTTPS nativo requer Windows 11 (build 22000+).'
+        }
     }
 
     if ($script:OptiKit -and $script:OptiKit.DryRun -and $ui.BadgeDryRun) {

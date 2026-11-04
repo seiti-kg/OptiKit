@@ -177,6 +177,7 @@ $moduleOrder = @(
     'src\windows\modules\tweak-engine.ps1',
     'src\windows\modules\game-engine.ps1',
     'src\windows\modules\maintenance.ps1',
+    'src\windows\modules\network-engine.ps1',
     'src\windows\modules\startup-manager.ps1',
     'src\windows\core\state-checker.ps1',
     'src\windows\modules\diagnostics.ps1',

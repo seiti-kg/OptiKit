@@ -21,6 +21,7 @@ $devRoot = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
 . (Join-Path $PSScriptRoot 'modules\tweak-engine.ps1')
 . (Join-Path $PSScriptRoot 'modules\game-engine.ps1')
 . (Join-Path $PSScriptRoot 'modules\maintenance.ps1')
+. (Join-Path $PSScriptRoot 'modules\network-engine.ps1')
 . (Join-Path $PSScriptRoot 'modules\startup-manager.ps1')
 . (Join-Path $PSScriptRoot 'core\state-checker.ps1')
 . (Join-Path $PSScriptRoot 'modules\diagnostics.ps1')
@@ -185,6 +186,7 @@ function Start-OptiKitWorkerTask {
         'Get-OptiKitStateUndoPlan', 'Invoke-OptiKitRevertAll',
         'Test-OptiKitUpdateAvailable', 'Export-OptiKitReport',
         'Test-WingetAvailable', 'Install-WingetBootstrap', 'Install-OptiKitApp',
+        'Invoke-OptiKitWingetCommand', 'Invoke-OptiKitWingetUpgrade',
         'Test-OneDriveKfmActive', 'Remove-OptiKitOneDrive', 'Install-OptiKitOneDrive', 'Test-OptiKitOneDriveRemoved',
         'Test-AntiCheatGuardrail', 'Get-RegistryEntryState', 'Set-RegistryEntryValue',
         'Set-ServiceStartupState', 'Set-ScheduledTaskState', 'Invoke-AppxRemoval',
@@ -193,6 +195,9 @@ function Start-OptiKitWorkerTask {
         'Optimize-NetworkAdapterGaming', 'Disable-RiotClientStartup', 'Clear-ShaderCache',
         'Invoke-GameOptimization', 'Test-GameOptimizationApplied',
         'Invoke-NetworkReset', 'Invoke-NativeStep', 'Invoke-CancelableProcess', 'Invoke-SystemIntegrityRepair', 'Clear-TemporaryFiles',
+        'Clear-OptiKitDirectory', 'Invoke-AdvancedCleanup',
+        'Get-OptiKitDohProviders', 'Get-OptiKitDnsAdapters', 'Test-OptiKitDohSupported',
+        'Set-OptiKitDnsFamily', 'Remove-OptiKitDohEncryption', 'Set-OptiKitDohEncryption', 'Set-OptiKitDohProvider', 'Restore-OptiKitDns',
         'Get-OptiKitStartupItems', 'Set-OptiKitStartupItemState',
         'Test-TweakApplied', 'Get-AllTweaksState'
     )
@@ -541,7 +546,7 @@ function Start-OptiKitMain {
             return
         }
 
-        $confirm = [System.Windows.MessageBox]::Show($window, ("Reverter TODOS os {0} estado(s) capturados? Isso desfaz tweaks, otimizações de jogos, plano de energia, USB, DirectX e Windows Update." -f $state.Count), 'Reverter Tudo (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        $confirm = [System.Windows.MessageBox]::Show($window, ("Reverter TODOS os {0} estado(s) capturados? Isso desfaz tweaks, otimizações de jogos, plano de energia, USB, DirectX, DNS/DoH e Windows Update." -f $state.Count), 'Reverter Tudo (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
         if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) {
             return
         }
@@ -591,6 +596,51 @@ function Start-OptiKitMain {
         $sync.CancelRequest = $true
         $script:OptiKit.CancelRequest = $true
         Write-OptimizerLog -Level WARN -Message 'Solicitação de cancelamento enviada ao processo em execução...'
+    }.GetNewClosure())
+
+    $ui.BtnApplyDoh.Add_Click({
+        if (-not $ui.DohSupported) { return }
+        $selected = $ui.CmbDohProvider.SelectedItem
+        if (-not $selected) {
+            Write-OptimizerLog -Level WARN -Message 'Selecione um provedor de DoH primeiro.'
+            return
+        }
+        $providerKey = [string]$selected.Tag
+        $providerName = [string]$selected.Content
+        $confirm = [System.Windows.MessageBox]::Show($window, ("Aplicar DNS over HTTPS via {0}?`r`n`r`nOs servidores DNS dos adaptadores físicos ativos serão alterados. O DNS original será salvo para o Undo." -f $providerName), 'DNS over HTTPS (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+        if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
+
+        Start-OptiKitWorkerTask -SyncHash $sync -Arguments @{ ProviderKey = $providerKey } -WorkerScript {
+            Set-OptiKitDohProvider -ProviderKey $WorkerArgs.ProviderKey
+        }
+    }.GetNewClosure())
+
+    $ui.BtnUndoDoh.Add_Click({
+        if (-not $ui.DohSupported) { return }
+        $confirm = [System.Windows.MessageBox]::Show($window, 'Restaurar o DNS original dos adaptadores e remover os templates DoH aplicados pelo OptiKit?', 'Reverter DNS over HTTPS (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
+
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
+            Restore-OptiKitDns
+        }
+    }.GetNewClosure())
+
+    $ui.BtnWingetUpgrade.Add_Click({
+        $confirm = [System.Windows.MessageBox]::Show($window, 'Atualizar TODOS os aplicativos gerenciados pelo Winget?`r`n`r`nA operação pode demorar e alguns aplicativos podem exigir reinicialização.', 'Atualizar Apps (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+        if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
+
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
+            Invoke-OptiKitWingetUpgrade -All | Out-Null
+        }
+    }.GetNewClosure())
+
+    $ui.BtnAdvancedCleanup.Add_Click({
+        $confirm = [System.Windows.MessageBox]::Show($window, "Limpeza avançada:`r`n`r`n• Cache do Windows Update`r`n• Cache do Delivery Optimization`r`n• Lixeira`r`n• Prefetch`r`n• Component Store via DISM`r`n`r`nPode demorar vários minutos. Continuar?", 'Limpeza Avançada (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
+
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
+            Invoke-AdvancedCleanup
+        }
     }.GetNewClosure())
 
     # Verificação de Estado
@@ -798,6 +848,11 @@ function Start-OptiKitMain {
         $ui.BtnClearTemp.IsEnabled = (-not $busy)
         $ui.BtnRefreshDiagnostics.IsEnabled = (-not $busy)
         $ui.BtnExportReport.IsEnabled = (-not $busy)
+        $ui.CmbDohProvider.IsEnabled = ((-not $busy) -and $ui.DohSupported)
+        $ui.BtnApplyDoh.IsEnabled = ((-not $busy) -and $ui.DohSupported)
+        $ui.BtnUndoDoh.IsEnabled = ((-not $busy) -and $ui.DohSupported)
+        $ui.BtnWingetUpgrade.IsEnabled = (-not $busy)
+        $ui.BtnAdvancedCleanup.IsEnabled = (-not $busy)
         $ui.BtnCancelMaintenance.IsEnabled = $busy
 
         if (-not $busy -and $sync.PendingDiagnosticsStart) {

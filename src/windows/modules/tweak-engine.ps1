@@ -621,7 +621,7 @@ function ConvertTo-OptiKitProfile {
         [string]$Preset = ''
     )
 
-    $version = if ($script:OptiKitVersion) { [string]$script:OptiKitVersion } else { '0.2.1' }
+    $version = if ($script:OptiKitVersion) { [string]$script:OptiKitVersion } else { '0.3.0' }
     return [pscustomobject]@{
         schemaVersion     = 1
         optikitVersion    = $version
@@ -817,6 +817,7 @@ function Get-OptiKitStateUndoPlan {
         elseif ($key -eq 'DirectXGlobalSettings') { $entry.Kind = 'DirectX' }
         elseif ($key -eq 'TargetReleaseVersion') { $entry.Kind = 'TargetRelease' }
         elseif ($key -eq 'ReservedStorage') { $entry.Kind = 'ReservedStorage' }
+        elseif ($key -eq 'DnsOverHttps') { $entry.Kind = 'Doh' }
 
         [void]$plan.Add($entry)
     }
@@ -856,6 +857,7 @@ function Invoke-OptiKitRevertAll {
                 'DirectX' { Disable-OptiKitWindowedGameOptimizations }
                 'TargetRelease' { Restore-OptiKitTargetRelease }
                 'ReservedStorage' { Enable-OptiKitReservedStorage }
+                'Doh' { Restore-OptiKitDns }
             }
             $reverted++
         }

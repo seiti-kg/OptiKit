@@ -139,6 +139,43 @@ function Invoke-SystemIntegrityRepair {
     } | Out-Null
 }
 
+function Clear-OptiKitDirectory {
+    [CmdletBinding()]
+    param(
+        [string[]]$TargetDirectories
+    )
+
+    $freedBytes = [int64]0
+    $deletedFiles = 0
+    $failedFiles = 0
+
+    foreach ($dir in @($TargetDirectories)) {
+        if (-not $dir -or -not (Test-Path -LiteralPath $dir)) {
+            continue
+        }
+
+        $files = Get-ChildItem -LiteralPath $dir -Recurse -File -Force -ErrorAction SilentlyContinue
+        foreach ($file in $files) {
+            $length = $file.Length
+            try {
+                Remove-Item -LiteralPath $file.FullName -Force -ErrorAction Stop
+                $freedBytes += $length
+                $deletedFiles++
+            }
+            catch {
+                $failedFiles++
+                Write-Verbose ("Arquivo em uso (ignorado): {0}" -f $file.FullName)
+            }
+        }
+    }
+
+    return [pscustomobject]@{
+        DeletedFiles = $deletedFiles
+        FailedFiles  = $failedFiles
+        FreedBytes   = $freedBytes
+    }
+}
+
 function Clear-TemporaryFiles {
     [CmdletBinding()]
     param(
@@ -153,30 +190,89 @@ function Clear-TemporaryFiles {
     }
 
     Invoke-Mutation -Description 'Limpar arquivos temporários do usuário (%TEMP%) e do sistema (Windows\Temp)' -Action {
+        $result = Clear-OptiKitDirectory -TargetDirectories $TargetDirectories
+        $freedMb = [math]::Round(($result.FreedBytes / 1MB), 2)
+        Write-OptimizerLog -Level OK -Message ("Limpeza concluída: {0} arquivos temporários removidos ({1} MB liberados)." -f $result.DeletedFiles, $freedMb)
+        if ($result.FailedFiles -gt 0) {
+            Write-OptimizerLog -Level WARN -Message ("{0} arquivo(s) temporário(s) estavam em uso e foram ignorados." -f $result.FailedFiles)
+        }
+    } | Out-Null
+}
+
+function Invoke-AdvancedCleanup {
+    [CmdletBinding()]
+    param(
+        [string]$WindowsUpdateCache = (Join-Path $env:SystemRoot 'SoftwareDistribution\Download'),
+        [string]$PrefetchDirectory = (Join-Path $env:SystemRoot 'Prefetch'),
+        [switch]$SkipComponentStore,
+        [switch]$SkipDeliveryOptimization,
+        [switch]$SkipRecycleBin
+    )
+
+    Invoke-Mutation -Description 'Limpeza avançada (Windows Update, Delivery Optimization, lixeira, prefetch e Component Store)' -Action {
+        $failedSteps = New-Object 'System.Collections.Generic.List[string]'
         $freedBytes = [int64]0
         $deletedFiles = 0
 
-        foreach ($dir in $TargetDirectories) {
-            if (-not $dir -or -not (Test-Path -LiteralPath $dir)) {
-                continue
-            }
+        $fileResult = Clear-OptiKitDirectory -TargetDirectories @($WindowsUpdateCache, $PrefetchDirectory)
+        $freedBytes += $fileResult.FreedBytes
+        $deletedFiles += $fileResult.DeletedFiles
+        if ($fileResult.FailedFiles -gt 0) {
+            Write-OptimizerLog -Level WARN -Message ("{0} arquivo(s) de cache estavam em uso e foram ignorados." -f $fileResult.FailedFiles)
+        }
 
-            $files = Get-ChildItem -LiteralPath $dir -Recurse -File -Force -ErrorAction SilentlyContinue
-            foreach ($f in $files) {
-                $len = $f.Length
+        if (-not $SkipRecycleBin) {
+            if (Get-Command Clear-RecycleBin -ErrorAction SilentlyContinue) {
                 try {
-                    Remove-Item -LiteralPath $f.FullName -Force -ErrorAction Stop
-                    $freedBytes += $len
-                    $deletedFiles++
+                    Clear-RecycleBin -Force -ErrorAction Stop
+                    Write-OptimizerLog -Level OK -Message 'Lixeira esvaziada.'
                 }
                 catch {
-                    Write-Verbose ("Arquivo temporário em uso (ignorado): {0}" -f $f.FullName)
+                    [void]$failedSteps.Add('Lixeira')
+                    Write-OptimizerLog -Level WARN -Message ("Falha ao esvaziar a lixeira: {0}" -f $_.Exception.Message)
                 }
+            }
+            else {
+                Write-OptimizerLog -Level INFO -Message 'Clear-RecycleBin indisponível nesta versão do Windows (ignorado).'
+            }
+        }
+
+        if (-not $SkipDeliveryOptimization) {
+            if (Get-Command Delete-DeliveryOptimizationCache -ErrorAction SilentlyContinue) {
+                try {
+                    Delete-DeliveryOptimizationCache -Force -ErrorAction Stop
+                    Write-OptimizerLog -Level OK -Message 'Cache do Delivery Optimization removido.'
+                }
+                catch {
+                    [void]$failedSteps.Add('Delivery Optimization')
+                    Write-OptimizerLog -Level WARN -Message ("Falha ao limpar o Delivery Optimization: {0}" -f $_.Exception.Message)
+                }
+            }
+            else {
+                Write-OptimizerLog -Level INFO -Message 'Delete-DeliveryOptimizationCache indisponível (ignorado).'
+            }
+        }
+
+        if (-not $SkipComponentStore) {
+            try {
+                $dismOk = Invoke-CancelableProcess -FilePath 'DISM.exe' -Arguments '/Online /Cleanup-Image /StartComponentCleanup' -StepName 'Component Store (DISM)' -SuccessExitCodes @(0, 3010)
+                if (-not $dismOk) {
+                    throw 'DISM /StartComponentCleanup falhou ou foi cancelado.'
+                }
+            }
+            catch {
+                [void]$failedSteps.Add('Component Store')
+                Write-OptimizerLog -Level WARN -Message ("Falha na limpeza do Component Store: {0}" -f $_.Exception.Message)
             }
         }
 
         $freedMb = [math]::Round(($freedBytes / 1MB), 2)
-        Write-OptimizerLog -Level OK -Message ("Limpeza concluída: {0} arquivos temporários removidos ({1} MB liberados)." -f $deletedFiles, $freedMb)
+        $summaryLevel = if ($failedSteps.Count -gt 0) { 'WARN' } else { 'OK' }
+        Write-OptimizerLog -Level $summaryLevel -Message ("Limpeza avançada concluída: {0} arquivo(s) removido(s) ({1} MB liberados)." -f $deletedFiles, $freedMb)
+
+        if ($failedSteps.Count -gt 0) {
+            throw ("Limpeza avançada concluída com falha em: {0}" -f ($failedSteps -join '; '))
+        }
     } | Out-Null
 }
 

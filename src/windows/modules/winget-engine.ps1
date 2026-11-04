@@ -262,3 +262,99 @@ function Test-OptiKitOneDriveRemoved {
     $exeProg = Join-Path ${env:ProgramFiles} 'Microsoft OneDrive\OneDrive.exe'
     return (-not (Test-Path -LiteralPath $exeLocal)) -and (-not (Test-Path -LiteralPath $exeProg))
 }
+
+function Invoke-OptiKitWingetCommand {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$WingetPath,
+        [Parameter(Mandatory = $true)][string[]]$Arguments,
+        [Parameter(Mandatory = $true)][string]$Label
+    )
+
+    $stdoutPath = [System.IO.Path]::GetTempFileName()
+    $stderrPath = [System.IO.Path]::GetTempFileName()
+    try {
+        $proc = Start-Process -FilePath $WingetPath -ArgumentList $Arguments -NoNewWindow -Wait -PassThru -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
+        foreach ($line in @(Get-Content -LiteralPath $stdoutPath -ErrorAction SilentlyContinue)) {
+            if (-not [string]::IsNullOrWhiteSpace($line)) {
+                Write-OptimizerLog -Level INFO -Message ("[{0}] {1}" -f $Label, $line.Trim())
+            }
+        }
+        foreach ($line in @(Get-Content -LiteralPath $stderrPath -ErrorAction SilentlyContinue)) {
+            if (-not [string]::IsNullOrWhiteSpace($line)) {
+                Write-OptimizerLog -Level WARN -Message ("[{0}] {1}" -f $Label, $line.Trim())
+            }
+        }
+        return [int]$proc.ExitCode
+    }
+    finally {
+        Remove-Item -LiteralPath $stdoutPath, $stderrPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Invoke-OptiKitWingetUpgrade {
+    [CmdletBinding()]
+    param(
+        [switch]$All,
+        [string[]]$Ids
+    )
+
+    $cleanIds = @($Ids | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
+    if (-not $All -and $cleanIds.Count -eq 0) {
+        throw 'Informe -All ou pelo menos um ID do Winget para atualizar.'
+    }
+
+    if ($script:OptiKit -and $script:OptiKit.DryRun) {
+        Write-OptimizerLog -Level DRYRUN -Message ("Atualizar aplicativos via Winget ({0})" -f $(if ($All) { 'todos' } else { $cleanIds -join ', ' }))
+        return $true
+    }
+
+    $wg = Test-WingetAvailable
+    if (-not $wg.Available) {
+        Write-OptimizerLog -Level WARN -Message 'Winget não encontrado. Iniciando instalação automática do App Installer...'
+        if (-not (Install-WingetBootstrap)) {
+            throw 'Winget indisponível; não foi possível atualizar os aplicativos.'
+        }
+        $wg = Test-WingetAvailable
+        if (-not $wg.Available) {
+            throw 'Winget indisponível após o bootstrap.'
+        }
+    }
+
+    $commands = New-Object 'System.Collections.Generic.List[pscustomobject]'
+    if ($All) {
+        [void]$commands.Add([pscustomobject]@{
+            Label     = 'Winget upgrade --all'
+            Arguments = @('upgrade', '--all', '--include-unknown', '--silent', '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity')
+        })
+    }
+    else {
+        foreach ($id in $cleanIds) {
+            [void]$commands.Add([pscustomobject]@{
+                Label     = ("Winget upgrade {0}" -f $id)
+                Arguments = @('upgrade', '--id', $id, '--exact', '--silent', '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity')
+            })
+        }
+    }
+
+    $successCodes = @(0, -1978335189, 3010)
+    Invoke-Mutation -Description 'Atualizar aplicativos via Winget' -Action {
+        foreach ($command in $commands) {
+            $exitCode = Invoke-OptiKitWingetCommand -WingetPath $wg.Path -Arguments $command.Arguments -Label $command.Label
+            if ($successCodes -notcontains $exitCode) {
+                throw ("{0} retornou código {1}." -f $command.Label, $exitCode)
+            }
+            if ($exitCode -eq -1978335189) {
+                Write-OptimizerLog -Level INFO -Message ("{0}: nenhuma atualização aplicável." -f $command.Label)
+            }
+            elseif ($exitCode -eq 3010) {
+                Write-OptimizerLog -Level OK -Message ("{0}: atualizado; reinicialização recomendada." -f $command.Label)
+            }
+            else {
+                Write-OptimizerLog -Level OK -Message ("{0}: concluído." -f $command.Label)
+            }
+        }
+    } | Out-Null
+
+    return $true
+}

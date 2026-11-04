@@ -252,6 +252,16 @@
                                 <Button Name="BtnImportProfile" Content="📥 Importar Perfil" Style="{StaticResource ActionButtonStyle}" Margin="0,0,8,6" />
                                 <Button Name="BtnExportReport" Content="📄 Exportar Relatório HTML" Style="{StaticResource ActionButtonStyle}" Margin="0,0,0,6" />
                             </WrapPanel>
+
+                            <TextBlock Text="Rede, Atualizações e Limpeza Avançada" FontSize="13" FontWeight="SemiBold" Foreground="#F3F4F6" Margin="0,8,0,6" />
+                            <WrapPanel Orientation="Horizontal">
+                                <TextBlock Text="DNS over HTTPS (Windows 11):" Foreground="#9CA3AF" FontSize="11.5" VerticalAlignment="Center" Margin="0,0,6,6" />
+                                <ComboBox Name="CmbDohProvider" Width="250" Height="26" Background="#121212" Foreground="#F3F4F6" BorderBrush="#2D2D32" Margin="0,0,8,6" />
+                                <Button Name="BtnApplyDoh" Content="🔐 Aplicar DoH" Style="{StaticResource ActionButtonStyle}" Margin="0,0,8,6" />
+                                <Button Name="BtnUndoDoh" Content="↩ Reverter DoH" Style="{StaticResource DangerRedButtonStyle}" Margin="0,0,8,6" />
+                                <Button Name="BtnWingetUpgrade" Content="⬆ Atualizar Apps (Winget)" Style="{StaticResource ActionButtonStyle}" Margin="0,0,8,6" />
+                                <Button Name="BtnAdvancedCleanup" Content="🧨 Limpeza Avançada" Style="{StaticResource DangerRedButtonStyle}" Margin="0,0,0,6" />
+                            </WrapPanel>
                         </StackPanel>
                     </Border>
 

@@ -27,6 +27,33 @@ Describe 'Manutenção (maintenance.ps1)' {
         (Invoke-CancelableProcess -FilePath 'cmd.exe' -Arguments '/c exit 3010' -StepName 'Teste 3010' -SuccessExitCodes @(0)) | Should -BeFalse
     }
 
+    It 'Clear-OptiKitDirectory deve remover arquivos e contabilizar bytes' {
+        $dir = Join-Path $TestDrive 'cleanup_dir'
+        New-Item -Path $dir -ItemType Directory -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $dir 'a.bin') -Value ('A' * 1024)
+        Set-Content -LiteralPath (Join-Path $dir 'b.bin') -Value ('B' * 2048)
+
+        $result = Clear-OptiKitDirectory -TargetDirectories @($dir)
+        $result.DeletedFiles | Should -Be 2
+        $result.FreedBytes | Should -BeGreaterThan 0
+        @(Get-ChildItem -LiteralPath $dir -File).Count | Should -Be 0
+    }
+
+    It 'Invoke-AdvancedCleanup deve limpar caches informados sem executar ferramentas do sistema' {
+        $wuDir = Join-Path $TestDrive 'wu_cache'
+        $pfDir = Join-Path $TestDrive 'prefetch'
+        New-Item -Path $wuDir -ItemType Directory -Force | Out-Null
+        New-Item -Path $pfDir -ItemType Directory -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $wuDir 'update.bin') -Value ('U' * 1024)
+        Set-Content -LiteralPath (Join-Path $pfDir 'app.pf') -Value ('P' * 512)
+
+        Invoke-AdvancedCleanup -WindowsUpdateCache $wuDir -PrefetchDirectory $pfDir -SkipComponentStore -SkipDeliveryOptimization -SkipRecycleBin
+
+        @(Get-ChildItem -LiteralPath $wuDir -File).Count | Should -Be 0
+        @(Get-ChildItem -LiteralPath $pfDir -File).Count | Should -Be 0
+        ($script:OptiKit.LogHistory -join "`n") | Should -Match 'Limpeza avançada concluída'
+    }
+
     It 'Invoke-NetworkReset deve propagar falha de um passo nativo' {
         Mock Invoke-NativeStep {
             if ($StepName -eq 'Reset do Winsock') {

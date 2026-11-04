@@ -45,6 +45,8 @@ O modo desatendido exige Administrador (UAC) e retorna `0` em sucesso, `1` em fa
 - **Diagnóstico de Hardware (somente leitura):** Detecta RAM sem XMP/EXPO, monitor abaixo da taxa máxima, VBS/HVCI ativo, HAGS/Game Mode/plano de energia, ausência do driver `amd3dvcache` em Ryzen X3D dual-CCD e drivers de GPU com mais de 180 dias, com ação recomendada por card.
 - **Perfis de Jogos:** Perfis ativos para VALORANT, Counter-Strike 2 e jogos Unreal Engine 5/AAA (detecção de executável, flags FSO/High DPI, preferência de GPU dedicada no DirectX, desativação de economia de energia na placa de rede e limpeza de Cache de Shaders DirectX/NVIDIA/AMD).
 - **Windows Update:** Bloqueio de drivers automáticos, fixação da versão atual do Windows (feature updates) e desativação do Armazenamento Reservado, com Undo pelo `state.json`.
+- **Rede e Atualizações:** DNS over HTTPS nativo no Windows 11 (Cloudflare, Google, Quad9 e AdGuard, IPv4/IPv6) com captura do DNS original para Undo; reset de pilha de rede e atualização de aplicativos via Winget (`upgrade --all`).
+- **Limpeza Avançada:** Remoção do cache do Windows Update, Delivery Optimization, lixeira, prefetch e Component Store via `DISM /StartComponentCleanup`, com contabilização de espaço liberado.
 - **Automação e Reversão:** Modo desatendido (`-Preset`/`-Config -Apply -Silent`), exportação/importação de perfil de seleção, **Reverter Tudo** a partir do estado capturado, relatório HTML da sessão e aviso de nova versão.
 - **Manutenção e Inicialização:** Reset de rede/DNS, execução de `DISM /RestoreHealth` + `SFC /scannow` em segundo plano, limpeza de temporários e gerenciador de programas de inicialização compatível com o Gerenciador de Tarefas (`StartupApproved`).
 

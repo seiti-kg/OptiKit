@@ -11,7 +11,7 @@ BeforeAll {
     . (Join-Path $script:RepoRoot 'src\windows\modules\maintenance.ps1')
     . (Join-Path $script:RepoRoot 'src\windows\core\state-checker.ps1')
 
-    $script:OptiKitVersion = '0.2.1'
+    $script:OptiKitVersion = '0.3.0'
     $script:Configs = @{
         Apps         = [System.IO.File]::ReadAllText((Join-Path $script:RepoRoot 'config\apps.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         WinTweaks    = [System.IO.File]::ReadAllText((Join-Path $script:RepoRoot 'config\win-tweaks.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
@@ -126,7 +126,7 @@ Describe 'Automação v0.2' {
         $reportPath = Export-OptiKitReport -OutputDirectory (Join-Path $testRoot 'reports') -Diagnostics $diagnostics -Counts $counts
         Test-Path -LiteralPath $reportPath | Should -BeTrue
         $content = [System.IO.File]::ReadAllText($reportPath, [System.Text.Encoding]::UTF8)
-        $content | Should -Match 'OptiKit v0\.2\.1'
+        $content | Should -Match 'OptiKit v0\.3\.0'
         $content | Should -Match 'linha de teste do relatório'
         $content | Should -Match 'Resumo da sessão'
         $content | Should -Match 'Operações OK'
