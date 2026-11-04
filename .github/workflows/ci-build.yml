@@ -51,17 +51,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           Import-Module Pester -RequiredVersion 5.7.1 -Force
-          $testFiles = @(
-            '.\tests\Config.Tests.ps1',
-            '.\tests\Backup.Tests.ps1',
-            '.\tests\TweakEngine.Tests.ps1',
-            '.\tests\GameEngine.Tests.ps1',
-            '.\tests\Foundation.Tests.ps1',
-            '.\tests\Whitelist.Tests.ps1',
-            '.\tests\Automation.Tests.ps1',
-            '.\tests\Build.Tests.ps1'
-          )
-          $res = Invoke-Pester -Path $testFiles -Output Detailed -PassThru
+          $res = Invoke-Pester -Path .\tests -Output Detailed -PassThru
           if ($res.FailedCount -gt 0) {
             throw "$($res.FailedCount) Pester test(s) failed."
           }

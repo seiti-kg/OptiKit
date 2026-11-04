@@ -338,7 +338,7 @@
 
 #### Remover Microsoft Office Hub (Appx) (`WPFTweaksRemoveOfficeHub`)
 - **Categoria:** Remoção de Bloatware (Appx) | **Impacto:** Baixo | **Risco:** Safe
-- **Descrição:** Remove o hub promocional Microsoft.MicrosoftOfficeHub (reversível via reinstalação).
+- **Descrição:** Remove o hub promocional Microsoft.MicrosoftOfficeHub (a reinstalação depende de o pacote continuar disponível na Store).
 - **Justificativa Técnica (Rationale):** Aplicativo de propaganda do Microsoft 365 pré-instalado em edições de consumidor, sem função para quem usa Office desktop ou webmail.
 
 #### Remover Power Automate Desktop (Appx) (`WPFTweaksRemovePowerAutomate`)
@@ -353,7 +353,7 @@
 
 #### Remover Windows Maps (Appx) (`WPFTweaksRemoveMaps`)
 - **Categoria:** Remoção de Bloatware (Appx) | **Impacto:** Baixo | **Risco:** Safe
-- **Descrição:** Remove o aplicativo Microsoft.WindowsMaps (reversível via reinstalação).
+- **Descrição:** Remove o aplicativo Microsoft.WindowsMaps (a reinstalação depende de o pacote continuar disponível na Store).
 - **Justificativa Técnica (Rationale):** Aplicativo de mapas com downloads offline e tarefas de atualização em segundo plano, sem uso típico em desktops gamers.
 
 #### Remover Microsoft Family Safety (Appx) (`WPFTweaksRemoveFamily`)
@@ -363,12 +363,12 @@
 
 #### Remover Dev Home (Appx) (`WPFTweaksRemoveDevHome`)
 - **Categoria:** Remoção de Bloatware (Appx) | **Impacto:** Baixo | **Risco:** Safe
-- **Descrição:** Remove o aplicativo Microsoft.Windows.DevHome (reversível via reinstalação).
+- **Descrição:** Remove o aplicativo Microsoft.Windows.DevHome (a reinstalação depende de o pacote continuar disponível na Store).
 - **Justificativa Técnica (Rationale):** Dashboard de desenvolvimento pré-instalado no Windows 11, útil apenas para quem realmente usa os widgets de dev.
 
 #### Remover LinkedIn for Windows (Appx) (`WPFTweaksRemoveLinkedIn`)
 - **Categoria:** Remoção de Bloatware (Appx) | **Impacto:** Baixo | **Risco:** Safe
-- **Descrição:** Remove o aplicativo LinkedIn pré-instalado (reversível via reinstalação).
+- **Descrição:** Remove o aplicativo LinkedIn pré-instalado (a reinstalação depende de o pacote continuar disponível na Store).
 - **Justificativa Técnica (Rationale):** Rede social profissional promovida no Windows 11, com sincronização em segundo plano e notificações.
 
 ## 2. Perfis de Jogos (`config/game-profiles.json`)

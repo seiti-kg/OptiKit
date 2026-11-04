@@ -2129,7 +2129,7 @@ $script:EmbeddedWinTweaksJson = @'
   "WPFTweaksRemoveOfficeHub": {
     "title": "Remover Microsoft Office Hub (Appx)",
     "category": "Remo\u00e7\u00e3o de Bloatware (Appx)",
-    "description": "Remove o hub promocional Microsoft.MicrosoftOfficeHub (revers\u00edvel via reinstala\u00e7\u00e3o).",
+    "description": "Remove o hub promocional Microsoft.MicrosoftOfficeHub (a reinstala\u00e7\u00e3o depende de o pacote continuar dispon\u00edvel na Store).",
     "rationale": "Aplicativo de propaganda do Microsoft 365 pr\u00e9-instalado em edi\u00e7\u00f5es de consumidor, sem fun\u00e7\u00e3o para quem usa Office desktop ou webmail.",
     "impact": "Baixo",
     "riskLevel": "Safe",
@@ -2201,7 +2201,7 @@ $script:EmbeddedWinTweaksJson = @'
   "WPFTweaksRemoveMaps": {
     "title": "Remover Windows Maps (Appx)",
     "category": "Remo\u00e7\u00e3o de Bloatware (Appx)",
-    "description": "Remove o aplicativo Microsoft.WindowsMaps (revers\u00edvel via reinstala\u00e7\u00e3o).",
+    "description": "Remove o aplicativo Microsoft.WindowsMaps (a reinstala\u00e7\u00e3o depende de o pacote continuar dispon\u00edvel na Store).",
     "rationale": "Aplicativo de mapas com downloads offline e tarefas de atualiza\u00e7\u00e3o em segundo plano, sem uso t\u00edpico em desktops gamers.",
     "impact": "Baixo",
     "riskLevel": "Safe",
@@ -2249,7 +2249,7 @@ $script:EmbeddedWinTweaksJson = @'
   "WPFTweaksRemoveDevHome": {
     "title": "Remover Dev Home (Appx)",
     "category": "Remo\u00e7\u00e3o de Bloatware (Appx)",
-    "description": "Remove o aplicativo Microsoft.Windows.DevHome (revers\u00edvel via reinstala\u00e7\u00e3o).",
+    "description": "Remove o aplicativo Microsoft.Windows.DevHome (a reinstala\u00e7\u00e3o depende de o pacote continuar dispon\u00edvel na Store).",
     "rationale": "Dashboard de desenvolvimento pr\u00e9-instalado no Windows 11, \u00fatil apenas para quem realmente usa os widgets de dev.",
     "impact": "Baixo",
     "riskLevel": "Safe",
@@ -2273,7 +2273,7 @@ $script:EmbeddedWinTweaksJson = @'
   "WPFTweaksRemoveLinkedIn": {
     "title": "Remover LinkedIn for Windows (Appx)",
     "category": "Remo\u00e7\u00e3o de Bloatware (Appx)",
-    "description": "Remove o aplicativo LinkedIn pr\u00e9-instalado (revers\u00edvel via reinstala\u00e7\u00e3o).",
+    "description": "Remove o aplicativo LinkedIn pr\u00e9-instalado (a reinstala\u00e7\u00e3o depende de o pacote continuar dispon\u00edvel na Store).",
     "rationale": "Rede social profissional promovida no Windows 11, com sincroniza\u00e7\u00e3o em segundo plano e notifica\u00e7\u00f5es.",
     "impact": "Baixo",
     "riskLevel": "Safe",
@@ -3239,7 +3239,21 @@ function Read-OptiKitStateFile {
         }
     }
     catch {
-        Write-OptimizerLog -Level WARN -Message ("N$([char]0x00E3)o foi poss$([char]0x00ED)vel ler state.json em '{0}': {1}" -f $StateFilePath, $_.Exception.Message)
+        $readError = $_.Exception.Message
+        $quarantinePath = "{0}.corrupt-{1}" -f $StateFilePath, (Get-Date -Format 'yyyyMMdd-HHmmss')
+
+        if ($script:OptiKit -and $script:OptiKit.DryRun) {
+            Write-OptimizerLog -Level WARN -Message ("state.json ileg$([char]0x00ED)vel em '{0}': {1}. DryRun ativo; arquivo n$([char]0x00E3)o foi movido para '{2}'." -f $StateFilePath, $readError, $quarantinePath)
+        }
+        else {
+            try {
+                Move-Item -LiteralPath $StateFilePath -Destination $quarantinePath -Force -ErrorAction Stop
+                Write-OptimizerLog -Level ERROR -Message ("state.json ileg$([char]0x00ED)vel em '{0}': {1}. Arquivo movido para '{2}'." -f $StateFilePath, $readError, $quarantinePath)
+            }
+            catch {
+                Write-OptimizerLog -Level WARN -Message ("state.json ileg$([char]0x00ED)vel em '{0}' ({1}) e falha ao mover para '{2}': {3}" -f $StateFilePath, $readError, $quarantinePath, $_.Exception.Message)
+            }
+        }
     }
 
     return $result
@@ -3274,10 +3288,12 @@ function Write-OptiKitStateFile {
 
     try {
         [System.IO.File]::WriteAllText($tmpFile, $json, $utf8Bom)
-        if (Test-Path -LiteralPath $StateFilePath) {
-            Remove-Item -LiteralPath $StateFilePath -Force
+        if ([System.IO.File]::Exists($StateFilePath)) {
+            [System.IO.File]::Replace($tmpFile, $StateFilePath, [NullString]::Value)
         }
-        Move-Item -LiteralPath $tmpFile -Destination $StateFilePath -Force
+        else {
+            [System.IO.File]::Move($tmpFile, $StateFilePath)
+        }
 
         if ($script:OptiKit -and $script:OptiKit.SessionDir -and (Test-Path -LiteralPath $script:OptiKit.SessionDir)) {
             $snapshotPath = Join-Path $script:OptiKit.SessionDir 'state-snapshot.json'
@@ -3444,6 +3460,22 @@ function New-OptiKitRestorePoint {
 # ============================================================================
 # Detec--o de Hardware (CPU/GPU/Chassi/SSD/Build) e Otimiza--es de Energia e Portas USB
 
+function Resolve-OptiKitCpuFlags {
+    [CmdletBinding()]
+    param(
+        [string]$CpuName,
+        [int]$CpuCores
+    )
+
+    $isX3D = [bool]($CpuName -match '(?i)\b\d{4}(?:HX|X)3D\b')
+    $isX3DDualCcd = $isX3D -and (($CpuName -match '(?i)\b(79|99)\d{2}(?:HX|X)3D\b') -or ($CpuCores -gt 8))
+
+    [pscustomobject]@{
+        IsX3D        = $isX3D
+        IsX3DDualCcd = $isX3DDualCcd
+    }
+}
+
 function Get-OptiKitHardware {
     [CmdletBinding()]
     param(
@@ -3465,8 +3497,6 @@ function Get-OptiKitHardware {
         Write-Verbose ("Falha ao ler nome da CPU do registro: {0}" -f $_.Exception.Message)
     }
 
-    $isX3D = [bool]($cpuName -match '(?i)\b\d{4}X3D\b')
-
     $cpuCores = 0
     try {
         $cpuCim = Get-CimInstance -ClassName Win32_Processor -ErrorAction SilentlyContinue
@@ -3479,7 +3509,9 @@ function Get-OptiKitHardware {
     }
 
     # X3D dual-CCD: 7900X3D/7950X3D/9900X3D/9950X3D (12/16 n-cleos). Single-CCD X3D tem at- 8.
-    $isX3DDualCcd = $isX3D -and (($cpuName -match '(?i)\b(79|99)\d{2}X3D\b') -or ($cpuCores -gt 8))
+    $cpuFlags = Resolve-OptiKitCpuFlags -CpuName $cpuName -CpuCores $cpuCores
+    $isX3D = $cpuFlags.IsX3D
+    $isX3DDualCcd = $cpuFlags.IsX3DDualCcd
 
     $isLaptop = $false
     try {
@@ -4360,6 +4392,7 @@ function Invoke-AppxRemoval {
         [string]$PackageName,
 
         [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
         [string]$StoreId,
 
         [ValidateSet('Apply', 'Undo')]
@@ -4372,6 +4405,14 @@ function Invoke-AppxRemoval {
 
     if ($Mode -eq 'Apply') {
         Invoke-Mutation -Description ("Remover pacote Appx '{0}' (usu$([char]0x00E1)rios + provisionamento)" -f $PackageName) -Action {
+            $wg = Test-WingetAvailable
+            if ($wg.Available -and -not [string]::IsNullOrWhiteSpace($StoreId)) {
+                & $wg.Path show --id $StoreId --source msstore --exact --accept-source-agreements *> $null
+                if ($LASTEXITCODE -ne 0) {
+                    Write-OptimizerLog -Level WARN -Message ("Pacote '{0}' (Store ID: {1}) n$([char]0x00E3)o est$([char]0x00E1) dispon$([char]0x00ED)vel na Store; o Undo poder$([char]0x00E1) falhar ao reinstalar." -f $PackageName, $StoreId)
+                }
+            }
+
             $pkgs = Get-AppxPackage -AllUsers -Name "*$PackageName*" -ErrorAction SilentlyContinue
             foreach ($p in $pkgs) {
                 Remove-AppxPackage -Package $p.PackageFullName -AllUsers -ErrorAction SilentlyContinue
@@ -4381,17 +4422,40 @@ function Invoke-AppxRemoval {
             foreach ($pr in $prov) {
                 Remove-AppxProvisionedPackage -Online -PackageName $pr.PackageName -ErrorAction SilentlyContinue | Out-Null
             }
+
+            $remainingUser = @(Get-AppxPackage -AllUsers -Name "*$PackageName*" -ErrorAction SilentlyContinue)
+            $remainingProv = @(Get-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue |
+                Where-Object { $_.DisplayName -like "*$PackageName*" })
+            if ($remainingUser.Count -gt 0 -or $remainingProv.Count -gt 0) {
+                $remainingNames = @($remainingUser | ForEach-Object { $_.PackageFullName }) +
+                    @($remainingProv | ForEach-Object { $_.PackageName })
+                throw ("Pacote Appx '{0}' ainda presente ap$([char]0x00F3)s a remo$([char]0x00E7)$([char]0x00E3)o: {1}" -f $PackageName, ($remainingNames -join '; '))
+            }
         } | Out-Null
     }
     else {
         Invoke-Mutation -Description ("Reinstalar pacote Appx '{0}' (Store ID: {1}) via Winget" -f $PackageName, $StoreId) -Action {
-            $wg = Test-WingetAvailable
-            if ($wg.Available) {
-                $argsList = @('install', '--id', $StoreId, '--source', 'msstore', '--exact', '--silent', '--accept-package-agreements', '--accept-source-agreements')
-                Start-Process -FilePath $wg.Path -ArgumentList $argsList -NoNewWindow -Wait | Out-Null
+            if ([string]::IsNullOrWhiteSpace($StoreId)) {
+                throw ("Store ID vazio para o pacote Appx '{0}'; n$([char]0x00E3)o $([char]0x00E9) poss$([char]0x00ED)vel reinstalar via Winget." -f $PackageName)
             }
-            else {
-                Write-OptimizerLog -Level WARN -Message ("Winget indispon$([char]0x00ED)vel para reinstalar '{0}' ({1})." -f $PackageName, $StoreId)
+
+            $wg = Test-WingetAvailable
+            if (-not $wg.Available) {
+                throw ("Winget indispon$([char]0x00ED)vel para reinstalar '{0}' ({1})." -f $PackageName, $StoreId)
+            }
+
+            $argsList = @('install', '--id', $StoreId, '--source', 'msstore', '--exact', '--silent', '--accept-package-agreements', '--accept-source-agreements')
+            $proc = Start-Process -FilePath $wg.Path -ArgumentList $argsList -NoNewWindow -Wait -PassThru
+            $exitCode = [int64]$proc.ExitCode
+            if ($exitCode -gt [int]::MaxValue) {
+                $exitCode -= 4294967296
+            }
+            if ($exitCode -ne 0 -and $exitCode -ne -1978335189 -and $exitCode -ne 3010) {
+                throw ("Winget falhou ao reinstalar '{0}' ({1}). C$([char]0x00F3)digo de sa$([char]0x00ED)da: {2}." -f $PackageName, $StoreId, $exitCode)
+            }
+
+            if (-not (Get-AppxPackage -Name $PackageName -ErrorAction SilentlyContinue)) {
+                throw ("Pacote Appx '{0}' n$([char]0x00E3)o encontrado ap$([char]0x00F3)s a reinstala$([char]0x00E7)$([char]0x00E3)o via Winget." -f $PackageName)
             }
         } | Out-Null
     }
@@ -4529,6 +4593,14 @@ function Invoke-Tweak {
         }
 
         foreach ($apx in @($Tweak.appx)) {
+            $capApx = $capturedList | Where-Object { $_.kind -eq 'appx' -and $_.name -eq $apx.name } | Select-Object -First 1
+            if ($null -ne $capApx -and -not [bool]$capApx.existed) {
+                Write-OptimizerLog -Level INFO -Message ("Pacote Appx '{0}' n$([char]0x00E3)o estava instalado antes do tweak; nada a reinstalar." -f $apx.name)
+                continue
+            }
+            if ($null -eq $capApx) {
+                Write-OptimizerLog -Level WARN -Message ("Sem captura de estado para o pacote Appx '{0}'; tentando reinstalar, mas o estado original $([char]0x00E9) desconhecido." -f $apx.name)
+            }
             Invoke-AppxRemoval -PackageName $apx.name -StoreId $apx.storeId -Mode 'Undo'
         }
 
@@ -5531,6 +5603,14 @@ function Set-OptiKitTargetRelease {
         Set-RegistryEntryValue -Path $wuKey -Name 'TargetReleaseVersion' -Type 'DWord' -Value 1
         Set-RegistryEntryValue -Path $wuKey -Name 'TargetReleaseVersionInfo' -Type 'String' -Value $displayVersion
     } | Out-Null
+
+    if ($script:OptiKit -and $script:OptiKit.DryRun) {
+        return
+    }
+
+    if (-not (Test-OptiKitTargetRelease)) {
+        throw "TargetReleaseVersion n$([char]0x00E3)o ficou efetivo; verifique pol$([char]0x00ED)ticas de GPO."
+    }
 }
 
 function Restore-OptiKitTargetRelease {
@@ -5601,6 +5681,23 @@ function Disable-OptiKitReservedStorage {
             throw ("DISM /Set-ReservedStorageState retornou c$([char]0x00F3)digo {0}" -f $proc.ExitCode)
         }
     } | Out-Null
+
+    if ($script:OptiKit -and $script:OptiKit.DryRun) {
+        return
+    }
+
+    $currentState = $null
+    try {
+        Import-Module -Name DISM -ErrorAction Stop
+        $currentState = [string](Get-WindowsReservedStorageState -ErrorAction Stop)
+    }
+    catch {
+        Write-OptimizerLog -Level WARN -Message ("N$([char]0x00E3)o foi poss$([char]0x00ED)vel verificar o estado do Armazenamento Reservado: {0}" -f $_.Exception.Message)
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($currentState) -and $currentState -notmatch '(?i)Disabled|Desabilitado') {
+        throw ("Armazenamento Reservado n$([char]0x00E3)o ficou desabilitado (estado atual: {0})." -f $currentState)
+    }
 }
 
 function Enable-OptiKitReservedStorage {
@@ -5619,6 +5716,24 @@ function Enable-OptiKitReservedStorage {
             throw ("DISM /Set-ReservedStorageState retornou c$([char]0x00F3)digo {0}" -f $proc.ExitCode)
         }
     } | Out-Null
+
+    if (-not ($script:OptiKit -and $script:OptiKit.DryRun)) {
+        $currentState = $null
+        try {
+            Import-Module -Name DISM -ErrorAction Stop
+            $currentState = [string](Get-WindowsReservedStorageState -ErrorAction Stop)
+        }
+        catch {
+            Write-OptimizerLog -Level WARN -Message ("N$([char]0x00E3)o foi poss$([char]0x00ED)vel verificar o estado do Armazenamento Reservado: {0}" -f $_.Exception.Message)
+        }
+
+        if (-not [string]::IsNullOrWhiteSpace($currentState)) {
+            $expectedPattern = if ($targetState -eq 'Enabled') { '(?i)Enabled|Habilitado' } else { '(?i)Disabled|Desabilitado' }
+            if ($currentState -notmatch $expectedPattern) {
+                throw ("Armazenamento Reservado n$([char]0x00E3)o ficou em {0} (estado atual: {1})." -f $targetState, $currentState)
+            }
+        }
+    }
 
     Remove-CapturedState -Id 'ReservedStorage'
 }
@@ -7412,7 +7527,8 @@ function Start-OptiKitWorkerTask {
         'New-OptiKitBackupSession', 'ConvertTo-RegExePath', 'Export-RegistryKeyBackup',
         'Read-OptiKitStateFile', 'Write-OptiKitStateFile', 'Save-CapturedState',
         'Get-CapturedState', 'Remove-CapturedState', 'New-OptiKitRestorePoint',
-        'Get-OptiKitHardware', 'Get-ActivePowerPlanGuid', 'Set-OptiKitSmartPowerPlan',
+        'Get-OptiKitHardware', 'Resolve-OptiKitCpuFlags',
+        'Get-ActivePowerPlanGuid', 'Set-OptiKitSmartPowerPlan',
         'Enable-OptiKitUltimatePowerPlan', 'Restore-OptiKitPowerPlan',
         'Test-OptiKitSmartPowerPlan', 'Test-OptiKitUltimatePowerPlan',
         'Disable-OptiKitHibernation', 'Enable-OptiKitHibernation',
@@ -7521,6 +7637,7 @@ function Invoke-OptiKitSilentMode {
 
     $failures = 0
     $executed = 0
+    $skipped = 0
 
     foreach ($tweakId in $tweaks) {
         try {
@@ -7529,6 +7646,7 @@ function Invoke-OptiKitSilentMode {
                 $executed++
             }
             else {
+                $skipped++
                 Write-OptimizerLog -Level WARN -Message ("Tweak '{0}' n$([char]0x00E3)o aplicado (bloqueado neste hardware ou sem efeito)." -f $tweakId)
             }
         }
@@ -7586,7 +7704,8 @@ function Invoke-OptiKitSilentMode {
 
     $state = Get-AllTweaksState -TweaksConfig $Configs.WinTweaks -GameProfilesConfig $Configs.GameProfiles
     $appliedState = @($state.Tweaks.Values | Where-Object { $_ -eq 'Applied' }).Count
-    Write-OptimizerLog -Level OK -Message ("Modo desatendido conclu$([char]0x00ED)do: {0} opera$([char]0x00E7)$([char]0x00E3)o($([char]0x00F5)es), {1} falha(s), {2} ajuste(s) ativo(s)." -f $executed, $failures, $appliedState)
+    Write-OptimizerLog -Level OK -Message ("Modo desatendido conclu$([char]0x00ED)do: {0} aplicado(s), {1} ignorado(s) por hardware/sem efeito, {2} falha(s), {3} ajuste(s) ativo(s)." -f $executed, $skipped, $failures, $appliedState)
+    Write-OptimizerLog -Level INFO -Message ("Log: {0}" -f $script:OptiKit.LogFile)
 
     if ($failures -gt 0) {
         return 1

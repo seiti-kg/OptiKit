@@ -43,6 +43,24 @@ Describe 'Fundação v0.2 (hardware guard + DirectX)' {
         (Test-OptiKitTweakBlocked -Tweak $tweak -Hardware $single) | Should -BeNullOrEmpty
     }
 
+    It 'Deve classificar flags X3D e dual-CCD via Resolve-OptiKitCpuFlags' {
+        $matrix = @(
+            @{ Name = 'AMD Ryzen 7 7800X3D 8-Core Processor'; Cores = 8; IsX3D = $true; IsDual = $false }
+            @{ Name = 'AMD Ryzen 9 7950X3D 16-Core Processor'; Cores = 16; IsX3D = $true; IsDual = $true }
+            @{ Name = 'AMD Ryzen 9 9900X3D 12-Core Processor'; Cores = 12; IsX3D = $true; IsDual = $true }
+            @{ Name = 'AMD Ryzen 9 7945HX3D with Radeon Graphics'; Cores = 16; IsX3D = $true; IsDual = $true }
+            @{ Name = 'AMD Ryzen 9 9955HX3D with Radeon Graphics'; Cores = 16; IsX3D = $true; IsDual = $true }
+            @{ Name = 'AMD Ryzen 7 9700X 8-Core Processor'; Cores = 8; IsX3D = $false; IsDual = $false }
+            @{ Name = 'AMD Ryzen 9 7950X 16-Core Processor'; Cores = 16; IsX3D = $false; IsDual = $false }
+        )
+
+        foreach ($case in $matrix) {
+            $flags = Resolve-OptiKitCpuFlags -CpuName $case.Name -CpuCores $case.Cores
+            $flags.IsX3D | Should -Be $case.IsX3D -Because ("IsX3D de '{0}' deve ser {1}" -f $case.Name, $case.IsX3D)
+            $flags.IsX3DDualCcd | Should -Be $case.IsDual -Because ("IsX3DDualCcd de '{0}' deve ser {1}" -f $case.Name, $case.IsDual)
+        }
+    }
+
     It 'Deve ignorar Apply de tweak bloqueado sem gravar no registro' {
         $subKey = "$script:TestRegRoot\Blocked"
         $mockTweak = [pscustomobject]@{

@@ -190,6 +190,14 @@ function Set-OptiKitTargetRelease {
         Set-RegistryEntryValue -Path $wuKey -Name 'TargetReleaseVersion' -Type 'DWord' -Value 1
         Set-RegistryEntryValue -Path $wuKey -Name 'TargetReleaseVersionInfo' -Type 'String' -Value $displayVersion
     } | Out-Null
+
+    if ($script:OptiKit -and $script:OptiKit.DryRun) {
+        return
+    }
+
+    if (-not (Test-OptiKitTargetRelease)) {
+        throw 'TargetReleaseVersion não ficou efetivo; verifique políticas de GPO.'
+    }
 }
 
 function Restore-OptiKitTargetRelease {
@@ -260,6 +268,23 @@ function Disable-OptiKitReservedStorage {
             throw ("DISM /Set-ReservedStorageState retornou código {0}" -f $proc.ExitCode)
         }
     } | Out-Null
+
+    if ($script:OptiKit -and $script:OptiKit.DryRun) {
+        return
+    }
+
+    $currentState = $null
+    try {
+        Import-Module -Name DISM -ErrorAction Stop
+        $currentState = [string](Get-WindowsReservedStorageState -ErrorAction Stop)
+    }
+    catch {
+        Write-OptimizerLog -Level WARN -Message ("Não foi possível verificar o estado do Armazenamento Reservado: {0}" -f $_.Exception.Message)
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($currentState) -and $currentState -notmatch '(?i)Disabled|Desabilitado') {
+        throw ("Armazenamento Reservado não ficou desabilitado (estado atual: {0})." -f $currentState)
+    }
 }
 
 function Enable-OptiKitReservedStorage {
@@ -278,6 +303,24 @@ function Enable-OptiKitReservedStorage {
             throw ("DISM /Set-ReservedStorageState retornou código {0}" -f $proc.ExitCode)
         }
     } | Out-Null
+
+    if (-not ($script:OptiKit -and $script:OptiKit.DryRun)) {
+        $currentState = $null
+        try {
+            Import-Module -Name DISM -ErrorAction Stop
+            $currentState = [string](Get-WindowsReservedStorageState -ErrorAction Stop)
+        }
+        catch {
+            Write-OptimizerLog -Level WARN -Message ("Não foi possível verificar o estado do Armazenamento Reservado: {0}" -f $_.Exception.Message)
+        }
+
+        if (-not [string]::IsNullOrWhiteSpace($currentState)) {
+            $expectedPattern = if ($targetState -eq 'Enabled') { '(?i)Enabled|Habilitado' } else { '(?i)Disabled|Desabilitado' }
+            if ($currentState -notmatch $expectedPattern) {
+                throw ("Armazenamento Reservado não ficou em {0} (estado atual: {1})." -f $targetState, $currentState)
+            }
+        }
+    }
 
     Remove-CapturedState -Id 'ReservedStorage'
 }

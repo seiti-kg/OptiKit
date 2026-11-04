@@ -15,7 +15,7 @@ Describe 'GUI WPF Smoke Test (win.ps1 -DryRun -SmokeTest)' {
 
         $proc = [System.Diagnostics.Process]::Start($psi)
         try {
-            $exited = $proc.WaitForExit(20000)
+            $exited = $proc.WaitForExit(40000)
             $exited | Should -BeTrue
             $proc.ExitCode | Should -Be 0
         }

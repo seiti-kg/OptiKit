@@ -9,6 +9,22 @@ if (-not (Get-Command Save-CapturedState -ErrorAction SilentlyContinue)) {
 }
 #endregion
 
+function Resolve-OptiKitCpuFlags {
+    [CmdletBinding()]
+    param(
+        [string]$CpuName,
+        [int]$CpuCores
+    )
+
+    $isX3D = [bool]($CpuName -match '(?i)\b\d{4}(?:HX|X)3D\b')
+    $isX3DDualCcd = $isX3D -and (($CpuName -match '(?i)\b(79|99)\d{2}(?:HX|X)3D\b') -or ($CpuCores -gt 8))
+
+    [pscustomobject]@{
+        IsX3D        = $isX3D
+        IsX3DDualCcd = $isX3DDualCcd
+    }
+}
+
 function Get-OptiKitHardware {
     [CmdletBinding()]
     param(
@@ -30,8 +46,6 @@ function Get-OptiKitHardware {
         Write-Verbose ("Falha ao ler nome da CPU do registro: {0}" -f $_.Exception.Message)
     }
 
-    $isX3D = [bool]($cpuName -match '(?i)\b\d{4}X3D\b')
-
     $cpuCores = 0
     try {
         $cpuCim = Get-CimInstance -ClassName Win32_Processor -ErrorAction SilentlyContinue
@@ -44,7 +58,9 @@ function Get-OptiKitHardware {
     }
 
     # X3D dual-CCD: 7900X3D/7950X3D/9900X3D/9950X3D (12/16 núcleos). Single-CCD X3D tem até 8.
-    $isX3DDualCcd = $isX3D -and (($cpuName -match '(?i)\b(79|99)\d{2}X3D\b') -or ($cpuCores -gt 8))
+    $cpuFlags = Resolve-OptiKitCpuFlags -CpuName $cpuName -CpuCores $cpuCores
+    $isX3D = $cpuFlags.IsX3D
+    $isX3DDualCcd = $cpuFlags.IsX3DDualCcd
 
     $isLaptop = $false
     try {

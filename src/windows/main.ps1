@@ -168,7 +168,8 @@ function Start-OptiKitWorkerTask {
         'New-OptiKitBackupSession', 'ConvertTo-RegExePath', 'Export-RegistryKeyBackup',
         'Read-OptiKitStateFile', 'Write-OptiKitStateFile', 'Save-CapturedState',
         'Get-CapturedState', 'Remove-CapturedState', 'New-OptiKitRestorePoint',
-        'Get-OptiKitHardware', 'Get-ActivePowerPlanGuid', 'Set-OptiKitSmartPowerPlan',
+        'Get-OptiKitHardware', 'Resolve-OptiKitCpuFlags',
+        'Get-ActivePowerPlanGuid', 'Set-OptiKitSmartPowerPlan',
         'Enable-OptiKitUltimatePowerPlan', 'Restore-OptiKitPowerPlan',
         'Test-OptiKitSmartPowerPlan', 'Test-OptiKitUltimatePowerPlan',
         'Disable-OptiKitHibernation', 'Enable-OptiKitHibernation',
@@ -277,6 +278,7 @@ function Invoke-OptiKitSilentMode {
 
     $failures = 0
     $executed = 0
+    $skipped = 0
 
     foreach ($tweakId in $tweaks) {
         try {
@@ -285,6 +287,7 @@ function Invoke-OptiKitSilentMode {
                 $executed++
             }
             else {
+                $skipped++
                 Write-OptimizerLog -Level WARN -Message ("Tweak '{0}' não aplicado (bloqueado neste hardware ou sem efeito)." -f $tweakId)
             }
         }
@@ -342,7 +345,8 @@ function Invoke-OptiKitSilentMode {
 
     $state = Get-AllTweaksState -TweaksConfig $Configs.WinTweaks -GameProfilesConfig $Configs.GameProfiles
     $appliedState = @($state.Tweaks.Values | Where-Object { $_ -eq 'Applied' }).Count
-    Write-OptimizerLog -Level OK -Message ("Modo desatendido concluído: {0} operação(ões), {1} falha(s), {2} ajuste(s) ativo(s)." -f $executed, $failures, $appliedState)
+    Write-OptimizerLog -Level OK -Message ("Modo desatendido concluído: {0} aplicado(s), {1} ignorado(s) por hardware/sem efeito, {2} falha(s), {3} ajuste(s) ativo(s)." -f $executed, $skipped, $failures, $appliedState)
+    Write-OptimizerLog -Level INFO -Message ("Log: {0}" -f $script:OptiKit.LogFile)
 
     if ($failures -gt 0) {
         return 1

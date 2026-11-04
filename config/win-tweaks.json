@@ -1642,7 +1642,7 @@
   "WPFTweaksRemoveOfficeHub": {
     "title": "Remover Microsoft Office Hub (Appx)",
     "category": "Remoção de Bloatware (Appx)",
-    "description": "Remove o hub promocional Microsoft.MicrosoftOfficeHub (reversível via reinstalação).",
+    "description": "Remove o hub promocional Microsoft.MicrosoftOfficeHub (a reinstalação depende de o pacote continuar disponível na Store).",
     "rationale": "Aplicativo de propaganda do Microsoft 365 pré-instalado em edições de consumidor, sem função para quem usa Office desktop ou webmail.",
     "impact": "Baixo",
     "riskLevel": "Safe",
@@ -1714,7 +1714,7 @@
   "WPFTweaksRemoveMaps": {
     "title": "Remover Windows Maps (Appx)",
     "category": "Remoção de Bloatware (Appx)",
-    "description": "Remove o aplicativo Microsoft.WindowsMaps (reversível via reinstalação).",
+    "description": "Remove o aplicativo Microsoft.WindowsMaps (a reinstalação depende de o pacote continuar disponível na Store).",
     "rationale": "Aplicativo de mapas com downloads offline e tarefas de atualização em segundo plano, sem uso típico em desktops gamers.",
     "impact": "Baixo",
     "riskLevel": "Safe",
@@ -1762,7 +1762,7 @@
   "WPFTweaksRemoveDevHome": {
     "title": "Remover Dev Home (Appx)",
     "category": "Remoção de Bloatware (Appx)",
-    "description": "Remove o aplicativo Microsoft.Windows.DevHome (reversível via reinstalação).",
+    "description": "Remove o aplicativo Microsoft.Windows.DevHome (a reinstalação depende de o pacote continuar disponível na Store).",
     "rationale": "Dashboard de desenvolvimento pré-instalado no Windows 11, útil apenas para quem realmente usa os widgets de dev.",
     "impact": "Baixo",
     "riskLevel": "Safe",
@@ -1786,7 +1786,7 @@
   "WPFTweaksRemoveLinkedIn": {
     "title": "Remover LinkedIn for Windows (Appx)",
     "category": "Remoção de Bloatware (Appx)",
-    "description": "Remove o aplicativo LinkedIn pré-instalado (reversível via reinstalação).",
+    "description": "Remove o aplicativo LinkedIn pré-instalado (a reinstalação depende de o pacote continuar disponível na Store).",
     "rationale": "Rede social profissional promovida no Windows 11, com sincronização em segundo plano e notificações.",
     "impact": "Baixo",
     "riskLevel": "Safe",

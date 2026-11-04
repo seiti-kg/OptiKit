@@ -138,4 +138,33 @@ Describe 'Automação v0.2' {
             }
         }
     }
+
+    It 'Deve sair com código 2 no modo desatendido quando o perfil contém tweak inexistente' {
+        $winPs1 = Join-Path $script:RepoRoot 'win.ps1'
+        $profilePath = Join-Path $TestDrive 'perfil_tweak_inexistente.json'
+        $profileJson = '{ "schemaVersion": 1, "preset": "MinimoSeguro", "tweaks": [ "NaoExiste" ], "gameOptimizations": [], "apps": [] }'
+        [System.IO.File]::WriteAllText($profilePath, $profileJson, (New-Object System.Text.ASCIIEncoding))
+
+        $psi = New-Object System.Diagnostics.ProcessStartInfo
+        $psi.FileName = 'C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe'
+        $psi.Arguments = ('-NoProfile -ExecutionPolicy Bypass -File "{0}" -DryRun -Silent -Config "{1}" -NoElevate' -f $winPs1, $profilePath)
+        $psi.UseShellExecute = $false
+        $psi.CreateNoWindow = $true
+        $psi.RedirectStandardOutput = $true
+        $psi.RedirectStandardError = $true
+
+        $proc = [System.Diagnostics.Process]::Start($psi)
+        try {
+            $exited = $proc.WaitForExit(60000)
+            $exited | Should -BeTrue
+            $stdout = $proc.StandardOutput.ReadToEnd()
+            $proc.ExitCode | Should -Be 2
+            $stdout | Should -Match "Tweak 'NaoExiste'"
+        }
+        finally {
+            if ($proc -and (-not $proc.HasExited)) {
+                try { $proc.Kill() } catch { Write-Verbose $_.Exception.Message }
+            }
+        }
+    }
 }

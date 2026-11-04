@@ -75,4 +75,34 @@ Describe 'Persistência de Estado e Undo Engine (backup.ps1)' {
         Remove-CapturedState -Id 'WPFTweaksMouseRawInput'
         (Get-CapturedState -Id 'WPFTweaksMouseRawInput') | Should -BeNullOrEmpty
     }
+
+    It 'Deve colocar em quarentena um state.json corrompido e retornar estado vazio' {
+        $corruptPath = Join-Path $TestDrive ("corrupt_" + [Guid]::NewGuid().ToString('N') + '.json')
+        $corruptContent = '{ "broken": '
+        $utf8Bom = New-Object System.Text.UTF8Encoding($true)
+        [System.IO.File]::WriteAllText($corruptPath, $corruptContent, $utf8Bom)
+
+        $state = Read-OptiKitStateFile -StateFilePath $corruptPath
+
+        $state.Count | Should -Be 0
+        Test-Path -LiteralPath $corruptPath | Should -BeFalse
+
+        $corruptLeaf = Split-Path -Path $corruptPath -Leaf
+        $quarantined = @(Get-ChildItem -LiteralPath $TestDrive -Filter ("{0}.corrupt-*" -f $corruptLeaf) -File)
+        $quarantined.Count | Should -Be 1
+        ([System.IO.File]::ReadAllText($quarantined[0].FullName, [System.Text.Encoding]::UTF8)) | Should -Be $corruptContent
+    }
+
+    It 'Deve sobrescrever o state.json atomicamente, sem deixar arquivos temporários' {
+        $statePath = Join-Path $TestDrive ("atomic_" + [Guid]::NewGuid().ToString('N') + '.json')
+
+        Write-OptiKitStateFile -StateFilePath $statePath -StateData @{ marker = 'primeiro'; count = 1 }
+        Write-OptiKitStateFile -StateFilePath $statePath -StateData @{ marker = 'segundo'; count = 2 }
+
+        $parsed = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
+        $parsed.marker | Should -Be 'segundo'
+        $parsed.count | Should -Be 2
+
+        @(Get-ChildItem -LiteralPath $TestDrive -Filter '*.tmp' -File).Count | Should -Be 0
+    }
 }

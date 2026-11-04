@@ -278,6 +278,7 @@ function Invoke-AppxRemoval {
         [string]$PackageName,
 
         [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
         [string]$StoreId,
 
         [ValidateSet('Apply', 'Undo')]
@@ -290,6 +291,14 @@ function Invoke-AppxRemoval {
 
     if ($Mode -eq 'Apply') {
         Invoke-Mutation -Description ("Remover pacote Appx '{0}' (usuários + provisionamento)" -f $PackageName) -Action {
+            $wg = Test-WingetAvailable
+            if ($wg.Available -and -not [string]::IsNullOrWhiteSpace($StoreId)) {
+                & $wg.Path show --id $StoreId --source msstore --exact --accept-source-agreements *> $null
+                if ($LASTEXITCODE -ne 0) {
+                    Write-OptimizerLog -Level WARN -Message ("Pacote '{0}' (Store ID: {1}) não está disponível na Store; o Undo poderá falhar ao reinstalar." -f $PackageName, $StoreId)
+                }
+            }
+
             $pkgs = Get-AppxPackage -AllUsers -Name "*$PackageName*" -ErrorAction SilentlyContinue
             foreach ($p in $pkgs) {
                 Remove-AppxPackage -Package $p.PackageFullName -AllUsers -ErrorAction SilentlyContinue
@@ -299,17 +308,40 @@ function Invoke-AppxRemoval {
             foreach ($pr in $prov) {
                 Remove-AppxProvisionedPackage -Online -PackageName $pr.PackageName -ErrorAction SilentlyContinue | Out-Null
             }
+
+            $remainingUser = @(Get-AppxPackage -AllUsers -Name "*$PackageName*" -ErrorAction SilentlyContinue)
+            $remainingProv = @(Get-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue |
+                Where-Object { $_.DisplayName -like "*$PackageName*" })
+            if ($remainingUser.Count -gt 0 -or $remainingProv.Count -gt 0) {
+                $remainingNames = @($remainingUser | ForEach-Object { $_.PackageFullName }) +
+                    @($remainingProv | ForEach-Object { $_.PackageName })
+                throw ("Pacote Appx '{0}' ainda presente após a remoção: {1}" -f $PackageName, ($remainingNames -join '; '))
+            }
         } | Out-Null
     }
     else {
         Invoke-Mutation -Description ("Reinstalar pacote Appx '{0}' (Store ID: {1}) via Winget" -f $PackageName, $StoreId) -Action {
-            $wg = Test-WingetAvailable
-            if ($wg.Available) {
-                $argsList = @('install', '--id', $StoreId, '--source', 'msstore', '--exact', '--silent', '--accept-package-agreements', '--accept-source-agreements')
-                Start-Process -FilePath $wg.Path -ArgumentList $argsList -NoNewWindow -Wait | Out-Null
+            if ([string]::IsNullOrWhiteSpace($StoreId)) {
+                throw ("Store ID vazio para o pacote Appx '{0}'; não é possível reinstalar via Winget." -f $PackageName)
             }
-            else {
-                Write-OptimizerLog -Level WARN -Message ("Winget indisponível para reinstalar '{0}' ({1})." -f $PackageName, $StoreId)
+
+            $wg = Test-WingetAvailable
+            if (-not $wg.Available) {
+                throw ("Winget indisponível para reinstalar '{0}' ({1})." -f $PackageName, $StoreId)
+            }
+
+            $argsList = @('install', '--id', $StoreId, '--source', 'msstore', '--exact', '--silent', '--accept-package-agreements', '--accept-source-agreements')
+            $proc = Start-Process -FilePath $wg.Path -ArgumentList $argsList -NoNewWindow -Wait -PassThru
+            $exitCode = [int64]$proc.ExitCode
+            if ($exitCode -gt [int]::MaxValue) {
+                $exitCode -= 4294967296
+            }
+            if ($exitCode -ne 0 -and $exitCode -ne -1978335189 -and $exitCode -ne 3010) {
+                throw ("Winget falhou ao reinstalar '{0}' ({1}). Código de saída: {2}." -f $PackageName, $StoreId, $exitCode)
+            }
+
+            if (-not (Get-AppxPackage -Name $PackageName -ErrorAction SilentlyContinue)) {
+                throw ("Pacote Appx '{0}' não encontrado após a reinstalação via Winget." -f $PackageName)
             }
         } | Out-Null
     }
@@ -447,6 +479,14 @@ function Invoke-Tweak {
         }
 
         foreach ($apx in @($Tweak.appx)) {
+            $capApx = $capturedList | Where-Object { $_.kind -eq 'appx' -and $_.name -eq $apx.name } | Select-Object -First 1
+            if ($null -ne $capApx -and -not [bool]$capApx.existed) {
+                Write-OptimizerLog -Level INFO -Message ("Pacote Appx '{0}' não estava instalado antes do tweak; nada a reinstalar." -f $apx.name)
+                continue
+            }
+            if ($null -eq $capApx) {
+                Write-OptimizerLog -Level WARN -Message ("Sem captura de estado para o pacote Appx '{0}'; tentando reinstalar, mas o estado original é desconhecido." -f $apx.name)
+            }
             Invoke-AppxRemoval -PackageName $apx.name -StoreId $apx.storeId -Mode 'Undo'
         }
 

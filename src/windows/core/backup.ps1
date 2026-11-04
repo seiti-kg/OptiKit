@@ -146,7 +146,21 @@ function Read-OptiKitStateFile {
         }
     }
     catch {
-        Write-OptimizerLog -Level WARN -Message ("Não foi possível ler state.json em '{0}': {1}" -f $StateFilePath, $_.Exception.Message)
+        $readError = $_.Exception.Message
+        $quarantinePath = "{0}.corrupt-{1}" -f $StateFilePath, (Get-Date -Format 'yyyyMMdd-HHmmss')
+
+        if ($script:OptiKit -and $script:OptiKit.DryRun) {
+            Write-OptimizerLog -Level WARN -Message ("state.json ilegível em '{0}': {1}. DryRun ativo; arquivo não foi movido para '{2}'." -f $StateFilePath, $readError, $quarantinePath)
+        }
+        else {
+            try {
+                Move-Item -LiteralPath $StateFilePath -Destination $quarantinePath -Force -ErrorAction Stop
+                Write-OptimizerLog -Level ERROR -Message ("state.json ilegível em '{0}': {1}. Arquivo movido para '{2}'." -f $StateFilePath, $readError, $quarantinePath)
+            }
+            catch {
+                Write-OptimizerLog -Level WARN -Message ("state.json ilegível em '{0}' ({1}) e falha ao mover para '{2}': {3}" -f $StateFilePath, $readError, $quarantinePath, $_.Exception.Message)
+            }
+        }
     }
 
     return $result
@@ -181,10 +195,12 @@ function Write-OptiKitStateFile {
 
     try {
         [System.IO.File]::WriteAllText($tmpFile, $json, $utf8Bom)
-        if (Test-Path -LiteralPath $StateFilePath) {
-            Remove-Item -LiteralPath $StateFilePath -Force
+        if ([System.IO.File]::Exists($StateFilePath)) {
+            [System.IO.File]::Replace($tmpFile, $StateFilePath, [NullString]::Value)
         }
-        Move-Item -LiteralPath $tmpFile -Destination $StateFilePath -Force
+        else {
+            [System.IO.File]::Move($tmpFile, $StateFilePath)
+        }
 
         if ($script:OptiKit -and $script:OptiKit.SessionDir -and (Test-Path -LiteralPath $script:OptiKit.SessionDir)) {
             $snapshotPath = Join-Path $script:OptiKit.SessionDir 'state-snapshot.json'
