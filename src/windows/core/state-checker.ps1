@@ -13,7 +13,10 @@ $script:AllowedCheckScripts = @(
     'Test-OptiKitSmartPowerPlan',
     'Test-OptiKitUltimatePowerPlan',
     'Test-UsbPowerOptimized',
-    'Test-OptiKitOneDriveRemoved'
+    'Test-OptiKitOneDriveRemoved',
+    'Test-OptiKitWindowedGameOptimizations',
+    'Test-OptiKitTargetRelease',
+    'Test-OptiKitReservedStorage'
 )
 
 function Test-TweakApplied {

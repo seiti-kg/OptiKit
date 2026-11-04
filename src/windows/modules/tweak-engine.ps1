@@ -37,7 +37,13 @@ $script:AllowedTweakScripts = @(
     'Optimize-UsbPower',
     'Restore-UsbPower',
     'Remove-OptiKitOneDrive',
-    'Install-OptiKitOneDrive'
+    'Install-OptiKitOneDrive',
+    'Enable-OptiKitWindowedGameOptimizations',
+    'Disable-OptiKitWindowedGameOptimizations',
+    'Set-OptiKitTargetRelease',
+    'Restore-OptiKitTargetRelease',
+    'Disable-OptiKitReservedStorage',
+    'Enable-OptiKitReservedStorage'
 )
 
 function Test-AntiCheatGuardrail {
@@ -341,6 +347,12 @@ function Invoke-Tweak {
     Test-AntiCheatGuardrail -Id $Id -Tweak $Tweak
 
     if ($Mode -eq 'Apply') {
+        $blockReason = Test-OptiKitTweakBlocked -Tweak $Tweak
+        if ($blockReason) {
+            Write-OptimizerLog -Level WARN -Message ("Tweak '{0}' ignorado neste hardware: {1}" -f $Id, $blockReason)
+            return $false
+        }
+
         Write-OptimizerLog -Level INFO -Message ("Aplicando tweak: {0} ({1})" -f $Tweak.title, $Id)
 
         $capturedItems = New-Object 'System.Collections.Generic.List[hashtable]'
@@ -480,4 +492,316 @@ function Invoke-Tweak {
         Remove-CapturedState -Id $Id
         return $true
     }
+}
+
+function Enable-OptiKitWindowedGameOptimizations {
+    [CmdletBinding()]
+    param(
+        [string]$RegistryPath = 'HKCU:\Software\Microsoft\DirectX\UserGpuPreferences'
+    )
+
+    $valueName = 'DirectXUserGlobalSettings'
+    $stateId = 'DirectXGlobalSettings'
+    $current = Get-RegistryEntryState -Path $RegistryPath -Name $valueName -FallbackType 'String'
+
+    Save-CapturedState -Id $stateId -CapturedItems @(
+        @{
+            kind       = 'registry'
+            path       = $RegistryPath
+            name       = $valueName
+            keyExisted = [bool]$current.KeyExisted
+            existed    = [bool]$current.ValueExisted
+            type       = 'String'
+            value      = $current.Value
+        }
+    )
+
+    $tokens = New-Object 'System.Collections.Generic.List[string]'
+    if ($current.ValueExisted -and -not [string]::IsNullOrWhiteSpace([string]$current.Value)) {
+        foreach ($token in ([string]$current.Value -split ';')) {
+            $clean = $token.Trim()
+            if (-not [string]::IsNullOrWhiteSpace($clean) -and $clean -notmatch '^SwapEffectUpgradeEnable=') {
+                [void]$tokens.Add($clean)
+            }
+        }
+    }
+    [void]$tokens.Add('SwapEffectUpgradeEnable=1')
+    $newValue = ($tokens -join ';') + ';'
+
+    Set-RegistryEntryValue -Path $RegistryPath -Name $valueName -Type 'String' -Value $newValue
+}
+
+function Disable-OptiKitWindowedGameOptimizations {
+    [CmdletBinding()]
+    param()
+
+    $stateId = 'DirectXGlobalSettings'
+    $captured = Get-CapturedState -Id $stateId
+    if ($captured -and $captured.captured -and $captured.captured.Count -gt 0) {
+        $item = $captured.captured[0]
+        if ($item.existed) {
+            Set-RegistryEntryValue -Path $item.path -Name $item.name -Type 'String' -Value $item.value
+        }
+        elseif ($item.keyExisted) {
+            Set-RegistryEntryValue -Path $item.path -Name $item.name -Type 'String' -Value '<RemoveEntry>'
+        }
+        else {
+            Set-RegistryEntryValue -Path $item.path -Name $item.name -Type 'String' -Value '<RemoveKey>'
+        }
+    }
+    Remove-CapturedState -Id $stateId
+}
+
+function Test-OptiKitWindowedGameOptimizations {
+    [CmdletBinding()]
+    param(
+        [string]$RegistryPath = 'HKCU:\Software\Microsoft\DirectX\UserGpuPreferences'
+    )
+
+    $state = Get-RegistryEntryState -Path $RegistryPath -Name 'DirectXUserGlobalSettings' -FallbackType 'String'
+    return ($state.ValueExisted -and ([string]$state.Value -match '(?i)(^|;)SwapEffectUpgradeEnable=1(;|$)'))
+}
+
+function ConvertTo-OptiKitProfile {
+    [CmdletBinding()]
+    param(
+        [string[]]$Tweaks = @(),
+        [string[]]$GameOptimizations = @(),
+        [string[]]$Apps = @(),
+        [string]$Preset = ''
+    )
+
+    $version = if ($script:OptiKitVersion) { [string]$script:OptiKitVersion } else { '0.2.0' }
+    return [pscustomobject]@{
+        schemaVersion     = 1
+        optikitVersion    = $version
+        createdAt         = (Get-Date -Format 'o')
+        preset            = $Preset
+        tweaks            = @($Tweaks | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+        gameOptimizations = @($GameOptimizations | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+        apps              = @($Apps | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    }
+}
+
+function Assert-OptiKitSelection {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Configs,
+        [Parameter(Mandatory = $true)][pscustomobject]$Selection
+    )
+
+    foreach ($tweakId in @($Selection.Tweaks)) {
+        if ([string]::IsNullOrWhiteSpace($tweakId)) { continue }
+        if (-not $Configs.WinTweaks.PSObject.Properties[$tweakId]) {
+            throw ("Tweak '{0}' não existe no catálogo." -f $tweakId)
+        }
+    }
+
+    foreach ($gameOptId in @($Selection.GameOptimizations)) {
+        if ([string]::IsNullOrWhiteSpace($gameOptId)) { continue }
+        $found = $false
+        foreach ($gameProfile in $Configs.GameProfiles.PSObject.Properties) {
+            foreach ($optimization in @($gameProfile.Value.optimizations)) {
+                if ($optimization.id -eq $gameOptId) {
+                    $found = $true
+                    break
+                }
+            }
+            if ($found) { break }
+        }
+        if (-not $found) {
+            throw ("Otimização de jogo '{0}' não existe no catálogo." -f $gameOptId)
+        }
+    }
+
+    foreach ($appId in @($Selection.Apps)) {
+        if ([string]::IsNullOrWhiteSpace($appId)) { continue }
+        if (-not $Configs.Apps.PSObject.Properties[$appId]) {
+            throw ("Aplicativo '{0}' não existe no catálogo." -f $appId)
+        }
+    }
+}
+
+function ConvertFrom-OptiKitProfile {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][hashtable]$Configs
+    )
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        throw ("Arquivo de perfil não encontrado: {0}" -f $Path)
+    }
+
+    $raw = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
+    try {
+        $profileData = $raw | ConvertFrom-Json -ErrorAction Stop
+    }
+    catch {
+        throw ("Perfil JSON inválido: {0}" -f $_.Exception.Message)
+    }
+    if ($null -eq $profileData) {
+        throw 'Perfil JSON vazio.'
+    }
+
+    $schema = if ($null -ne $profileData.schemaVersion) { [int]$profileData.schemaVersion } else { 1 }
+    if ($schema -gt 1) {
+        throw ("Perfil com schemaVersion {0} não é suportado por esta versão do OptiKit." -f $schema)
+    }
+
+    $selection = [pscustomobject]@{
+        Preset            = [string]$profileData.preset
+        Tweaks            = @($profileData.tweaks | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+        GameOptimizations = @($profileData.gameOptimizations | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+        Apps              = @($profileData.apps | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    }
+
+    Assert-OptiKitSelection -Configs $Configs -Selection $selection
+    return $selection
+}
+
+function Resolve-OptiKitSelection {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Configs,
+        [string]$PresetKey,
+        [string]$ConfigPath
+    )
+
+    if (-not [string]::IsNullOrWhiteSpace($PresetKey) -and -not [string]::IsNullOrWhiteSpace($ConfigPath)) {
+        throw 'Use apenas -Preset ou -Config, não ambos.'
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($ConfigPath)) {
+        return ConvertFrom-OptiKitProfile -Path $ConfigPath -Configs $Configs
+    }
+
+    if ([string]::IsNullOrWhiteSpace($PresetKey)) {
+        throw 'Informe -Preset ou -Config para o modo desatendido.'
+    }
+
+    $presetProp = $Configs.Presets.PSObject.Properties[$PresetKey]
+    if (-not $presetProp) {
+        throw ("Preset '{0}' não encontrado em presets.json." -f $PresetKey)
+    }
+
+    $preset = $presetProp.Value
+    $selection = [pscustomobject]@{
+        Preset            = $PresetKey
+        Tweaks            = @($preset.tweaks)
+        GameOptimizations = @($preset.gameOptimizations)
+        Apps              = @($preset.apps)
+    }
+
+    Assert-OptiKitSelection -Configs $Configs -Selection $selection
+    return $selection
+}
+
+function Get-OptiKitStateUndoPlan {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$StateData,
+        [Parameter(Mandatory = $true)][hashtable]$Configs
+    )
+
+    $gameOptions = @{}
+    foreach ($gameProfile in $Configs.GameProfiles.PSObject.Properties) {
+        foreach ($optimization in @($gameProfile.Value.optimizations)) {
+            $gameOptions[$optimization.id] = [pscustomobject]@{
+                Profile      = $gameProfile.Value
+                Optimization = $optimization
+            }
+        }
+    }
+
+    $plan = New-Object 'System.Collections.Generic.List[pscustomobject]'
+    foreach ($key in $StateData.Keys) {
+        $record = $StateData[$key]
+        $appliedAt = $null
+        if ($record -and $record.appliedAt) {
+            try {
+                $appliedAt = [datetime]$record.appliedAt
+            }
+            catch {
+                Write-Verbose ("appliedAt inválido para '{0}': {1}" -f $key, $_.Exception.Message)
+            }
+        }
+
+        $entry = [pscustomobject]@{
+            Key          = $key
+            AppliedAt    = $appliedAt
+            Kind         = 'Unknown'
+            Tweak        = $null
+            Profile      = $null
+            Optimization = $null
+        }
+
+        if ($Configs.WinTweaks.PSObject.Properties[$key]) {
+            $entry.Kind = 'Tweak'
+            $entry.Tweak = $Configs.WinTweaks.$key
+        }
+        elseif ($gameOptions.ContainsKey($key)) {
+            $entry.Kind = 'GameOpt'
+            $entry.Profile = $gameOptions[$key].Profile
+            $entry.Optimization = $gameOptions[$key].Optimization
+        }
+        elseif ($key -eq 'PowerPlanOriginal') { $entry.Kind = 'PowerPlan' }
+        elseif ($key -eq 'UsbPowerOptimization') { $entry.Kind = 'UsbPower' }
+        elseif ($key -eq 'NetworkAdapterGaming') { $entry.Kind = 'Network' }
+        elseif ($key -eq 'DirectXGlobalSettings') { $entry.Kind = 'DirectX' }
+        elseif ($key -eq 'TargetReleaseVersion') { $entry.Kind = 'TargetRelease' }
+        elseif ($key -eq 'ReservedStorage') { $entry.Kind = 'ReservedStorage' }
+
+        [void]$plan.Add($entry)
+    }
+
+    return @($plan | Sort-Object -Property @{ Expression = { if ($_.AppliedAt) { $_.AppliedAt } else { [datetime]::MinValue } }; Descending = $true })
+}
+
+function Invoke-OptiKitRevertAll {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Configs
+    )
+
+    $state = Read-OptiKitStateFile
+    if ($state.Count -eq 0) {
+        Write-OptimizerLog -Level INFO -Message 'Nenhum estado capturado para reverter.'
+        return 0
+    }
+
+    $plan = Get-OptiKitStateUndoPlan -StateData $state -Configs $Configs
+    $failures = 0
+    $reverted = 0
+
+    foreach ($entry in $plan) {
+        if ($entry.Kind -eq 'Unknown') {
+            Write-OptimizerLog -Level WARN -Message ("Estado '{0}' sem rotina de reversão conhecida; entrada mantida." -f $entry.Key)
+            continue
+        }
+
+        try {
+            switch ($entry.Kind) {
+                'Tweak' { Invoke-Tweak -Id $entry.Key -Tweak $entry.Tweak -Mode 'Undo' | Out-Null }
+                'GameOpt' { Invoke-GameOptimization -ProfileConfig $entry.Profile -Optimization $entry.Optimization -Mode 'Undo' | Out-Null }
+                'PowerPlan' { Restore-OptiKitPowerPlan }
+                'UsbPower' { Restore-UsbPower }
+                'Network' { Optimize-NetworkAdapterGaming -Mode 'Undo' }
+                'DirectX' { Disable-OptiKitWindowedGameOptimizations }
+                'TargetRelease' { Restore-OptiKitTargetRelease }
+                'ReservedStorage' { Enable-OptiKitReservedStorage }
+            }
+            $reverted++
+        }
+        catch {
+            $failures++
+            Write-OptimizerLog -Level WARN -Message ("Falha ao reverter '{0}': {1}" -f $entry.Key, $_.Exception.Message)
+        }
+    }
+
+    Write-OptimizerLog -Level OK -Message ("Reverter Tudo concluído: {0} entrada(s) revertida(s), {1} falha(s)." -f $reverted, $failures)
+    if ($failures -gt 0) {
+        return 1
+    }
+    return 0
 }

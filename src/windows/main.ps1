@@ -7,7 +7,10 @@ param(
     [string]$Preset,
     [switch]$SmokeTest,
     [switch]$NoElevate,
-    [switch]$Relaunched
+    [switch]$Relaunched,
+    [switch]$Apply,
+    [switch]$Silent,
+    [string]$Config
 )
 
 $devRoot = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
@@ -20,6 +23,7 @@ $devRoot = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
 . (Join-Path $PSScriptRoot 'modules\maintenance.ps1')
 . (Join-Path $PSScriptRoot 'modules\startup-manager.ps1')
 . (Join-Path $PSScriptRoot 'core\state-checker.ps1')
+. (Join-Path $PSScriptRoot 'modules\diagnostics.ps1')
 . (Join-Path $PSScriptRoot 'ui\ui-builder.ps1')
 #endregion
 
@@ -35,7 +39,10 @@ function Invoke-OptiKitRelaunch {
         [switch]$PassDryRun,
         [string]$PassPreset,
         [switch]$PassSmokeTest,
-        [switch]$PassNoElevate
+        [switch]$PassNoElevate,
+        [switch]$PassApply,
+        [switch]$PassSilent,
+        [string]$PassConfig
     )
 
     $targetScript = $null
@@ -84,6 +91,12 @@ function Invoke-OptiKitRelaunch {
     }
     if ($PassSmokeTest) { [void]$argList.Add('-SmokeTest') }
     if ($PassNoElevate) { [void]$argList.Add('-NoElevate') }
+    if ($PassApply) { [void]$argList.Add('-Apply') }
+    if ($PassSilent) { [void]$argList.Add('-Silent') }
+    if (-not [string]::IsNullOrWhiteSpace($PassConfig)) {
+        [void]$argList.Add('-Config')
+        [void]$argList.Add(('"{0}"' -f $PassConfig))
+    }
 
     $startParams = @{
         FilePath     = $psExe
@@ -160,6 +173,16 @@ function Start-OptiKitWorkerTask {
         'Test-OptiKitSmartPowerPlan', 'Test-OptiKitUltimatePowerPlan',
         'Disable-OptiKitHibernation', 'Enable-OptiKitHibernation',
         'Optimize-UsbPower', 'Restore-UsbPower', 'Test-UsbPowerOptimized',
+        'Test-OptiKitTweakBlocked', 'Enable-OptiKitWindowedGameOptimizations',
+        'Disable-OptiKitWindowedGameOptimizations', 'Test-OptiKitWindowedGameOptimizations',
+        'Set-OptiKitTargetRelease', 'Restore-OptiKitTargetRelease', 'Test-OptiKitTargetRelease',
+        'Disable-OptiKitReservedStorage', 'Enable-OptiKitReservedStorage', 'Test-OptiKitReservedStorage',
+        'Get-OptiKitHardwareDiagnostics', 'New-OptiKitDiagnosticItem',
+        'Get-OptiKitDiagnosticRam', 'Get-OptiKitDisplayModes', 'Get-OptiKitDiagnosticMonitor',
+        'Get-OptiKitDiagnosticDeviceGuard', 'Get-OptiKitDiagnosticGamingToggles',
+        'Get-OptiKitDiagnosticX3dService', 'Get-OptiKitDiagnosticGpuDriver',
+        'Get-OptiKitStateUndoPlan', 'Invoke-OptiKitRevertAll',
+        'Test-OptiKitUpdateAvailable', 'Export-OptiKitReport',
         'Test-WingetAvailable', 'Install-WingetBootstrap', 'Install-OptiKitApp',
         'Test-OneDriveKfmActive', 'Remove-OptiKitOneDrive', 'Install-OptiKitOneDrive', 'Test-OptiKitOneDriveRemoved',
         'Test-AntiCheatGuardrail', 'Get-RegistryEntryState', 'Set-RegistryEntryValue',
@@ -187,29 +210,24 @@ function Start-OptiKitWorkerTask {
     $runspace.SessionStateProxy.SetVariable('SyncHash', $SyncHash)
     $runspace.SessionStateProxy.SetVariable('WorkerArgs', $Arguments)
     $runspace.SessionStateProxy.SetVariable('ParentOptiKit', $script:OptiKit)
+    $runspace.SessionStateProxy.SetVariable('AllowedTweakScripts', $script:AllowedTweakScripts)
+    $runspace.SessionStateProxy.SetVariable('AllowedCheckScripts', $script:AllowedCheckScripts)
+    $runspace.SessionStateProxy.SetVariable('AllowedGameActions', $script:AllowedGameActions)
+    $runspace.SessionStateProxy.SetVariable('ProtectedAppxPackages', $script:ProtectedAppxPackages)
+    $runspace.SessionStateProxy.SetVariable('OptiKitVersion', $script:OptiKitVersion)
+    $runspace.SessionStateProxy.SetVariable('OptiKitRepo', $script:OptiKitRepo)
 
     $ps = [powershell]::Create()
     $ps.Runspace = $runspace
 
     $wrapper = {
         $script:OptiKit = $ParentOptiKit
-        $script:ProtectedAppxPackages = @(
-            'Microsoft.WindowsStore', 'Microsoft.StorePurchaseApp', 'Microsoft.WindowsCalculator',
-            'Microsoft.ScreenSketch', 'Microsoft.XboxIdentityProvider', 'Microsoft.GamingServices',
-            'Microsoft.DesktopAppInstaller', 'Microsoft.VCLibs.140.00', 'Microsoft.UI.Xaml.2.7', 'Microsoft.UI.Xaml.2.8'
-        )
-        $script:AllowedTweakScripts = @(
-            'Set-OptiKitSmartPowerPlan', 'Enable-OptiKitUltimatePowerPlan', 'Restore-OptiKitPowerPlan',
-            'Disable-OptiKitHibernation', 'Enable-OptiKitHibernation', 'Optimize-UsbPower',
-            'Restore-UsbPower', 'Remove-OptiKitOneDrive', 'Install-OptiKitOneDrive'
-        )
-        $script:AllowedGameActions = @(
-            'Set-AppCompatFlags', 'Set-DirectXGpuPreference', 'Optimize-NetworkAdapterGaming',
-            'Disable-RiotClientStartup', 'Clear-ShaderCache', 'Optimize-UsbPower'
-        )
-        $script:AllowedCheckScripts = @(
-            'Test-OptiKitSmartPowerPlan', 'Test-OptiKitUltimatePowerPlan', 'Test-UsbPowerOptimized', 'Test-OptiKitOneDriveRemoved'
-        )
+        $script:ProtectedAppxPackages = @($ProtectedAppxPackages)
+        $script:AllowedTweakScripts = @($AllowedTweakScripts)
+        $script:AllowedGameActions = @($AllowedGameActions)
+        $script:AllowedCheckScripts = @($AllowedCheckScripts)
+        $script:OptiKitVersion = $OptiKitVersion
+        $script:OptiKitRepo = $OptiKitRepo
 
         try {
             & ([scriptblock]::Create($WorkerArgs.ScriptText))
@@ -230,6 +248,108 @@ function Start-OptiKitWorkerTask {
     $SyncHash.AsyncResult = $ps.BeginInvoke()
 }
 
+function Invoke-OptiKitSilentMode {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Configs,
+        [Parameter(Mandatory = $true)][pscustomobject]$Selection,
+        [switch]$ApplyMode
+    )
+
+    $tweaks = @($Selection.Tweaks)
+    $gameOpts = @($Selection.GameOptimizations)
+    $apps = @($Selection.Apps)
+
+    Write-OptimizerLog -Level INFO -Message ("Modo desatendido: {0} tweak(s), {1} otimização(ões) de jogo, {2} app(s)." -f $tweaks.Count, $gameOpts.Count, $apps.Count)
+
+    if (-not $ApplyMode) {
+        Write-OptimizerLog -Level INFO -Message 'Nenhuma alteração será feita (-Apply não informado). Itens resolvidos:'
+        foreach ($id in $tweaks) { Write-OptimizerLog -Level INFO -Message ("  [Tweak] {0}" -f $id) }
+        foreach ($id in $gameOpts) { Write-OptimizerLog -Level INFO -Message ("  [Jogo] {0}" -f $id) }
+        foreach ($id in $apps) { Write-OptimizerLog -Level INFO -Message ("  [App] {0}" -f $id) }
+        return 0
+    }
+
+    New-OptiKitBackupSession | Out-Null
+    if ($tweaks.Count -gt 0 -or $gameOpts.Count -gt 0) {
+        New-OptiKitRestorePoint -Description 'OptiKit - Modo desatendido' | Out-Null
+    }
+
+    $failures = 0
+    $executed = 0
+
+    foreach ($tweakId in $tweaks) {
+        try {
+            $result = Invoke-Tweak -Id $tweakId -Tweak $Configs.WinTweaks.$tweakId -Mode 'Apply'
+            if ($result) {
+                $executed++
+            }
+            else {
+                Write-OptimizerLog -Level WARN -Message ("Tweak '{0}' não aplicado (bloqueado neste hardware ou sem efeito)." -f $tweakId)
+            }
+        }
+        catch {
+            $failures++
+            Write-OptimizerLog -Level ERROR -Message ("Falha no tweak '{0}': {1}" -f $tweakId, $_.Exception.Message)
+        }
+    }
+
+    foreach ($gameOptId in $gameOpts) {
+        $profileConfig = $null
+        $optimization = $null
+        foreach ($gameProfile in $Configs.GameProfiles.PSObject.Properties) {
+            foreach ($candidate in @($gameProfile.Value.optimizations)) {
+                if ($candidate.id -eq $gameOptId) {
+                    $profileConfig = $gameProfile.Value
+                    $optimization = $candidate
+                    break
+                }
+            }
+            if ($optimization) { break }
+        }
+
+        if (-not $optimization) {
+            $failures++
+            Write-OptimizerLog -Level ERROR -Message ("Otimização de jogo '{0}' não encontrada." -f $gameOptId)
+            continue
+        }
+
+        try {
+            Invoke-GameOptimization -ProfileConfig $profileConfig -Optimization $optimization -Mode 'Apply' | Out-Null
+            $executed++
+        }
+        catch {
+            $failures++
+            Write-OptimizerLog -Level ERROR -Message ("Falha na otimização '{0}': {1}" -f $gameOptId, $_.Exception.Message)
+        }
+    }
+
+    foreach ($appId in $apps) {
+        try {
+            $ok = Install-OptiKitApp -AppKey $appId -AppConfig $Configs.Apps.$appId
+            if ($ok) {
+                $executed++
+            }
+            else {
+                $failures++
+            }
+        }
+        catch {
+            $failures++
+            Write-OptimizerLog -Level ERROR -Message ("Falha ao instalar '{0}': {1}" -f $appId, $_.Exception.Message)
+        }
+    }
+
+    $state = Get-AllTweaksState -TweaksConfig $Configs.WinTweaks -GameProfilesConfig $Configs.GameProfiles
+    $appliedState = @($state.Tweaks.Values | Where-Object { $_ -eq 'Applied' }).Count
+    Write-OptimizerLog -Level OK -Message ("Modo desatendido concluído: {0} operação(ões), {1} falha(s), {2} ajuste(s) ativo(s)." -f $executed, $failures, $appliedState)
+
+    if ($failures -gt 0) {
+        return 1
+    }
+    return 0
+}
+
 function Start-OptiKitMain {
     [CmdletBinding()]
     param(
@@ -237,18 +357,36 @@ function Start-OptiKitMain {
         [string]$InitialPreset,
         [switch]$IsSmokeTest,
         [switch]$SkipElevation,
-        [switch]$IsRelaunched
+        [switch]$IsRelaunched,
+        [switch]$ApplyMode,
+        [switch]$SilentMode,
+        [string]$ConfigPath
     )
 
-    $needsAdmin = (-not $DryRunMode -and -not $IsSmokeTest -and -not $SkipElevation -and (-not (Test-IsAdministrator)))
-    $needsSta = ([Threading.Thread]::CurrentThread.ApartmentState -ne 'STA')
+    $needsAdmin = (-not $DryRunMode -and -not $IsSmokeTest -and -not $SkipElevation -and (-not (Test-IsAdministrator)) -and ((-not $SilentMode) -or $ApplyMode))
+    $needsSta = (-not $SilentMode) -and ([Threading.Thread]::CurrentThread.ApartmentState -ne 'STA')
 
     if ($needsAdmin -or $needsSta) {
         if ($IsRelaunched) {
             throw 'O OptiKit já tentou reinicializar em modo Administrador/STA uma vez e foi interrompido para evitar loop. Abra o Windows PowerShell como Administrador.'
         }
-        Invoke-OptiKitRelaunch -AsAdmin:$needsAdmin -PassDryRun:$DryRunMode -PassPreset $InitialPreset -PassSmokeTest:$IsSmokeTest -PassNoElevate:$SkipElevation
+        Invoke-OptiKitRelaunch -AsAdmin:$needsAdmin -PassDryRun:$DryRunMode -PassPreset $InitialPreset -PassSmokeTest:$IsSmokeTest -PassNoElevate:$SkipElevation -PassApply:$ApplyMode -PassSilent:$SilentMode -PassConfig $ConfigPath
         return
+    }
+
+    if ($SilentMode) {
+        Initialize-OptiKitEnvironment -DryRun:$DryRunMode | Out-Null
+        $script:OptiKit.ConsoleOutput = $true
+        $configs = Get-OptiKitCatalogConfigs
+        try {
+            $selection = Resolve-OptiKitSelection -Configs $configs -PresetKey $InitialPreset -ConfigPath $ConfigPath
+        }
+        catch {
+            Write-OptimizerLog -Level ERROR -Message $_.Exception.Message
+            exit 2
+        }
+        $code = Invoke-OptiKitSilentMode -Configs $configs -Selection $selection -ApplyMode:$ApplyMode
+        exit $code
     }
 
     $sync = [hashtable]::Synchronized(@{
@@ -258,6 +396,9 @@ function Start-OptiKitMain {
         IsBusy               = $false
         CancelRequest        = $false
         PendingStateReport   = $null
+        PendingDiagnosticsReport = $null
+        PendingDiagnosticsStart  = $false
+        PendingUpdateInfo    = $null
         PendingStartupItems  = $null
         ActivePowerShell     = $null
         ActiveRunspace       = $null
@@ -324,6 +465,98 @@ function Start-OptiKitMain {
         }
     }.GetNewClosure())
 
+    $ui.BtnExportProfile.Add_Click({
+        $tweaks = New-Object 'System.Collections.Generic.List[string]'
+        foreach ($tid in $ui.TweakCheckboxes.Keys) {
+            if ($ui.TweakCheckboxes[$tid].CheckBox.IsChecked -eq $true) { [void]$tweaks.Add($tid) }
+        }
+        $gameOpts = New-Object 'System.Collections.Generic.List[string]'
+        foreach ($gid in $ui.GameOptCheckboxes.Keys) {
+            if ($ui.GameOptCheckboxes[$gid].CheckBox.IsChecked -eq $true) { [void]$gameOpts.Add($gid) }
+        }
+        $apps = New-Object 'System.Collections.Generic.List[string]'
+        foreach ($aid in $ui.AppCheckboxes.Keys) {
+            if ($ui.AppCheckboxes[$aid].CheckBox.IsChecked -eq $true) { [void]$apps.Add($aid) }
+        }
+
+        $presetKey = ''
+        if ($ui.CmbPresets -and $ui.CmbPresets.SelectedItem -and $null -ne $ui.CmbPresets.SelectedItem.Tag) {
+            $presetKey = [string]$ui.CmbPresets.SelectedItem.Tag
+        }
+
+        $optiKitProfile = ConvertTo-OptiKitProfile -Tweaks $tweaks.ToArray() -GameOptimizations $gameOpts.ToArray() -Apps $apps.ToArray() -Preset $presetKey
+        $dlg = New-Object System.Windows.Forms.SaveFileDialog
+        $dlg.Filter = 'Perfil OptiKit (*.json)|*.json'
+        $dlg.FileName = 'optikit-profile.json'
+        $dlg.Title = 'Exportar perfil de seleção do OptiKit'
+        if ($dlg.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+            $json = $optiKitProfile | ConvertTo-Json -Depth 5
+            $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+            [System.IO.File]::WriteAllText($dlg.FileName, $json, $utf8NoBom)
+            Write-OptimizerLog -Level OK -Message ("Perfil exportado: {0}" -f $dlg.FileName)
+        }
+    }.GetNewClosure())
+
+    $ui.BtnImportProfile.Add_Click({
+        $dlg = New-Object System.Windows.Forms.OpenFileDialog
+        $dlg.Filter = 'Perfil OptiKit (*.json)|*.json|Todos os arquivos (*.*)|*.*'
+        $dlg.Title = 'Importar perfil do OptiKit'
+        if ($dlg.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+            try {
+                $selection = ConvertFrom-OptiKitProfile -Path $dlg.FileName -Configs $configs
+                Set-OptiKitSelectionFromProfile -Ui $ui -Selection $selection
+            }
+            catch {
+                Write-OptimizerLog -Level ERROR -Message ("Falha ao importar perfil: {0}" -f $_.Exception.Message)
+                [void][System.Windows.MessageBox]::Show($window, $_.Exception.Message, 'Importar Perfil (OptiKit)', [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
+            }
+        }
+    }.GetNewClosure())
+
+    $ui.BtnExportReport.Add_Click({
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
+            $path = Export-OptiKitReport
+            if ($path -and (Test-Path -LiteralPath $path)) {
+                Start-Process -FilePath $path
+            }
+        }
+    }.GetNewClosure())
+
+    $ui.BtnUndoAll.Add_Click({
+        $state = Read-OptiKitStateFile
+        if ($state.Count -eq 0) {
+            Write-OptimizerLog -Level WARN -Message 'Nenhum estado capturado para reverter.'
+            return
+        }
+
+        $confirm = [System.Windows.MessageBox]::Show($window, ("Reverter TODOS os {0} estado(s) capturados? Isso desfaz tweaks, otimizações de jogos, plano de energia, USB, DirectX e Windows Update." -f $state.Count), 'Reverter Tudo (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) {
+            return
+        }
+
+        Start-OptiKitWorkerTask -SyncHash $sync -Arguments @{
+            TweaksConfig       = $configs.WinTweaks
+            GameProfilesConfig = $configs.GameProfiles
+            AppsConfig         = $configs.Apps
+            PresetsConfig      = $configs.Presets
+        } -WorkerScript {
+            $allConfigs = @{
+                WinTweaks    = $WorkerArgs.TweaksConfig
+                GameProfiles = $WorkerArgs.GameProfilesConfig
+                Apps         = $WorkerArgs.AppsConfig
+                Presets      = $WorkerArgs.PresetsConfig
+            }
+            [void](Invoke-OptiKitRevertAll -Configs $allConfigs)
+            $SyncHash.PendingStateReport = Get-AllTweaksState -TweaksConfig $WorkerArgs.TweaksConfig -GameProfilesConfig $WorkerArgs.GameProfilesConfig
+        }
+    }.GetNewClosure())
+
+    if ($ui.BadgeUpdate) {
+        $ui.BadgeUpdate.Add_MouseLeftButtonUp({
+            Start-Process -FilePath ("https://github.com/{0}/releases/latest" -f $script:OptiKitRepo)
+        }.GetNewClosure())
+    }
+
     $ui.BtnResetNetwork.Add_Click({
         Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
             Invoke-NetworkReset
@@ -353,14 +586,29 @@ function Start-OptiKitMain {
         Start-OptiKitWorkerTask -SyncHash $sync -Arguments @{
             TweaksConfig       = $configs.WinTweaks
             GameProfilesConfig = $configs.GameProfiles
+            SkipUpdateCheck    = $IsSmokeTest
         } -WorkerScript {
             Write-OptimizerLog -Level INFO -Message 'Verificando estado atual dos ajustes na máquina...'
             $SyncHash.PendingStateReport = Get-AllTweaksState -TweaksConfig $WorkerArgs.TweaksConfig -GameProfilesConfig $WorkerArgs.GameProfilesConfig
+            if (-not $WorkerArgs.SkipUpdateCheck) {
+                $SyncHash.PendingUpdateInfo = Test-OptiKitUpdateAvailable
+            }
             Write-OptimizerLog -Level OK -Message 'Verificação de estado concluída.'
         }
     }.GetNewClosure()
 
     $ui.BtnRefreshState.Add_Click($triggerStateCheck)
+
+    $triggerDiagnostics = {
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
+            Write-OptimizerLog -Level INFO -Message 'Executando diagnóstico de hardware (somente leitura)...'
+            $SyncHash.PendingDiagnosticsReport = Get-OptiKitHardwareDiagnostics
+            Write-OptimizerLog -Level OK -Message 'Diagnóstico de hardware concluído.'
+        }
+    }.GetNewClosure()
+
+    $ui.BtnRefreshDiagnostics.Add_Click($triggerDiagnostics)
+
     $ui.BtnViewApplied.Add_Click({
         Show-AppliedChangesDialog -Ui $ui
     }.GetNewClosure())
@@ -511,15 +759,39 @@ function Start-OptiKitMain {
         $busy = [bool]$sync.IsBusy
         $ui.BtnApplySelected.IsEnabled = (-not $busy)
         $ui.BtnUndoSelected.IsEnabled = (-not $busy)
+        $ui.BtnUndoAll.IsEnabled = (-not $busy)
         $ui.BtnResetNetwork.IsEnabled = (-not $busy)
         $ui.BtnRunSfcDism.IsEnabled = (-not $busy)
         $ui.BtnClearTemp.IsEnabled = (-not $busy)
+        $ui.BtnRefreshDiagnostics.IsEnabled = (-not $busy)
+        $ui.BtnExportReport.IsEnabled = (-not $busy)
         $ui.BtnCancelMaintenance.IsEnabled = $busy
+
+        if (-not $busy -and $sync.PendingDiagnosticsStart) {
+            $sync.PendingDiagnosticsStart = $false
+            & $triggerDiagnostics
+        }
 
         if ($null -ne $sync.PendingStateReport) {
             $rep = $sync.PendingStateReport
             $sync.PendingStateReport = $null
             Update-OptiKitStateBadges -Ui $ui -StateReport $rep
+        }
+
+        if ($null -ne $sync.PendingDiagnosticsReport) {
+            $diag = $sync.PendingDiagnosticsReport
+            $sync.PendingDiagnosticsReport = $null
+            Update-OptiKitDiagnosticsUi -Ui $ui -Items @($diag)
+        }
+
+        if ($null -ne $sync.PendingUpdateInfo) {
+            $update = $sync.PendingUpdateInfo
+            $sync.PendingUpdateInfo = $null
+            if ($update -and $ui.BadgeUpdate) {
+                $ui.TxtUpdateBadge.Text = ("Nova versão v{0} disponível" -f $update.Version)
+                $ui.BadgeUpdate.ToolTip = 'Clique para abrir a página de releases do OptiKit.'
+                $ui.BadgeUpdate.Visibility = 'Visible'
+            }
         }
 
         if (-not $busy -and $null -ne $sync.ActivePowerShell -and $sync.AsyncResult.IsCompleted) {
@@ -557,6 +829,9 @@ function Start-OptiKitMain {
 
     $window.Add_ContentRendered({
         & $triggerStateCheck
+        if (-not $IsSmokeTest) {
+            $sync.PendingDiagnosticsStart = $true
+        }
         if ($null -ne $smokeTimer) {
             $smokeTimer.Start()
         }
@@ -581,5 +856,8 @@ if (-not $script:OptiKitSkipAutoStart) {
     $effNoElev = ([bool]$NoElevate -or [bool]$OptiKitInitNoElevate)
     $effRelaunched = ([bool]$Relaunched -or [bool]$OptiKitInitRelaunched)
     $effPreset = if (-not [string]::IsNullOrWhiteSpace($Preset)) { $Preset } else { [string]$OptiKitInitPreset }
-    Start-OptiKitMain -DryRunMode:$effDryRun -InitialPreset $effPreset -IsSmokeTest:$effSmoke -SkipElevation:$effNoElev -IsRelaunched:$effRelaunched
+    $effApply = ([bool]$Apply -or [bool]$OptiKitInitApply)
+    $effSilent = ([bool]$Silent -or [bool]$OptiKitInitSilent)
+    $effConfig = if (-not [string]::IsNullOrWhiteSpace($Config)) { $Config } else { [string]$OptiKitInitConfig }
+    Start-OptiKitMain -DryRunMode:$effDryRun -InitialPreset $effPreset -IsSmokeTest:$effSmoke -SkipElevation:$effNoElev -IsRelaunched:$effRelaunched -ApplyMode:$effApply -SilentMode:$effSilent -ConfigPath $effConfig
 }

@@ -56,6 +56,9 @@ jobs:
             '.\tests\Backup.Tests.ps1',
             '.\tests\TweakEngine.Tests.ps1',
             '.\tests\GameEngine.Tests.ps1',
+            '.\tests\Foundation.Tests.ps1',
+            '.\tests\Whitelist.Tests.ps1',
+            '.\tests\Automation.Tests.ps1',
             '.\tests\Build.Tests.ps1'
           )
           $res = Invoke-Pester -Path $testFiles -Output Detailed -PassThru

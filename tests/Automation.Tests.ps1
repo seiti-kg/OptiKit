@@ -1,0 +1,141 @@
+﻿# Testes de automação v0.2: perfis, plano de undo, relatório e modo desatendido
+
+BeforeAll {
+    $script:RepoRoot = Split-Path -Path $PSScriptRoot -Parent
+    . (Join-Path $script:RepoRoot 'src\windows\core\logger.ps1')
+    . (Join-Path $script:RepoRoot 'src\windows\core\backup.ps1')
+    . (Join-Path $script:RepoRoot 'src\windows\modules\hardware-utils.ps1')
+    . (Join-Path $script:RepoRoot 'src\windows\modules\winget-engine.ps1')
+    . (Join-Path $script:RepoRoot 'src\windows\modules\tweak-engine.ps1')
+    . (Join-Path $script:RepoRoot 'src\windows\modules\game-engine.ps1')
+    . (Join-Path $script:RepoRoot 'src\windows\modules\maintenance.ps1')
+    . (Join-Path $script:RepoRoot 'src\windows\core\state-checker.ps1')
+
+    $script:OptiKitVersion = '0.2.0'
+    $script:Configs = @{
+        Apps         = [System.IO.File]::ReadAllText((Join-Path $script:RepoRoot 'config\apps.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+        WinTweaks    = [System.IO.File]::ReadAllText((Join-Path $script:RepoRoot 'config\win-tweaks.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+        GameProfiles = [System.IO.File]::ReadAllText((Join-Path $script:RepoRoot 'config\game-profiles.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+        Presets      = [System.IO.File]::ReadAllText((Join-Path $script:RepoRoot 'config\presets.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+    }
+}
+
+Describe 'Automação v0.2' {
+    It 'Deve exportar e reimportar um perfil com IDs válidos' {
+        $profile = ConvertTo-OptiKitProfile -Tweaks @('WPFTweaksDisableGameDVR', 'WPFTweaksEdgeTelemetry') -GameOptimizations @('Global_OptimizeUSB') -Apps @('VCRedistX64') -Preset 'GamerRecomendado'
+        $profile.schemaVersion | Should -Be 1
+        @($profile.tweaks).Count | Should -Be 2
+
+        $path = Join-Path $TestDrive 'profile.json'
+        [System.IO.File]::WriteAllText($path, ($profile | ConvertTo-Json -Depth 5), (New-Object System.Text.UTF8Encoding($false)))
+
+        $selection = ConvertFrom-OptiKitProfile -Path $path -Configs $script:Configs
+        @($selection.Tweaks).Count | Should -Be 2
+        @($selection.GameOptimizations) | Should -Contain 'Global_OptimizeUSB'
+        @($selection.Apps) | Should -Contain 'VCRedistX64'
+    }
+
+    It 'Deve rejeitar perfil com ID inexistente e uso simultâneo de -Preset/-Config' {
+        $badProfile = [pscustomobject]@{
+            schemaVersion     = 1
+            tweaks            = @('WPFTweaksNaoExiste')
+            gameOptimizations = @()
+            apps              = @()
+        }
+        $badPath = Join-Path $TestDrive 'bad-profile.json'
+        [System.IO.File]::WriteAllText($badPath, ($badProfile | ConvertTo-Json -Depth 5), (New-Object System.Text.UTF8Encoding($false)))
+
+        { ConvertFrom-OptiKitProfile -Path $badPath -Configs $script:Configs } | Should -Throw '*não existe*'
+        { Resolve-OptiKitSelection -Configs $script:Configs -PresetKey 'MinimoSeguro' -ConfigPath $badPath } | Should -Throw '*apenas*'
+    }
+
+    It 'Deve classificar tweaks, game opts e estados auxiliares no plano de Reverter Tudo' {
+        $state = @{
+            'WPFTweaksDisableGameDVR' = [pscustomobject]@{ appliedAt = '2026-11-04T10:00:00'; session = 's1'; captured = @() }
+            'Global_OptimizeUSB'      = [pscustomobject]@{ appliedAt = '2026-11-04T10:01:00'; session = 's1'; captured = @() }
+            'PowerPlanOriginal'       = [pscustomobject]@{ appliedAt = '2026-11-04T10:02:00'; session = 's1'; captured = @() }
+            'DirectXGlobalSettings'   = [pscustomobject]@{ appliedAt = '2026-11-04T10:03:00'; session = 's1'; captured = @() }
+        }
+
+        $plan = Get-OptiKitStateUndoPlan -StateData $state -Configs $script:Configs
+        @($plan).Count | Should -Be 4
+        $plan[0].Key | Should -Be 'DirectXGlobalSettings'
+        ($plan | Where-Object { $_.Key -eq 'WPFTweaksDisableGameDVR' }).Kind | Should -Be 'Tweak'
+        ($plan | Where-Object { $_.Key -eq 'Global_OptimizeUSB' }).Kind | Should -Be 'GameOpt'
+        ($plan | Where-Object { $_.Key -eq 'PowerPlanOriginal' }).Kind | Should -Be 'PowerPlan'
+    }
+
+    It 'Deve reverter um tweak de teste via Reverter Tudo' {
+        $testRoot = Join-Path $TestDrive ("revert_test_" + [Guid]::NewGuid().ToString('N'))
+        Initialize-OptiKitEnvironment -DataRoot $testRoot -DryRun:$false | Out-Null
+        New-OptiKitBackupSession -SessionId '2026-11-04_11-00-00' | Out-Null
+
+        $regKey = 'HKCU:\Software\optikit-tests-revert'
+        if (Test-Path -LiteralPath $regKey) {
+            Remove-Item -LiteralPath $regKey -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        New-Item -Path $regKey -Force | Out-Null
+        Set-ItemProperty -LiteralPath $regKey -Name 'Value' -Value 42 -Type DWord
+
+        $mockTweak = [pscustomobject]@{
+            title          = 'Tweak de Reversão'
+            registry       = @(
+                [pscustomobject]@{ path = $regKey; name = 'Value'; type = 'DWord'; value = 0; originalValue = 1 }
+            )
+            services       = @()
+            scheduledTasks = @()
+            appx           = @()
+            invokeScript   = @()
+            undoScript     = @()
+            checkScript    = $null
+        }
+
+        $configs = $script:Configs.Clone()
+        $configs.WinTweaks = $script:Configs.WinTweaks | Select-Object
+        $configs.WinTweaks | Add-Member -NotePropertyName 'TestRevertTweak' -NotePropertyValue $mockTweak
+
+        Invoke-Tweak -Id 'TestRevertTweak' -Tweak $mockTweak -Mode 'Apply' | Out-Null
+        (Get-ItemProperty -LiteralPath $regKey -Name 'Value').Value | Should -Be 0
+
+        $result = Invoke-OptiKitRevertAll -Configs $configs
+        $result | Should -Be 0
+        (Get-ItemProperty -LiteralPath $regKey -Name 'Value').Value | Should -Be 42
+
+        Remove-Item -LiteralPath $regKey -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    It 'Deve gerar relatório HTML com hardware, estado e log' {
+        $testRoot = Join-Path $TestDrive ("report_test_" + [Guid]::NewGuid().ToString('N'))
+        Initialize-OptiKitEnvironment -DataRoot $testRoot -DryRun:$false | Out-Null
+        Write-OptimizerLog -Level INFO -Message 'linha de teste do relatório'
+
+        $reportPath = Export-OptiKitReport -OutputDirectory (Join-Path $testRoot 'reports')
+        Test-Path -LiteralPath $reportPath | Should -BeTrue
+        $content = [System.IO.File]::ReadAllText($reportPath, [System.Text.Encoding]::UTF8)
+        $content | Should -Match 'OptiKit v0\.2\.0'
+        $content | Should -Match 'linha de teste do relatório'
+    }
+
+    It 'Deve executar o modo desatendido em dry-run sem GUI e sair com código 0' {
+        $winPs1 = Join-Path $script:RepoRoot 'win.ps1'
+        $psi = New-Object System.Diagnostics.ProcessStartInfo
+        $psi.FileName = 'C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe'
+        $psi.Arguments = ('-NoProfile -ExecutionPolicy Bypass -File "{0}" -DryRun -Silent -Preset MinimoSeguro -NoElevate' -f $winPs1)
+        $psi.UseShellExecute = $false
+        $psi.CreateNoWindow = $true
+        $psi.RedirectStandardOutput = $true
+        $psi.RedirectStandardError = $true
+
+        $proc = [System.Diagnostics.Process]::Start($psi)
+        try {
+            $exited = $proc.WaitForExit(60000)
+            $exited | Should -BeTrue
+            $proc.ExitCode | Should -Be 0
+        }
+        finally {
+            if ($proc -and (-not $proc.HasExited)) {
+                try { $proc.Kill() } catch { Write-Verbose $_.Exception.Message }
+            }
+        }
+    }
+}

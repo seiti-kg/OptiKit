@@ -41,13 +41,38 @@
 | `WPFTweaksRemoveCortana` | Remover Cortana Legada (Appx) | Remoção de Bloatware (Appx) | **Baixo** | `Safe` | Win10, Win11 | Não |
 | `WPFTweaksRemoveOneDrive` | Desinstalar Microsoft OneDrive de Forma Limpa e Segura | Remoção de Bloatware (Appx) | **Médio** | `Moderate` | Win10, Win11 | Não |
 | `WPFTweaksDisableHVCI` | Desativar Integridade da Memória (HVCI / Isolamento de Núcleo) | Avançado | **Situacional** | `Advanced` | Win10, Win11 | Sim |
+| `WPFTweaksDisableGameDVRPolicy` | Desativar Game DVR por Política de Máquina (HKLM) | Desempenho & Energia | **Médio** | `Moderate` | Win10, Win11 | Não |
+| `WPFTweaksWindowedGameOptimizations` | Ativar Otimizações para Jogos em Janela (Flip Model DX10/11) | Desempenho & Energia | **Médio** | `Safe` | Win10, Win11 | Não |
+| `WPFTweaksEdgeNoBackground` | Desativar Startup Boost e Modo em Segundo Plano do Edge | Desempenho & Energia | **Médio** | `Safe` | Win10, Win11 | Não |
+| `WPFTweaksVisualEffectsPerformance` | Ajustar Efeitos Visuais para Melhor Desempenho | Desempenho & Energia | **Situacional** | `Safe` | Win10, Win11 | Não |
+| `WPFTweaksDeliveryOptimizationOff` | Desativar P2P do Windows Update (Delivery Optimization) | Desempenho & Energia | **Médio** | `Safe` | Win10, Win11 | Não |
+| `WPFTweaksStartupDelay` | Remover Atraso Artificial de Apps de Inicialização | Desempenho & Energia | **Baixo** | `Safe` | Win10, Win11 | Não |
+| `WPFTweaksExcludeWUDrivers` | Impedir Windows Update de Instalar Drivers Automaticamente | Windows Update | **Situacional** | `Moderate` | Win10, Win11 | Não |
+| `WPFTweaksPinFeatureRelease` | Fixar Versão Atual do Windows (Bloquear Feature Updates) | Windows Update | **Situacional** | `Advanced` | Win10, Win11 | Não |
+| `WPFTweaksDisableReservedStorage` | Desativar Armazenamento Reservado do Windows (~7 GB) | Windows Update | **Situacional** | `Moderate` | Win10, Win11 | Não |
+| `WPFTweaksEdgeTelemetry` | Reduzir Telemetria e Personalização do Microsoft Edge | Privacidade & Telemetria | **Médio** | `Safe` | Win10, Win11 | Não |
+| `WPFTweaksInkingTyping` | Desativar Coleta de Digitação e Escrita à Mão | Privacidade & Telemetria | **Baixo** | `Safe` | Win10, Win11 | Não |
+| `WPFTweaksDisableAIExtras` | Desativar Click to Do (IA Contextual do Windows 11) | Privacidade & Telemetria | **Médio** | `Safe` | Win11 | Não |
+| `WPFTweaksTaskbarAlignLeft` | Alinhar Barra de Tarefas à Esquerda | Interface & Windows 11 | **Baixo** | `Safe` | Win11 | Não |
+| `WPFTweaksTaskbarCompact` | Ocultar Busca e Task View e Ativar Finalizar Tarefa | Interface & Windows 11 | **Baixo** | `Safe` | Win11 | Não |
+| `WPFTweaksExplorerOpenThisPc` | Abrir Explorer em 'Este Computador' | Interface & Windows 11 | **Baixo** | `Safe` | Win10, Win11 | Não |
+| `WPFTweaksShowHiddenFiles` | Mostrar Arquivos e Pastas Ocultos | Interface & Windows 11 | **Baixo** | `Safe` | Win10, Win11 | Não |
+| `WPFTweaksDarkMode` | Ativar Modo Escuro do Sistema e dos Aplicativos | Interface & Windows 11 | **Baixo** | `Safe` | Win10, Win11 | Não |
+| `WPFTweaksRemoveBingSearch` | Remover Microsoft Bing Search (Appx) | Remoção de Bloatware (Appx) | **Baixo** | `Safe` | Win10, Win11 | Não |
+| `WPFTweaksRemoveOfficeHub` | Remover Microsoft Office Hub (Appx) | Remoção de Bloatware (Appx) | **Baixo** | `Safe` | Win10, Win11 | Não |
+| `WPFTweaksRemovePowerAutomate` | Remover Power Automate Desktop (Appx) | Remoção de Bloatware (Appx) | **Baixo** | `Safe` | Win10, Win11 | Não |
+| `WPFTweaksRemoveTodos` | Remover Microsoft To Do (Appx) | Remoção de Bloatware (Appx) | **Baixo** | `Safe` | Win10, Win11 | Não |
+| `WPFTweaksRemoveMaps` | Remover Windows Maps (Appx) | Remoção de Bloatware (Appx) | **Baixo** | `Safe` | Win10, Win11 | Não |
+| `WPFTweaksRemoveFamily` | Remover Microsoft Family Safety (Appx) | Remoção de Bloatware (Appx) | **Baixo** | `Safe` | Win10, Win11 | Não |
+| `WPFTweaksRemoveDevHome` | Remover Dev Home (Appx) | Remoção de Bloatware (Appx) | **Baixo** | `Safe` | Win11 | Não |
+| `WPFTweaksRemoveLinkedIn` | Remover LinkedIn for Windows (Appx) | Remoção de Bloatware (Appx) | **Baixo** | `Safe` | Win10, Win11 | Não |
 
 ### Detalhamento Técnico e Justificativa (Anti-Placebo)
 
 #### Desativar Xbox Game DVR e Gravação em 2º Plano (`WPFTweaksDisableGameDVR`)
 - **Categoria:** Desempenho & Energia | **Impacto:** Médio | **Risco:** Safe
 - **Descrição:** Desativa a gravação contínua de tela do Xbox Game Bar, reduzindo o uso de GPU/Vídeo e eliminando micro-stutterings em jogos.
-- **Justificativa Técnica (Rationale):** O recurso Historical Capture mantém sessões de codificação de vídeo (NVENC/AMF) e buffers D3D ativos em segundo plano. Desativá-lo preserva a Xbox Game Bar para convites de amigos, mas impede gravação contínua involuntária. Fonte: Documentação Microsoft Policy CSP ApplicationManagement/AllowGameDVR.
+- **Justificativa Técnica (Rationale):** O recurso Historical Capture mantém sessões de codificação de vídeo (NVENC/AMF) e buffers D3D ativos em segundo plano. Este tweak altera apenas HKCU, preservando a Xbox Game Bar e a detecção de jogos usada pelo AMD 3D V-Cache Optimizer. A policy de máquina AllowGameDVR fica em um tweak separado, bloqueado em Ryzen X3D dual-CCD.
 
 #### Mouse 1:1 (Desativar Aprimorar Precisão do Ponteiro) (`WPFTweaksMouseRawInput`)
 - **Categoria:** Desempenho & Energia | **Impacto:** Alto | **Risco:** Safe
@@ -61,6 +86,7 @@
 
 #### Ativar Plano Desempenho Máximo (Ultimate Performance) (`WPFTweaksUltimatePowerPlan`)
 - **Categoria:** Desempenho & Energia | **Impacto:** Baixo | **Risco:** Moderate
+- **Bloqueado em:** X3DDualCcd
 - **Descrição:** Desbloqueia e ativa o plano oculto Ultimate Performance da Microsoft (sem duplicar esquemas existentes).
 - **Justificativa Técnica (Rationale):** Reduz micro-latências de gerenciamento de energia de dispositivos e frequência de CPU. Em CPUs modernas com SpeedShift/CPPC o ganho sobre Alto Desempenho é marginal, e aumenta o consumo em idle; não recomendado para Ryzen dual-CCD X3D ou notebooks.
 
@@ -219,6 +245,132 @@
 - **Descrição:** Desativa apenas o Hypervisor-Protected Code Integrity (HVCI), mantendo o TPM 2.0 e Secure Boot intactos.
 - **Justificativa Técnica (Rationale):** A verificação de integridade de código em páginas de memória do kernel via hipervisor adiciona overhead mensurável de CPU em jogos limitados por processador (5% a 12% em CPUs sem suporte nativo a MBEC). A própria Microsoft documenta a opção de desativar o HVCI para ganho de desempenho em jogos, mas alerta sobre a redução de segurança e possíveis exigências do Riot Vanguard / FACEIT no Windows 11. Fonte: Microsoft Support 'Options to optimize gaming performance in Windows 11'.
 
+#### Desativar Game DVR por Política de Máquina (HKLM) (`WPFTweaksDisableGameDVRPolicy`)
+- **Categoria:** Desempenho & Energia | **Impacto:** Médio | **Risco:** Moderate
+- **Bloqueado em:** X3DDualCcd
+- **Descrição:** Aplica AllowGameDVR=0 em HKLM para impedir a gravação contínua do Game DVR para todos os usuários do computador.
+- **Justificativa Técnica (Rationale):** A policy de máquina complementa as chaves HKCU do tweak principal. Em Ryzen X3D dual-CCD ela é bloqueada porque o AMD 3D V-Cache Optimizer depende da detecção de jogos da Xbox Game Bar; nesses CPUs apenas o tweak HKCU é aplicado.
+
+#### Ativar Otimizações para Jogos em Janela (Flip Model DX10/11) (`WPFTweaksWindowedGameOptimizations`)
+- **Categoria:** Desempenho & Energia | **Impacto:** Médio | **Risco:** Safe
+- **Descrição:** Ativa SwapEffectUpgradeEnable=1 no DirectX UserGpuPreferences, permitindo flip model em jogos borderless DX10/11.
+- **Justificativa Técnica (Rationale):** O flip model reduz a latência de composição do DWM em jogos em janela sem bordas. O helper faz merge da string DirectXUserGlobalSettings para preservar AutoHDR e VRR já configurados. Fonte: Microsoft DirectX Developer Blog.
+
+#### Desativar Startup Boost e Modo em Segundo Plano do Edge (`WPFTweaksEdgeNoBackground`)
+- **Categoria:** Desempenho & Energia | **Impacto:** Médio | **Risco:** Safe
+- **Descrição:** Aplica políticas para impedir que o Microsoft Edge mantenha processos em segundo plano e pré-carregue o navegador no boot.
+- **Justificativa Técnica (Rationale):** Startup Boost e Background Mode mantêm processos msedge.exe residentes mesmo com o navegador fechado, consumindo RAM e CPU em idle. As políticas são reversíveis e exigem reiniciar o Edge.
+
+#### Ajustar Efeitos Visuais para Melhor Desempenho (`WPFTweaksVisualEffectsPerformance`)
+- **Categoria:** Desempenho & Energia | **Impacto:** Situacional | **Risco:** Safe
+- **Descrição:** Seleciona 'Ajustar para melhor desempenho' e desativa a transparência do Windows.
+- **Justificativa Técnica (Rationale):** Em PCs com GPU integrada ou hardware antigo, animações e transparência consomem composição do DWM. O ganho é situacional; em desktops modernos o impacto é cosmético. Reinicie a sessão para aplicar por completo.
+
+#### Desativar P2P do Windows Update (Delivery Optimization) (`WPFTweaksDeliveryOptimizationOff`)
+- **Categoria:** Desempenho & Energia | **Impacto:** Médio | **Risco:** Safe
+- **Descrição:** Configura DODownloadMode=0 para que o Windows Update baixe apenas da Microsoft, sem usar upload de outros PCs.
+- **Justificativa Técnica (Rationale):** O modo P2P pode consumir upload e disco em segundo plano. Em uma única máquina doméstica, o ganho de banda é imediato; em redes com muitos PCs, aumenta o consumo de internet.
+
+#### Remover Atraso Artificial de Apps de Inicialização (`WPFTweaksStartupDelay`)
+- **Categoria:** Desempenho & Energia | **Impacto:** Baixo | **Risco:** Safe
+- **Descrição:** Define StartupDelayInMSec=0 para remover o atraso de 10 segundos aplicado pelo Explorer aos apps de inicialização.
+- **Justificativa Técnica (Rationale):** O atraso existe para reduzir contenção no login, mas em SSDs modernos apenas posterga a abertura dos apps. O impacto é baixo e reversível.
+
+#### Impedir Windows Update de Instalar Drivers Automaticamente (`WPFTweaksExcludeWUDrivers`)
+- **Categoria:** Windows Update | **Impacto:** Situacional | **Risco:** Moderate
+- **Descrição:** Aplica ExcludeWUDriversInQualityUpdate=1 para que atualizações de qualidade não substituam drivers instalados manualmente.
+- **Justificativa Técnica (Rationale):** Evita que o Windows Update sobrescreva o driver de GPU ou chipset com uma versão mais antiga. Não bloqueia drivers incluídos em atualizações de segurança nem feature updates. Fonte: Microsoft Policy CSP Update/ExcludeWUDriversInQualityUpdate.
+
+#### Fixar Versão Atual do Windows (Bloquear Feature Updates) (`WPFTweaksPinFeatureRelease`)
+- **Categoria:** Windows Update | **Impacto:** Situacional | **Risco:** Advanced
+- **Descrição:** Configura TargetReleaseVersion para manter a versão atual (ex.: 24H2) e bloquear a instalação automática de uma nova feature update.
+- **Justificativa Técnica (Rationale):** Útil para quem precisa de estabilidade de drivers e anti-cheat antes de migrar de versão. Atualizações de qualidade continuam sendo instaladas. O helper lê DisplayVersion e ProductVersion do sistema e restaura os valores originais no Undo.
+
+#### Desativar Armazenamento Reservado do Windows (~7 GB) (`WPFTweaksDisableReservedStorage`)
+- **Categoria:** Windows Update | **Impacto:** Situacional | **Risco:** Moderate
+- **Descrição:** Executa DISM /Set-ReservedStorageState /State:Disabled para liberar o espaço reservado a atualizações.
+- **Justificativa Técnica (Rationale):** O Armazenamento Reservado mantém vários GB bloqueados para updates. Desativá-lo libera espaço, mas atualizações podem falhar se o disco estiver quase cheio. O Undo reativa o estado anterior.
+
+#### Reduzir Telemetria e Personalização do Microsoft Edge (`WPFTweaksEdgeTelemetry`)
+- **Categoria:** Privacidade & Telemetria | **Impacto:** Médio | **Risco:** Safe
+- **Descrição:** Aplica políticas do Edge para desativar métricas de uso, personalização e dados de diagnóstico.
+- **Justificativa Técnica (Rationale):** As políticas MetricsReportingEnabled, PersonalizationReportingEnabled e DiagnosticData reduzem o envio de dados do navegador. O Edge pode exibir o aviso de 'gerenciado pela organização'.
+
+#### Desativar Coleta de Digitação e Escrita à Mão (`WPFTweaksInkingTyping`)
+- **Categoria:** Privacidade & Telemetria | **Impacto:** Baixo | **Risco:** Safe
+- **Descrição:** Desativa o TIPC e restringe a coleta implícita de texto, tinta e contatos.
+- **Justificativa Técnica (Rationale):** O Windows coleta amostras de digitação e escrita à mão para personalização e sugestões. Desativar reduz a telemetria e o armazenamento local de dados de entrada.
+
+#### Desativar Click to Do (IA Contextual do Windows 11) (`WPFTweaksDisableAIExtras`)
+- **Categoria:** Privacidade & Telemetria | **Impacto:** Médio | **Risco:** Safe
+- **Descrição:** Aplica a política DisableClickToDo para remover os pontos de entrada do Click to Do no Windows 11 24H2+.
+- **Justificativa Técnica (Rationale):** O Click to Do captura a tela sob demanda e analisa o conteúdo localmente. A política oficial remove o recurso e seus pontos de entrada. Fonte: Microsoft Policy CSP WindowsAI/DisableClickToDo.
+
+#### Alinhar Barra de Tarefas à Esquerda (`WPFTweaksTaskbarAlignLeft`)
+- **Categoria:** Interface & Windows 11 | **Impacto:** Baixo | **Risco:** Safe
+- **Descrição:** Define TaskbarAl=0 para alinhar os ícones da barra de tarefas à esquerda, como no Windows 10.
+- **Justificativa Técnica (Rationale):** Preferência de interface sem impacto em desempenho. Requer reiniciar o Explorer ou sair e entrar para aplicar.
+
+#### Ocultar Busca e Task View e Ativar Finalizar Tarefa (`WPFTweaksTaskbarCompact`)
+- **Categoria:** Interface & Windows 11 | **Impacto:** Baixo | **Risco:** Safe
+- **Descrição:** Oculta a caixa de busca e o botão Task View, e habilita 'Finalizar tarefa' no clique direito da barra de tarefas (23H2+).
+- **Justificativa Técnica (Rationale):** Reduz elementos visuais e adiciona um atalho útil para encerrar processos travados. TaskbarEndTask é ignorado em builds anteriores ao 23H2. Requer reiniciar o Explorer.
+
+#### Abrir Explorer em 'Este Computador' (`WPFTweaksExplorerOpenThisPc`)
+- **Categoria:** Interface & Windows 11 | **Impacto:** Baixo | **Risco:** Safe
+- **Descrição:** Define LaunchTo=1 para abrir o Explorer em Este Computador em vez de Acesso Rápido.
+- **Justificativa Técnica (Rationale):** Preferência de navegação; evita carregar a lista de recentes do Acesso Rápido. Requer reiniciar o Explorer.
+
+#### Mostrar Arquivos e Pastas Ocultos (`WPFTweaksShowHiddenFiles`)
+- **Categoria:** Interface & Windows 11 | **Impacto:** Baixo | **Risco:** Safe
+- **Descrição:** Define Hidden=1 para exibir arquivos e pastas com atributo oculto no Explorer.
+- **Justificativa Técnica (Rationale):** Preferência de usabilidade para usuários avançados. Aumenta o risco de alterar arquivos de sistema; combine com 'Mostrar extensões'.
+
+#### Ativar Modo Escuro do Sistema e dos Aplicativos (`WPFTweaksDarkMode`)
+- **Categoria:** Interface & Windows 11 | **Impacto:** Baixo | **Risco:** Safe
+- **Descrição:** Define AppsUseLightTheme=0 e SystemUsesLightTheme=0 para o modo escuro do Windows e dos apps.
+- **Justificativa Técnica (Rationale):** Preferência visual. Não altera desempenho; alguns apps clássicos podem ignorar o tema. Requer reiniciar o Explorer ou sair e entrar.
+
+#### Remover Microsoft Bing Search (Appx) (`WPFTweaksRemoveBingSearch`)
+- **Categoria:** Remoção de Bloatware (Appx) | **Impacto:** Baixo | **Risco:** Safe
+- **Descrição:** Remove o aplicativo Microsoft.BingSearch do sistema e do provisionamento (reversível via reinstalação).
+- **Justificativa Técnica (Rationale):** O app de busca do Bing é pré-instalado no Windows 11 e mantém integrações de pesquisa que já são desativadas pelo tweak de busca local.
+
+#### Remover Microsoft Office Hub (Appx) (`WPFTweaksRemoveOfficeHub`)
+- **Categoria:** Remoção de Bloatware (Appx) | **Impacto:** Baixo | **Risco:** Safe
+- **Descrição:** Remove o hub promocional Microsoft.MicrosoftOfficeHub (reversível via reinstalação).
+- **Justificativa Técnica (Rationale):** Aplicativo de propaganda do Microsoft 365 pré-instalado em edições de consumidor, sem função para quem usa Office desktop ou webmail.
+
+#### Remover Power Automate Desktop (Appx) (`WPFTweaksRemovePowerAutomate`)
+- **Categoria:** Remoção de Bloatware (Appx) | **Impacto:** Baixo | **Risco:** Safe
+- **Descrição:** Remove o aplicativo Microsoft.PowerAutomateDesktop (reversível via reinstalação).
+- **Justificativa Técnica (Rationale):** Automação de fluxos pré-instalada no Windows 11, raramente usada em PCs gamers e que mantém serviços em segundo plano.
+
+#### Remover Microsoft To Do (Appx) (`WPFTweaksRemoveTodos`)
+- **Categoria:** Remoção de Bloatware (Appx) | **Impacto:** Baixo | **Risco:** Safe
+- **Descrição:** Remove o aplicativo Microsoft.Todos (reversível via reinstalação).
+- **Justificativa Técnica (Rationale):** Gerenciador de tarefas pré-instalado que sincroniza em segundo plano; desnecessário para quem usa outro app de produtividade.
+
+#### Remover Windows Maps (Appx) (`WPFTweaksRemoveMaps`)
+- **Categoria:** Remoção de Bloatware (Appx) | **Impacto:** Baixo | **Risco:** Safe
+- **Descrição:** Remove o aplicativo Microsoft.WindowsMaps (reversível via reinstalação).
+- **Justificativa Técnica (Rationale):** Aplicativo de mapas com downloads offline e tarefas de atualização em segundo plano, sem uso típico em desktops gamers.
+
+#### Remover Microsoft Family Safety (Appx) (`WPFTweaksRemoveFamily`)
+- **Categoria:** Remoção de Bloatware (Appx) | **Impacto:** Baixo | **Risco:** Safe
+- **Descrição:** Remove o aplicativo MicrosoftCorporationII.MicrosoftFamily (reversível via reinstalação).
+- **Justificativa Técnica (Rationale):** Controle parental pré-instalado que mantém serviços de sincronização; desnecessário em PCs pessoais.
+
+#### Remover Dev Home (Appx) (`WPFTweaksRemoveDevHome`)
+- **Categoria:** Remoção de Bloatware (Appx) | **Impacto:** Baixo | **Risco:** Safe
+- **Descrição:** Remove o aplicativo Microsoft.Windows.DevHome (reversível via reinstalação).
+- **Justificativa Técnica (Rationale):** Dashboard de desenvolvimento pré-instalado no Windows 11, útil apenas para quem realmente usa os widgets de dev.
+
+#### Remover LinkedIn for Windows (Appx) (`WPFTweaksRemoveLinkedIn`)
+- **Categoria:** Remoção de Bloatware (Appx) | **Impacto:** Baixo | **Risco:** Safe
+- **Descrição:** Remove o aplicativo LinkedIn pré-instalado (reversível via reinstalação).
+- **Justificativa Técnica (Rationale):** Rede social profissional promovida no Windows 11, com sincronização em segundo plano e notificações.
+
 ## 2. Perfis de Jogos (`config/game-profiles.json`)
 
 ### VALORANT (`ProfileValorant`)
@@ -234,11 +386,23 @@
 
 ### Counter-Strike 2 (`ProfileCS2`)
 - **Engine:** Source 2 | **Anti-Cheat:** VAC / FACEIT Anti-Cheat
-- **Aviso:** Em breve: detecção automática via biblioteca Steam, preferência de GPU DX11/Vulkan e limpeza de cache Source 2.
+- **Aviso:** Perfil ativo: aplica preferência de GPU, flags de DPI/FSO e limpeza de cache de shaders. O FACEIT Anti-Cheat pode exigir configurações específicas; nenhum serviço de anti-cheat é alterado.
+
+| ID | Otimização | Action | Impacto | Justificativa |
+|---|---|---|---|---|
+| `CS2_DirectX_HighPerf` | Forçar GPU de Alto Desempenho no DirectX | `Set-DirectXGpuPreference` | **Médio** | Garante que o DXGI selecione a GPU dedicada em notebooks e desktops com iGPU ativa. |
+| `CS2_FSO_HighDPI` | Aplicar Flags FSO e High DPI Bypass no cs2.exe | `Set-AppCompatFlags` | **Situacional** | Evita escalonamento de DPI do Windows em setups com escala maior que 100% ou Windows 10. |
+| `CS2_ClearShaderCache` | Limpar Cache de Shaders (DirectX/NVIDIA/AMD) | `Clear-ShaderCache` | **Médio** | Caches antigos podem causar frame drops; o driver recria os arquivos automaticamente. |
 
 ### Jogos Unreal Engine 5 / AAA (`ProfileUE5`)
 - **Engine:** Unreal Engine 5 | **Anti-Cheat:** Easy Anti-Cheat / BattlEye
-- **Aviso:** Em breve: otimização de compilação de shaders PSO, preferência de GPU por executável e ajustes de streaming.
+- **Aviso:** Perfil genérico: selecione manualmente o .exe do jogo. Aplica preferência de GPU, flags de DPI/FSO e limpeza de cache de shaders; nenhum serviço de anti-cheat é alterado.
+
+| ID | Otimização | Action | Impacto | Justificativa |
+|---|---|---|---|---|
+| `UE5_DirectX_HighPerf` | Forçar GPU de Alto Desempenho no DirectX | `Set-DirectXGpuPreference` | **Médio** | Garante que o DXGI selecione a GPU dedicada em notebooks e desktops com iGPU ativa. |
+| `UE5_FSO_HighDPI` | Aplicar Flags FSO e High DPI Bypass no Executável | `Set-AppCompatFlags` | **Situacional** | Evita escalonamento de DPI do Windows em setups com escala maior que 100% ou Windows 10. |
+| `UE5_ClearShaderCache` | Limpar Cache de Shaders (DirectX/NVIDIA/AMD) | `Clear-ShaderCache` | **Médio** | Caches antigos podem causar frame drops; o driver recria os arquivos automaticamente. |
 
 ### Ferramentas Globais de Gaming (`GlobalGamingTools`)
 - **Engine:** DirectX / Vulkan / Hardware | **Anti-Cheat:** Universal (Compatível)

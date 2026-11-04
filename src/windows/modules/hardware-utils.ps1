@@ -32,6 +32,20 @@ function Get-OptiKitHardware {
 
     $isX3D = [bool]($cpuName -match '(?i)\b\d{4}X3D\b')
 
+    $cpuCores = 0
+    try {
+        $cpuCim = Get-CimInstance -ClassName Win32_Processor -ErrorAction SilentlyContinue
+        if ($cpuCim) {
+            $cpuCores = [int](($cpuCim | Measure-Object -Property NumberOfCores -Sum).Sum)
+        }
+    }
+    catch {
+        Write-Verbose ("Falha ao obter número de núcleos da CPU: {0}" -f $_.Exception.Message)
+    }
+
+    # X3D dual-CCD: 7900X3D/7950X3D/9900X3D/9950X3D (12/16 núcleos). Single-CCD X3D tem até 8.
+    $isX3DDualCcd = $isX3D -and (($cpuName -match '(?i)\b(79|99)\d{2}X3D\b') -or ($cpuCores -gt 8))
+
     $isLaptop = $false
     try {
         $enclosure = Get-CimInstance -ClassName Win32_SystemEnclosure -ErrorAction SilentlyContinue
@@ -100,7 +114,9 @@ function Get-OptiKitHardware {
 
     $script:OptiKitHardwareCache = [pscustomobject]@{
         CpuName         = $cpuName
+        CpuCores        = $cpuCores
         IsX3D           = $isX3D
+        IsX3DDualCcd    = $isX3DDualCcd
         IsLaptop        = $isLaptop
         GpuNames        = $gpuNames.ToArray()
         GpuVendors      = $gpuVendors.ToArray()
@@ -111,6 +127,43 @@ function Get-OptiKitHardware {
     }
 
     return $script:OptiKitHardwareCache
+}
+
+function Test-OptiKitTweakBlocked {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [pscustomobject]$Tweak,
+
+        [pscustomobject]$Hardware
+    )
+
+    $guards = @($Tweak.blockedOn)
+    if ($guards.Count -eq 0) {
+        return $null
+    }
+
+    if (-not $Hardware) {
+        $Hardware = Get-OptiKitHardware
+    }
+
+    foreach ($guard in $guards) {
+        $isBlocked = switch ([string]$guard) {
+            'X3DDualCcd' { [bool]$Hardware.IsX3DDualCcd }
+            'X3D'        { [bool]$Hardware.IsX3D }
+            'Laptop'     { [bool]$Hardware.IsLaptop }
+            default      { $false }
+        }
+
+        if ($isBlocked) {
+            if (-not [string]::IsNullOrWhiteSpace($Tweak.blockedMessage)) {
+                return [string]$Tweak.blockedMessage
+            }
+            return ("Bloqueado neste hardware ({0})." -f $guard)
+        }
+    }
+
+    return $null
 }
 
 function Get-ActivePowerPlanGuid {

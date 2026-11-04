@@ -179,6 +179,7 @@ $moduleOrder = @(
     'src\windows\modules\maintenance.ps1',
     'src\windows\modules\startup-manager.ps1',
     'src\windows\core\state-checker.ps1',
+    'src\windows\modules\diagnostics.ps1',
     'src\windows\ui\ui-builder.ps1',
     'src\windows\main.ps1'
 )
@@ -211,7 +212,10 @@ $outBuilder = New-Object System.Text.StringBuilder
 [void]$outBuilder.AppendLine('    [string]$Preset,')
 [void]$outBuilder.AppendLine('    [switch]$SmokeTest,')
 [void]$outBuilder.AppendLine('    [switch]$NoElevate,')
-[void]$outBuilder.AppendLine('    [switch]$Relaunched')
+[void]$outBuilder.AppendLine('    [switch]$Relaunched,')
+[void]$outBuilder.AppendLine('    [switch]$Apply,')
+[void]$outBuilder.AppendLine('    [switch]$Silent,')
+[void]$outBuilder.AppendLine('    [string]$Config')
 [void]$outBuilder.AppendLine(')')
 [void]$outBuilder.AppendLine('')
 [void]$outBuilder.AppendLine("`$script:OptiKitVersion = '$version'")
@@ -291,6 +295,9 @@ if ($Docs) {
         $t = $prop.Value
         [void]$docSb.AppendLine("#### $($t.title) (``$id``)")
         [void]$docSb.AppendLine("- **Categoria:** $($t.category) | **Impacto:** $($t.impact) | **Risco:** $($t.riskLevel)")
+        if ($t.blockedOn -and @($t.blockedOn).Count -gt 0) {
+            [void]$docSb.AppendLine("- **Bloqueado em:** $((@($t.blockedOn)) -join ', ')")
+        }
         [void]$docSb.AppendLine("- **Descrição:** $($t.description)")
         [void]$docSb.AppendLine("- **Justificativa Técnica (Rationale):** $($t.rationale)")
         [void]$docSb.AppendLine('')

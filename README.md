@@ -25,12 +25,27 @@ Para executar localmente em modo de simulação (sem alterar o sistema):
 powershell -ExecutionPolicy Bypass -File .\win.ps1 -DryRun
 ```
 
+### Modo desatendido (pós-formatação)
+
+```powershell
+# Aplica um preset sem abrir a interface
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/seiti-kg/OptiKit/main/win.ps1))) -Preset GamerRecomendado -Apply -Silent
+
+# Importa um perfil exportado em outro PC
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/seiti-kg/OptiKit/main/win.ps1))) -Config .\optikit-profile.json -Apply -Silent
+```
+
+O modo desatendido exige Administrador (UAC) e retorna `0` em sucesso, `1` em falhas parciais e `2` em erro de uso ou perfil inválido. Sem `-Apply`, ele apenas imprime o que seria aplicado.
+
 ## Funcionalidades
 
 - **Instalação de Pacotes (Winget):** Catálogo com mais de 40 softwares essenciais (navegadores, launchers, utilitários, runtimes C++/DirectX e ferramentas de desenvolvimento), incluindo bootstrap automático do Winget em instalações recém-formatadas.
 - **Desempenho e Energia:** Desativação de Xbox Game DVR, Mouse 1:1 (sem aceleração de ponteiro), gerenciamento inteligente de planos de energia (detecção de Desktop, Notebook e CPUs AMD Ryzen X3D), ativação de HAGS/Game Mode, otimização de portas USB (1000Hz–8000Hz) e controle de Hibernação/Fast Startup.
 - **Privacidade e Debloat:** Redução de telemetria e serviços de diagnóstico (`DiagTrack`), bloqueio do Windows Recall e Copilot, restauração do menu de contexto clássico no Windows 11, desativação da busca web do Bing no Menu Iniciar e remoção seletiva de pacotes Appx (preservando Microsoft Store, Calculadora, Captura de Tela e serviços Xbox).
-- **Perfis de Jogos:** Perfil dedicado para VALORANT (detecção automática de executável, flags FSO/High DPI, preferência de GPU dedicada no DirectX, desativação de economia de energia na placa de rede e controle de inicialização do Riot Client) e limpador global de Cache de Shaders (DirectX, NVIDIA e AMD).
+- **Diagnóstico de Hardware (somente leitura):** Detecta RAM sem XMP/EXPO, monitor abaixo da taxa máxima, VBS/HVCI ativo, HAGS/Game Mode/plano de energia, ausência do driver `amd3dvcache` em Ryzen X3D dual-CCD e drivers de GPU com mais de 180 dias, com ação recomendada por card.
+- **Perfis de Jogos:** Perfis ativos para VALORANT, Counter-Strike 2 e jogos Unreal Engine 5/AAA (detecção de executável, flags FSO/High DPI, preferência de GPU dedicada no DirectX, desativação de economia de energia na placa de rede e limpeza de Cache de Shaders DirectX/NVIDIA/AMD).
+- **Windows Update:** Bloqueio de drivers automáticos, fixação da versão atual do Windows (feature updates) e desativação do Armazenamento Reservado, com Undo pelo `state.json`.
+- **Automação e Reversão:** Modo desatendido (`-Preset`/`-Config -Apply -Silent`), exportação/importação de perfil de seleção, **Reverter Tudo** a partir do estado capturado, relatório HTML da sessão e aviso de nova versão.
 - **Manutenção e Inicialização:** Reset de rede/DNS, execução de `DISM /RestoreHealth` + `SFC /scannow` em segundo plano, limpeza de temporários e gerenciador de programas de inicialização compatível com o Gerenciador de Tarefas (`StartupApproved`).
 
 Consulte a lista técnica de todos os ajustes e justificativas em [`docs/tweaks.md`](docs/tweaks.md).
@@ -51,6 +66,7 @@ Consulte a lista técnica de todos os ajustes e justificativas em [`docs/tweaks.
 ├── config/                         # Catálogos JSON (apps, win-tweaks, game-profiles, presets)
 ├── src/windows/                    # Código-fonte modular (core, modules, ui, main.ps1)
 ├── docs/tweaks.md                  # Catálogo técnico gerado automaticamente
+├── docs/rejected.md                # Tweaks placebo rejeitados e critérios de admissão
 └── tests/                          # Testes automatizados (Pester 5)
 ```
 

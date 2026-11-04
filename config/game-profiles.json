@@ -54,29 +54,89 @@
   },
   "ProfileCS2": {
     "gameName": "Counter-Strike 2",
-    "status": "comingSoon",
+    "status": "active",
     "engine": "Source 2",
     "antiCheat": "VAC / FACEIT Anti-Cheat",
-    "warning": "Em breve: detecção automática via biblioteca Steam, preferência de GPU DX11/Vulkan e limpeza de cache Source 2.",
+    "warning": "Perfil ativo: aplica preferência de GPU, flags de DPI/FSO e limpeza de cache de shaders. O FACEIT Anti-Cheat pode exigir configurações específicas; nenhum serviço de anti-cheat é alterado.",
     "executableDetection": {
       "defaultPaths": [
-        "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\game\\bin\\win64\\cs2.exe"
+        "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\game\\bin\\win64\\cs2.exe",
+        "D:\\SteamLibrary\\steamapps\\common\\Counter-Strike Global Offensive\\game\\bin\\win64\\cs2.exe",
+        "E:\\SteamLibrary\\steamapps\\common\\Counter-Strike Global Offensive\\game\\bin\\win64\\cs2.exe"
       ],
       "registryFallback": null
     },
-    "optimizations": []
+    "optimizations": [
+      {
+        "id": "CS2_DirectX_HighPerf",
+        "title": "Forçar GPU de Alto Desempenho no DirectX",
+        "description": "Registra o cs2.exe em UserGpuPreferences com GpuPreference=2.",
+        "rationale": "Garante que o DXGI selecione a GPU dedicada em notebooks e desktops com iGPU ativa.",
+        "impact": "Médio",
+        "riskLevel": "Safe",
+        "action": "Set-DirectXGpuPreference"
+      },
+      {
+        "id": "CS2_FSO_HighDPI",
+        "title": "Aplicar Flags FSO e High DPI Bypass no cs2.exe",
+        "description": "Configura DISABLEDXMAXIMIZEDWINDOWEDMODE e HIGHDPIAWARE no executável.",
+        "rationale": "Evita escalonamento de DPI do Windows em setups com escala maior que 100% ou Windows 10.",
+        "impact": "Situacional",
+        "riskLevel": "Safe",
+        "action": "Set-AppCompatFlags",
+        "flags": "~ DISABLEDXMAXIMIZEDWINDOWEDMODE HIGHDPIAWARE"
+      },
+      {
+        "id": "CS2_ClearShaderCache",
+        "title": "Limpar Cache de Shaders (DirectX/NVIDIA/AMD)",
+        "description": "Limpa os caches globais de shaders para eliminar stuttering após atualização de driver ou patch do Source 2.",
+        "rationale": "Caches antigos podem causar frame drops; o driver recria os arquivos automaticamente.",
+        "impact": "Médio",
+        "riskLevel": "Safe",
+        "action": "Clear-ShaderCache"
+      }
+    ]
   },
   "ProfileUE5": {
     "gameName": "Jogos Unreal Engine 5 / AAA",
-    "status": "comingSoon",
+    "status": "active",
     "engine": "Unreal Engine 5",
     "antiCheat": "Easy Anti-Cheat / BattlEye",
-    "warning": "Em breve: otimização de compilação de shaders PSO, preferência de GPU por executável e ajustes de streaming.",
+    "warning": "Perfil genérico: selecione manualmente o .exe do jogo. Aplica preferência de GPU, flags de DPI/FSO e limpeza de cache de shaders; nenhum serviço de anti-cheat é alterado.",
     "executableDetection": {
       "defaultPaths": [],
       "registryFallback": null
     },
-    "optimizations": []
+    "optimizations": [
+      {
+        "id": "UE5_DirectX_HighPerf",
+        "title": "Forçar GPU de Alto Desempenho no DirectX",
+        "description": "Registra o executável selecionado em UserGpuPreferences com GpuPreference=2.",
+        "rationale": "Garante que o DXGI selecione a GPU dedicada em notebooks e desktops com iGPU ativa.",
+        "impact": "Médio",
+        "riskLevel": "Safe",
+        "action": "Set-DirectXGpuPreference"
+      },
+      {
+        "id": "UE5_FSO_HighDPI",
+        "title": "Aplicar Flags FSO e High DPI Bypass no Executável",
+        "description": "Configura DISABLEDXMAXIMIZEDWINDOWEDMODE e HIGHDPIAWARE no executável selecionado.",
+        "rationale": "Evita escalonamento de DPI do Windows em setups com escala maior que 100% ou Windows 10.",
+        "impact": "Situacional",
+        "riskLevel": "Safe",
+        "action": "Set-AppCompatFlags",
+        "flags": "~ DISABLEDXMAXIMIZEDWINDOWEDMODE HIGHDPIAWARE"
+      },
+      {
+        "id": "UE5_ClearShaderCache",
+        "title": "Limpar Cache de Shaders (DirectX/NVIDIA/AMD)",
+        "description": "Limpa os caches globais de shaders para reduzir stuttering após atualização de driver ou patch do jogo.",
+        "rationale": "Caches antigos podem causar frame drops; o driver recria os arquivos automaticamente.",
+        "impact": "Médio",
+        "riskLevel": "Safe",
+        "action": "Clear-ShaderCache"
+      }
+    ]
   },
   "GlobalGamingTools": {
     "gameName": "Ferramentas Globais de Gaming",

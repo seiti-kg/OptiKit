@@ -108,14 +108,18 @@ Describe 'Validação de Schema e Integridade dos Catálogos JSON' {
     }
 
     Context 'config/game-profiles.json' {
-        It 'Deve conter o perfil ativo do VALORANT com as 4 otimizações especificadas e cards comingSoon para CS2 e UE5' {
+        It 'Deve conter VALORANT, CS2 e UE5 ativos com otimizações e as ferramentas globais' {
             $val = $script:Games.ProfileValorant
             $null -ne $val | Should -BeTrue
             $val.status | Should -Be 'active'
             @($val.optimizations).Count | Should -Be 4
 
-            $script:Games.ProfileCS2.status | Should -Be 'comingSoon'
-            $script:Games.ProfileUE5.status | Should -Be 'comingSoon'
+            $script:Games.ProfileCS2.status | Should -Be 'active'
+            @($script:Games.ProfileCS2.optimizations).Count | Should -Be 3
+
+            $script:Games.ProfileUE5.status | Should -Be 'active'
+            @($script:Games.ProfileUE5.optimizations).Count | Should -Be 3
+
             $script:Games.GlobalGamingTools.status | Should -Be 'global'
         }
     }

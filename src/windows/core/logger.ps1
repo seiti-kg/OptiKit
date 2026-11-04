@@ -14,6 +14,7 @@ if (-not $script:OptiKit) {
         SyncHash      = $null
         LogHistory    = New-Object 'System.Collections.Generic.List[string]'
         CancelRequest = $false
+        ConsoleOutput = $false
     }
 }
 
@@ -105,6 +106,10 @@ function Write-OptimizerLog {
             $sync.LogQueue.Enqueue($entry)
         }
         $sync.StatusText = $Message
+    }
+
+    if ($script:OptiKit -and $script:OptiKit.ConsoleOutput) {
+        Write-Host $line
     }
 }
 
