@@ -46,4 +46,45 @@ Describe 'Execução via One-Liner (irm | iex)' {
             $listener.Close()
         }
     }
+
+    It 'Deve reconstruir o script completo via AST e reinicializar apenas uma vez quando executado em MTA via irm | iex' {
+        $port = Get-Random -Minimum 49152 -Maximum 65000
+        $listener = New-Object System.Net.HttpListener
+        $listener.Prefixes.Add("http://127.0.0.1:$port/")
+        $listener.Start()
+        $proc = $null
+
+        try {
+            $winBytes = [System.IO.File]::ReadAllBytes($script:WinPs1Path)
+            $clientCmd = "`$OptiKitInitDryRun = `$true; `$OptiKitInitSmokeTest = `$true; `$OptiKitInitNoElevate = `$true; Invoke-RestMethod -Uri 'http://127.0.0.1:$port/win.ps1' | Invoke-Expression"
+
+            $psi = New-Object System.Diagnostics.ProcessStartInfo
+            $psi.FileName = "C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe"
+            $psi.Arguments = ('-NoProfile -ExecutionPolicy Bypass -MTA -Command "{0}"' -f $clientCmd)
+            $psi.UseShellExecute = $false
+            $psi.CreateNoWindow = $true
+
+            $proc = [System.Diagnostics.Process]::Start($psi)
+
+            $asyncCtx = $listener.BeginGetContext($null, $null)
+            if ($asyncCtx.AsyncWaitHandle.WaitOne(10000)) {
+                $ctx = $listener.EndGetContext($asyncCtx)
+                $ctx.Response.ContentType = 'text/plain; charset=utf-8'
+                $ctx.Response.ContentLength64 = $winBytes.Length
+                $ctx.Response.OutputStream.Write($winBytes, 0, $winBytes.Length)
+                $ctx.Response.OutputStream.Close()
+            }
+
+            $exited = $proc.WaitForExit(25000)
+            $exited | Should -BeTrue
+            $proc.ExitCode | Should -Be 0
+        }
+        finally {
+            if ($proc -and (-not $proc.HasExited)) {
+                try { $proc.Kill() } catch { Write-Verbose $_.Exception.Message }
+            }
+            $listener.Stop()
+            $listener.Close()
+        }
+    }
 }

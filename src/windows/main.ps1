@@ -6,7 +6,8 @@ param(
     [switch]$DryRun,
     [string]$Preset,
     [switch]$SmokeTest,
-    [switch]$NoElevate
+    [switch]$NoElevate,
+    [switch]$Relaunched
 )
 
 $devRoot = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
@@ -37,15 +38,34 @@ function Invoke-OptiKitRelaunch {
         [switch]$PassNoElevate
     )
 
-    $tempScript = Join-Path $env:TEMP 'optikit_bootstrap.ps1'
-    $utf8Bom = New-Object System.Text.UTF8Encoding($true)
-
-    if ($MyInvocation.PSCommandPath -and (Test-Path -LiteralPath $MyInvocation.PSCommandPath)) {
-        $tempScript = $MyInvocation.PSCommandPath
+    $targetScript = $null
+    $createdTemp = $false
+    if ($PSCommandPath -and (Test-Path -LiteralPath $PSCommandPath)) {
+        $existingContent = [System.IO.File]::ReadAllText($PSCommandPath, [System.Text.Encoding]::UTF8)
+        if ($existingContent -match 'function\s+Start-OptiKitMain') {
+            $targetScript = $PSCommandPath
+        }
     }
-    else {
-        $scriptBody = $MyInvocation.MyCommand.ScriptBlock.ToString()
-        [System.IO.File]::WriteAllText($tempScript, $scriptBody, $utf8Bom)
+
+    if (-not $targetScript) {
+        $fnCmd = Get-Command -Name 'Invoke-OptiKitRelaunch' -CommandType Function -ErrorAction Stop
+        $rootAst = $fnCmd.ScriptBlock.Ast
+        while ($null -ne $rootAst.Parent) {
+            $rootAst = $rootAst.Parent
+        }
+        $scriptBody = $rootAst.Extent.Text
+        if ([string]::IsNullOrWhiteSpace($scriptBody) -or ($scriptBody -notmatch 'function\s+Start-OptiKitMain') -or ($scriptBody -notmatch 'function\s+Initialize-OptiKitUi')) {
+            throw 'Não foi possível reconstruir o script completo na memória para elevação UAC. Abra o PowerShell já como Administrador e execute novamente.'
+        }
+        $targetScript = Join-Path $env:TEMP ("optikit_bootstrap_" + [Guid]::NewGuid().ToString('N') + ".ps1")
+        $utf8Bom = New-Object System.Text.UTF8Encoding($true)
+        [System.IO.File]::WriteAllText($targetScript, $scriptBody, $utf8Bom)
+        $createdTemp = $true
+    }
+
+    $psExe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+    if (-not (Test-Path -LiteralPath $psExe)) {
+        $psExe = 'powershell.exe'
     }
 
     $argList = New-Object 'System.Collections.Generic.List[string]'
@@ -54,7 +74,8 @@ function Invoke-OptiKitRelaunch {
     [void]$argList.Add('Bypass')
     [void]$argList.Add('-STA')
     [void]$argList.Add('-File')
-    [void]$argList.Add(('"{0}"' -f $tempScript))
+    [void]$argList.Add(('"{0}"' -f $targetScript))
+    [void]$argList.Add('-Relaunched')
 
     if ($PassDryRun) { [void]$argList.Add('-DryRun') }
     if (-not [string]::IsNullOrWhiteSpace($PassPreset)) {
@@ -65,7 +86,7 @@ function Invoke-OptiKitRelaunch {
     if ($PassNoElevate) { [void]$argList.Add('-NoElevate') }
 
     $startParams = @{
-        FilePath     = 'powershell.exe'
+        FilePath     = $psExe
         ArgumentList = ($argList -join ' ')
         Wait         = $true
         PassThru     = $true
@@ -76,11 +97,17 @@ function Invoke-OptiKitRelaunch {
 
     try {
         $proc = Start-Process @startParams
-        exit $proc.ExitCode
+        $code = if ($null -ne $proc.ExitCode) { $proc.ExitCode } else { 0 }
+        exit $code
     }
     catch {
         Write-Warning ("Elevação UAC cancelada ou falhou: {0}" -f $_.Exception.Message)
         exit 1
+    }
+    finally {
+        if ($createdTemp -and $targetScript -and (Test-Path -LiteralPath $targetScript)) {
+            Remove-Item -LiteralPath $targetScript -Force -ErrorAction SilentlyContinue
+        }
     }
 }
 
@@ -209,16 +236,18 @@ function Start-OptiKitMain {
         [switch]$DryRunMode,
         [string]$InitialPreset,
         [switch]$IsSmokeTest,
-        [switch]$SkipElevation
+        [switch]$SkipElevation,
+        [switch]$IsRelaunched
     )
 
-    if (-not $DryRunMode -and -not $IsSmokeTest -and -not $SkipElevation -and (-not (Test-IsAdministrator))) {
-        Invoke-OptiKitRelaunch -AsAdmin -PassDryRun:$DryRunMode -PassPreset $InitialPreset -PassSmokeTest:$IsSmokeTest
-        return
-    }
+    $needsAdmin = (-not $DryRunMode -and -not $IsSmokeTest -and -not $SkipElevation -and (-not (Test-IsAdministrator)))
+    $needsSta = ([Threading.Thread]::CurrentThread.ApartmentState -ne 'STA')
 
-    if ([Threading.Thread]::CurrentThread.ApartmentState -ne 'STA') {
-        Invoke-OptiKitRelaunch -PassDryRun:$DryRunMode -PassPreset $InitialPreset -PassSmokeTest:$IsSmokeTest -PassNoElevate:$SkipElevation
+    if ($needsAdmin -or $needsSta) {
+        if ($IsRelaunched) {
+            throw 'O OptiKit já tentou reinicializar em modo Administrador/STA uma vez e foi interrompido para evitar loop. Abra o Windows PowerShell como Administrador.'
+        }
+        Invoke-OptiKitRelaunch -AsAdmin:$needsAdmin -PassDryRun:$DryRunMode -PassPreset $InitialPreset -PassSmokeTest:$IsSmokeTest -PassNoElevate:$SkipElevation
         return
     }
 
@@ -550,6 +579,7 @@ if (-not $script:OptiKitSkipAutoStart) {
     $effDryRun = ([bool]$DryRun -or [bool]$OptiKitInitDryRun)
     $effSmoke = ([bool]$SmokeTest -or [bool]$OptiKitInitSmokeTest)
     $effNoElev = ([bool]$NoElevate -or [bool]$OptiKitInitNoElevate)
+    $effRelaunched = ([bool]$Relaunched -or [bool]$OptiKitInitRelaunched)
     $effPreset = if (-not [string]::IsNullOrWhiteSpace($Preset)) { $Preset } else { [string]$OptiKitInitPreset }
-    Start-OptiKitMain -DryRunMode:$effDryRun -InitialPreset $effPreset -IsSmokeTest:$effSmoke -SkipElevation:$effNoElev
+    Start-OptiKitMain -DryRunMode:$effDryRun -InitialPreset $effPreset -IsSmokeTest:$effSmoke -SkipElevation:$effNoElev -IsRelaunched:$effRelaunched
 }
