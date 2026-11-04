@@ -1,4 +1,4 @@
-﻿# Inicializador principal do redimo (Windows): UAC, STA, Runspace Worker assíncrono e ciclo de vida da GUI WPF
+﻿# Inicializador principal do OptiKit (Windows): UAC, STA, Runspace Worker assíncrono e ciclo de vida da GUI WPF
 
 #region dev-only
 [CmdletBinding()]
@@ -28,7 +28,7 @@ function Test-IsAdministrator {
     return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
-function Invoke-RedimoRelaunch {
+function Invoke-OptiKitRelaunch {
     param(
         [switch]$AsAdmin,
         [switch]$PassDryRun,
@@ -37,7 +37,7 @@ function Invoke-RedimoRelaunch {
         [switch]$PassNoElevate
     )
 
-    $tempScript = Join-Path $env:TEMP 'redimo_bootstrap.ps1'
+    $tempScript = Join-Path $env:TEMP 'optikit_bootstrap.ps1'
     $utf8Bom = New-Object System.Text.UTF8Encoding($true)
 
     if ($MyInvocation.PSCommandPath -and (Test-Path -LiteralPath $MyInvocation.PSCommandPath)) {
@@ -84,7 +84,7 @@ function Invoke-RedimoRelaunch {
     }
 }
 
-function Get-RedimoCatalogConfigs {
+function Get-OptiKitCatalogConfigs {
     if ($script:EmbeddedAppsJson -and $script:EmbeddedWinTweaksJson -and $script:EmbeddedGameProfilesJson -and $script:EmbeddedPresetsJson) {
         return @{
             Apps         = $script:EmbeddedAppsJson | ConvertFrom-Json
@@ -105,7 +105,7 @@ function Get-RedimoCatalogConfigs {
     }
 }
 
-function Start-RedimoWorkerTask {
+function Start-OptiKitWorkerTask {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)][hashtable]$SyncHash,
@@ -124,17 +124,17 @@ function Start-RedimoWorkerTask {
 
     $iss = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
     $fnNames = @(
-        'Initialize-RedimoEnvironment', 'Write-OptimizerLog', 'Invoke-Mutation',
-        'New-RedimoBackupSession', 'ConvertTo-RegExePath', 'Export-RegistryKeyBackup',
-        'Read-RedimoStateFile', 'Write-RedimoStateFile', 'Save-CapturedState',
-        'Get-CapturedState', 'Remove-CapturedState', 'New-RedimoRestorePoint',
-        'Get-RedimoHardware', 'Get-ActivePowerPlanGuid', 'Set-RedimoSmartPowerPlan',
-        'Enable-RedimoUltimatePowerPlan', 'Restore-RedimoPowerPlan',
-        'Test-RedimoSmartPowerPlan', 'Test-RedimoUltimatePowerPlan',
-        'Disable-RedimoHibernation', 'Enable-RedimoHibernation',
+        'Initialize-OptiKitEnvironment', 'Write-OptimizerLog', 'Invoke-Mutation',
+        'New-OptiKitBackupSession', 'ConvertTo-RegExePath', 'Export-RegistryKeyBackup',
+        'Read-OptiKitStateFile', 'Write-OptiKitStateFile', 'Save-CapturedState',
+        'Get-CapturedState', 'Remove-CapturedState', 'New-OptiKitRestorePoint',
+        'Get-OptiKitHardware', 'Get-ActivePowerPlanGuid', 'Set-OptiKitSmartPowerPlan',
+        'Enable-OptiKitUltimatePowerPlan', 'Restore-OptiKitPowerPlan',
+        'Test-OptiKitSmartPowerPlan', 'Test-OptiKitUltimatePowerPlan',
+        'Disable-OptiKitHibernation', 'Enable-OptiKitHibernation',
         'Optimize-UsbPower', 'Restore-UsbPower', 'Test-UsbPowerOptimized',
-        'Test-WingetAvailable', 'Install-WingetBootstrap', 'Install-RedimoApp',
-        'Test-OneDriveKfmActive', 'Remove-RedimoOneDrive', 'Install-RedimoOneDrive', 'Test-RedimoOneDriveRemoved',
+        'Test-WingetAvailable', 'Install-WingetBootstrap', 'Install-OptiKitApp',
+        'Test-OneDriveKfmActive', 'Remove-OptiKitOneDrive', 'Install-OptiKitOneDrive', 'Test-OptiKitOneDriveRemoved',
         'Test-AntiCheatGuardrail', 'Get-RegistryEntryState', 'Set-RegistryEntryValue',
         'Set-ServiceStartupState', 'Set-ScheduledTaskState', 'Invoke-AppxRemoval',
         'Invoke-TweakHelperScript', 'Invoke-Tweak',
@@ -142,7 +142,7 @@ function Start-RedimoWorkerTask {
         'Optimize-NetworkAdapterGaming', 'Disable-RiotClientStartup', 'Clear-ShaderCache',
         'Invoke-GameOptimization', 'Test-GameOptimizationApplied',
         'Invoke-NetworkReset', 'Invoke-CancelableProcess', 'Invoke-SystemIntegrityRepair', 'Clear-TemporaryFiles',
-        'Get-RedimoStartupItems', 'Set-RedimoStartupItemState',
+        'Get-OptiKitStartupItems', 'Set-OptiKitStartupItemState',
         'Test-TweakApplied', 'Get-AllTweaksState'
     )
 
@@ -159,29 +159,29 @@ function Start-RedimoWorkerTask {
     $runspace.Open()
     $runspace.SessionStateProxy.SetVariable('SyncHash', $SyncHash)
     $runspace.SessionStateProxy.SetVariable('WorkerArgs', $Arguments)
-    $runspace.SessionStateProxy.SetVariable('ParentRedimo', $script:Redimo)
+    $runspace.SessionStateProxy.SetVariable('ParentOptiKit', $script:OptiKit)
 
     $ps = [powershell]::Create()
     $ps.Runspace = $runspace
 
     $wrapper = {
-        $script:Redimo = $ParentRedimo
+        $script:OptiKit = $ParentOptiKit
         $script:ProtectedAppxPackages = @(
             'Microsoft.WindowsStore', 'Microsoft.StorePurchaseApp', 'Microsoft.WindowsCalculator',
             'Microsoft.ScreenSketch', 'Microsoft.XboxIdentityProvider', 'Microsoft.GamingServices',
             'Microsoft.DesktopAppInstaller', 'Microsoft.VCLibs.140.00', 'Microsoft.UI.Xaml.2.7', 'Microsoft.UI.Xaml.2.8'
         )
         $script:AllowedTweakScripts = @(
-            'Set-RedimoSmartPowerPlan', 'Enable-RedimoUltimatePowerPlan', 'Restore-RedimoPowerPlan',
-            'Disable-RedimoHibernation', 'Enable-RedimoHibernation', 'Optimize-UsbPower',
-            'Restore-UsbPower', 'Remove-RedimoOneDrive', 'Install-RedimoOneDrive'
+            'Set-OptiKitSmartPowerPlan', 'Enable-OptiKitUltimatePowerPlan', 'Restore-OptiKitPowerPlan',
+            'Disable-OptiKitHibernation', 'Enable-OptiKitHibernation', 'Optimize-UsbPower',
+            'Restore-UsbPower', 'Remove-OptiKitOneDrive', 'Install-OptiKitOneDrive'
         )
         $script:AllowedGameActions = @(
             'Set-AppCompatFlags', 'Set-DirectXGpuPreference', 'Optimize-NetworkAdapterGaming',
             'Disable-RiotClientStartup', 'Clear-ShaderCache', 'Optimize-UsbPower'
         )
         $script:AllowedCheckScripts = @(
-            'Test-RedimoSmartPowerPlan', 'Test-RedimoUltimatePowerPlan', 'Test-UsbPowerOptimized', 'Test-RedimoOneDriveRemoved'
+            'Test-OptiKitSmartPowerPlan', 'Test-OptiKitUltimatePowerPlan', 'Test-UsbPowerOptimized', 'Test-OptiKitOneDriveRemoved'
         )
 
         try {
@@ -203,7 +203,7 @@ function Start-RedimoWorkerTask {
     $SyncHash.AsyncResult = $ps.BeginInvoke()
 }
 
-function Start-RedimoMain {
+function Start-OptiKitMain {
     [CmdletBinding()]
     param(
         [switch]$DryRunMode,
@@ -213,19 +213,19 @@ function Start-RedimoMain {
     )
 
     if (-not $DryRunMode -and -not $IsSmokeTest -and -not $SkipElevation -and (-not (Test-IsAdministrator))) {
-        Invoke-RedimoRelaunch -AsAdmin -PassDryRun:$DryRunMode -PassPreset $InitialPreset -PassSmokeTest:$IsSmokeTest
+        Invoke-OptiKitRelaunch -AsAdmin -PassDryRun:$DryRunMode -PassPreset $InitialPreset -PassSmokeTest:$IsSmokeTest
         return
     }
 
     if ([Threading.Thread]::CurrentThread.ApartmentState -ne 'STA') {
-        Invoke-RedimoRelaunch -PassDryRun:$DryRunMode -PassPreset $InitialPreset -PassSmokeTest:$IsSmokeTest -PassNoElevate:$SkipElevation
+        Invoke-OptiKitRelaunch -PassDryRun:$DryRunMode -PassPreset $InitialPreset -PassSmokeTest:$IsSmokeTest -PassNoElevate:$SkipElevation
         return
     }
 
     $sync = [hashtable]::Synchronized(@{
         LogQueue             = New-Object 'System.Collections.Concurrent.ConcurrentQueue[psobject]'
         Progress             = 0
-        StatusText           = 'Inicializando redimo...'
+        StatusText           = 'Inicializando OptiKit...'
         IsBusy               = $false
         CancelRequest        = $false
         PendingStateReport   = $null
@@ -236,30 +236,30 @@ function Start-RedimoMain {
     })
 
     if ($IsSmokeTest) {
-        $smokeDataDir = Join-Path $env:TEMP ("redimo_smoke_" + [Guid]::NewGuid().ToString('N'))
-        Initialize-RedimoEnvironment -DataRoot $smokeDataDir -DryRun:$true -SyncHash $sync | Out-Null
+        $smokeDataDir = Join-Path $env:TEMP ("optikit_smoke_" + [Guid]::NewGuid().ToString('N'))
+        Initialize-OptiKitEnvironment -DataRoot $smokeDataDir -DryRun:$true -SyncHash $sync | Out-Null
     }
     else {
-        Initialize-RedimoEnvironment -DryRun:$DryRunMode -SyncHash $sync | Out-Null
+        Initialize-OptiKitEnvironment -DryRun:$DryRunMode -SyncHash $sync | Out-Null
     }
 
-    $configs = Get-RedimoCatalogConfigs
-    $hardware = Get-RedimoHardware
+    $configs = Get-OptiKitCatalogConfigs
+    $hardware = Get-OptiKitHardware
     $window = [Windows.Markup.XamlReader]::Parse($configs.ThemeXaml)
-    $ui = Initialize-RedimoUi -Window $window -Configs $configs -Hardware $hardware
+    $ui = Initialize-OptiKitUi -Window $window -Configs $configs -Hardware $hardware
 
-    Write-OptimizerLog -Level INFO -Message ("redimo iniciado ({0})" -f $hardware.Summary)
-    if ($script:Redimo.DryRun) {
+    Write-OptimizerLog -Level INFO -Message ("OptiKit iniciado ({0})" -f $hardware.Summary)
+    if ($script:OptiKit.DryRun) {
         Write-OptimizerLog -Level DRYRUN -Message 'Modo de simulação (-DryRun) ativo: nenhuma alteração real será feita no sistema.'
     }
 
     if (-not [string]::IsNullOrWhiteSpace($InitialPreset)) {
-        Select-RedimoPreset -Ui $ui -PresetKey $InitialPreset
+        Select-OptiKitPreset -Ui $ui -PresetKey $InitialPreset
     }
 
     # Carregar Startup Items
     $refreshStartupFn = {
-        $items = Get-RedimoStartupItems
+        $items = Get-OptiKitStartupItems
         $ui.GridStartupItems.ItemsSource = @($items)
     }.GetNewClosure()
     & $refreshStartupFn
@@ -273,7 +273,7 @@ function Start-RedimoMain {
             Write-OptimizerLog -Level WARN -Message 'Selecione um item na tabela de inicialização primeiro.'
             return
         }
-        if (Set-RedimoStartupItemState -Item $sel -Enabled $true) {
+        if (Set-OptiKitStartupItemState -Item $sel -Enabled $true) {
             & $refreshStartupFn
         }
     }.GetNewClosure())
@@ -284,44 +284,44 @@ function Start-RedimoMain {
             Write-OptimizerLog -Level WARN -Message 'Selecione um item na tabela de inicialização primeiro.'
             return
         }
-        if (Set-RedimoStartupItemState -Item $sel -Enabled $false) {
+        if (Set-OptiKitStartupItemState -Item $sel -Enabled $false) {
             & $refreshStartupFn
         }
     }.GetNewClosure())
 
     $ui.BtnOpenBackupsDir.Add_Click({
-        if (Test-Path -LiteralPath $script:Redimo.DataRoot) {
-            Start-Process -FilePath 'explorer.exe' -ArgumentList $script:Redimo.DataRoot
+        if (Test-Path -LiteralPath $script:OptiKit.DataRoot) {
+            Start-Process -FilePath 'explorer.exe' -ArgumentList $script:OptiKit.DataRoot
         }
     }.GetNewClosure())
 
     $ui.BtnResetNetwork.Add_Click({
-        Start-RedimoWorkerTask -SyncHash $sync -WorkerScript {
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
             Invoke-NetworkReset
         }
     }.GetNewClosure())
 
     $ui.BtnClearTemp.Add_Click({
-        Start-RedimoWorkerTask -SyncHash $sync -WorkerScript {
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
             Clear-TemporaryFiles
         }
     }.GetNewClosure())
 
     $ui.BtnRunSfcDism.Add_Click({
-        Start-RedimoWorkerTask -SyncHash $sync -WorkerScript {
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
             Invoke-SystemIntegrityRepair
         }
     }.GetNewClosure())
 
     $ui.BtnCancelMaintenance.Add_Click({
         $sync.CancelRequest = $true
-        $script:Redimo.CancelRequest = $true
+        $script:OptiKit.CancelRequest = $true
         Write-OptimizerLog -Level WARN -Message 'Solicitação de cancelamento enviada ao processo em execução...'
     }.GetNewClosure())
 
     # Verificação de Estado
     $triggerStateCheck = {
-        Start-RedimoWorkerTask -SyncHash $sync -Arguments @{
+        Start-OptiKitWorkerTask -SyncHash $sync -Arguments @{
             TweaksConfig       = $configs.WinTweaks
             GameProfilesConfig = $configs.GameProfiles
         } -WorkerScript {
@@ -389,17 +389,17 @@ function Start-RedimoMain {
             if ($rebootItems.Count -gt 0) {
                 $summaryText += "`r`n`r`n⚠️ Itens que exigem reinicialização:`r`n- " + ($rebootItems -join "`r`n- ")
             }
-            if ($script:Redimo -and $script:Redimo.DryRun) {
+            if ($script:OptiKit -and $script:OptiKit.DryRun) {
                 $summaryText += "`r`n`r`n⚠️ MODO DRY-RUN (SIMULAÇÃO) ATIVO:`r`nNenhuma alteração real será gravada no Windows. Para aplicar de verdade, execute o win.ps1 sem a flag -DryRun."
             }
             $summaryText += "`r`n`r`nDeseja prosseguir?"
-            $confirm = [System.Windows.MessageBox]::Show($window, $summaryText, "Confirmar Execução (redimo)", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+            $confirm = [System.Windows.MessageBox]::Show($window, $summaryText, "Confirmar Execução (OptiKit)", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
             if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) {
                 return
             }
         }
 
-        Start-RedimoWorkerTask -SyncHash $sync -Arguments @{
+        Start-OptiKitWorkerTask -SyncHash $sync -Arguments @{
             Mode               = $ActionMode
             Tweaks             = $selectedTweaks.ToArray()
             GameOpts           = $selectedGameOpts.ToArray()
@@ -414,9 +414,9 @@ function Start-RedimoMain {
             $total = [math]::Max(1, ($tweaks.Count + $gameOpts.Count + $apps.Count))
             $done = 0
 
-            New-RedimoBackupSession | Out-Null
+            New-OptiKitBackupSession | Out-Null
             if ($mode -eq 'Apply' -and ($tweaks.Count -gt 0 -or $gameOpts.Count -gt 0)) {
-                New-RedimoRestorePoint -Description 'redimo - Antes de aplicar otimizações' | Out-Null
+                New-OptiKitRestorePoint -Description 'OptiKit - Antes de aplicar otimizações' | Out-Null
             }
 
             foreach ($tw in $tweaks) {
@@ -444,7 +444,7 @@ function Start-RedimoMain {
             if ($mode -eq 'Apply') {
                 foreach ($ap in $apps) {
                     try {
-                        Install-RedimoApp -AppKey $ap.Id -AppConfig $ap.Config | Out-Null
+                        Install-OptiKitApp -AppKey $ap.Id -AppConfig $ap.Config | Out-Null
                     }
                     catch {
                         Write-OptimizerLog -Level WARN -Message ("Falha ao instalar '{0}': {1}" -f $ap.Id, $_.Exception.Message)
@@ -490,7 +490,7 @@ function Start-RedimoMain {
         if ($null -ne $sync.PendingStateReport) {
             $rep = $sync.PendingStateReport
             $sync.PendingStateReport = $null
-            Update-RedimoStateBadges -Ui $ui -StateReport $rep
+            Update-OptiKitStateBadges -Ui $ui -StateReport $rep
         }
 
         if (-not $busy -and $null -ne $sync.ActivePowerShell -and $sync.AsyncResult.IsCompleted) {
@@ -519,7 +519,7 @@ function Start-RedimoMain {
         $smokeTimer.Add_Tick({
             if ($sync.IsBusy) { return }
             $smokeTimer.Stop()
-            Select-RedimoPreset -Ui $ui -PresetKey 'MinimoSeguro'
+            Select-OptiKitPreset -Ui $ui -PresetKey 'MinimoSeguro'
             Invoke-SearchFilter -Ui $ui -Query 'Mouse'
             Invoke-SearchFilter -Ui $ui -Query ''
             $window.Close()
@@ -546,10 +546,10 @@ function Start-RedimoMain {
     [void]$window.ShowDialog()
 }
 
-if (-not $script:RedimoSkipAutoStart) {
-    $effDryRun = ([bool]$DryRun -or [bool]$RedimoInitDryRun)
-    $effSmoke = ([bool]$SmokeTest -or [bool]$RedimoInitSmokeTest)
-    $effNoElev = ([bool]$NoElevate -or [bool]$RedimoInitNoElevate)
-    $effPreset = if (-not [string]::IsNullOrWhiteSpace($Preset)) { $Preset } else { [string]$RedimoInitPreset }
-    Start-RedimoMain -DryRunMode:$effDryRun -InitialPreset $effPreset -IsSmokeTest:$effSmoke -SkipElevation:$effNoElev
+if (-not $script:OptiKitSkipAutoStart) {
+    $effDryRun = ([bool]$DryRun -or [bool]$OptiKitInitDryRun)
+    $effSmoke = ([bool]$SmokeTest -or [bool]$OptiKitInitSmokeTest)
+    $effNoElev = ([bool]$NoElevate -or [bool]$OptiKitInitNoElevate)
+    $effPreset = if (-not [string]::IsNullOrWhiteSpace($Preset)) { $Preset } else { [string]$OptiKitInitPreset }
+    Start-OptiKitMain -DryRunMode:$effDryRun -InitialPreset $effPreset -IsSmokeTest:$effSmoke -SkipElevation:$effNoElev
 }

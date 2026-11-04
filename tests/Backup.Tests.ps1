@@ -8,45 +8,45 @@ BeforeAll {
 
 Describe 'Logger e Ponto Único de Mutação (logger.ps1)' {
     BeforeEach {
-        $testRoot = Join-Path $TestDrive ("redimo_" + [Guid]::NewGuid().ToString('N'))
+        $testRoot = Join-Path $TestDrive ("optikit_" + [Guid]::NewGuid().ToString('N'))
         $sync = @{
             LogQueue   = New-Object 'System.Collections.Concurrent.ConcurrentQueue[psobject]'
             StatusText = ''
         }
-        Initialize-RedimoEnvironment -DataRoot $testRoot -DryRun:$false -SyncHash $sync | Out-Null
+        Initialize-OptiKitEnvironment -DataRoot $testRoot -DryRun:$false -SyncHash $sync | Out-Null
     }
 
     It 'Deve gravar entradas de log em arquivo UTF-8 e enfileirar na ConcurrentQueue da UI' {
         Write-OptimizerLog -Level INFO -Message 'Iniciando verificação de acentuação: Otimização concluída'
-        Test-Path -LiteralPath $script:Redimo.LogFile | Should -BeTrue
+        Test-Path -LiteralPath $script:OptiKit.LogFile | Should -BeTrue
 
-        $content = [System.IO.File]::ReadAllText($script:Redimo.LogFile, [System.Text.Encoding]::UTF8)
+        $content = [System.IO.File]::ReadAllText($script:OptiKit.LogFile, [System.Text.Encoding]::UTF8)
         $content | Should -Match 'Otimização concluída'
 
         $queuedItem = $null
-        $deq = $script:Redimo.SyncHash.LogQueue.TryDequeue([ref]$queuedItem)
+        $deq = $script:OptiKit.SyncHash.LogQueue.TryDequeue([ref]$queuedItem)
         $deq | Should -BeTrue
         $queuedItem.Level | Should -Be 'INFO'
         $queuedItem.Message | Should -Match 'Otimização concluída'
     }
 
     It 'Invoke-Mutation deve impedir execução real quando DryRun está ativo e registrar [DRYRUN]' {
-        Initialize-RedimoEnvironment -DryRun:$true | Out-Null
+        Initialize-OptiKitEnvironment -DryRun:$true | Out-Null
         $script:Executed = $false
         Invoke-Mutation -Description 'Alterar chave crítica de teste' -Action {
             $script:Executed = $true
         } | Out-Null
 
         $script:Executed | Should -BeFalse
-        ($script:Redimo.LogHistory -join "`n") | Should -Match '\[DRYRUN\] Alterar chave crítica de teste'
+        ($script:OptiKit.LogHistory -join "`n") | Should -Match '\[DRYRUN\] Alterar chave crítica de teste'
     }
 }
 
 Describe 'Persistência de Estado e Undo Engine (backup.ps1)' {
     BeforeEach {
         $testRoot = Join-Path $TestDrive ("backup_" + [Guid]::NewGuid().ToString('N'))
-        Initialize-RedimoEnvironment -DataRoot $testRoot -DryRun:$false | Out-Null
-        New-RedimoBackupSession -SessionId '2026-11-02_16-00-00' | Out-Null
+        Initialize-OptiKitEnvironment -DataRoot $testRoot -DryRun:$false | Out-Null
+        New-OptiKitBackupSession -SessionId '2026-11-02_16-00-00' | Out-Null
     }
 
     It 'Deve converter caminhos de registro do PowerShell para o formato do reg.exe' {
@@ -69,7 +69,7 @@ Describe 'Persistência de Estado e Undo Engine (backup.ps1)' {
         $null -ne $saved | Should -BeTrue
         $saved.captured[0].value | Should -Be '1'
 
-        $snapshotPath = Join-Path $script:Redimo.SessionDir 'state-snapshot.json'
+        $snapshotPath = Join-Path $script:OptiKit.SessionDir 'state-snapshot.json'
         Test-Path -LiteralPath $snapshotPath | Should -BeTrue
 
         Remove-CapturedState -Id 'WPFTweaksMouseRawInput'

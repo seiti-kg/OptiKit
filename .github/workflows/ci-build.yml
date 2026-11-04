@@ -1,4 +1,4 @@
-name: CI Build & Verify (redimo)
+﻿name: CI Build & Verify (OptiKit)
 
 on:
   push:

@@ -1,8 +1,8 @@
 ﻿# Sistema de logs, estado de execução e ponto único de mutação (DryRun / Auditoria)
 
-if (-not $script:Redimo) {
-    $defaultRoot = Join-Path $env:ProgramData 'redimo'
-    $script:Redimo = @{
+if (-not $script:OptiKit) {
+    $defaultRoot = Join-Path $env:ProgramData 'optikit'
+    $script:OptiKit = @{
         DataRoot      = $defaultRoot
         LogsDir       = Join-Path $defaultRoot 'logs'
         BackupsDir    = Join-Path $defaultRoot 'backups'
@@ -17,7 +17,7 @@ if (-not $script:Redimo) {
     }
 }
 
-function Initialize-RedimoEnvironment {
+function Initialize-OptiKitEnvironment {
     [CmdletBinding()]
     param(
         [string]$DataRoot,
@@ -26,43 +26,43 @@ function Initialize-RedimoEnvironment {
     )
 
     if ($DataRoot) {
-        $script:Redimo.DataRoot   = $DataRoot
-        $script:Redimo.LogsDir    = Join-Path $DataRoot 'logs'
-        $script:Redimo.BackupsDir = Join-Path $DataRoot 'backups'
-        $script:Redimo.StateFile  = Join-Path $DataRoot 'state.json'
+        $script:OptiKit.DataRoot   = $DataRoot
+        $script:OptiKit.LogsDir    = Join-Path $DataRoot 'logs'
+        $script:OptiKit.BackupsDir = Join-Path $DataRoot 'backups'
+        $script:OptiKit.StateFile  = Join-Path $DataRoot 'state.json'
     }
 
     if ($PSBoundParameters.ContainsKey('DryRun')) {
-        $script:Redimo.DryRun = [bool]$DryRun
+        $script:OptiKit.DryRun = [bool]$DryRun
     }
 
     if ($SyncHash) {
-        $script:Redimo.SyncHash = $SyncHash
+        $script:OptiKit.SyncHash = $SyncHash
     }
 
     try {
-        if (-not (Test-Path -LiteralPath $script:Redimo.LogsDir)) {
-            New-Item -Path $script:Redimo.LogsDir -ItemType Directory -Force | Out-Null
+        if (-not (Test-Path -LiteralPath $script:OptiKit.LogsDir)) {
+            New-Item -Path $script:OptiKit.LogsDir -ItemType Directory -Force | Out-Null
         }
-        if (-not (Test-Path -LiteralPath $script:Redimo.BackupsDir)) {
-            New-Item -Path $script:Redimo.BackupsDir -ItemType Directory -Force | Out-Null
+        if (-not (Test-Path -LiteralPath $script:OptiKit.BackupsDir)) {
+            New-Item -Path $script:OptiKit.BackupsDir -ItemType Directory -Force | Out-Null
         }
     }
     catch {
-        $fallbackRoot = Join-Path $env:TEMP 'redimo'
-        $script:Redimo.DataRoot   = $fallbackRoot
-        $script:Redimo.LogsDir    = Join-Path $fallbackRoot 'logs'
-        $script:Redimo.BackupsDir = Join-Path $fallbackRoot 'backups'
-        $script:Redimo.StateFile  = Join-Path $fallbackRoot 'state.json'
-        New-Item -Path $script:Redimo.LogsDir -ItemType Directory -Force | Out-Null
-        New-Item -Path $script:Redimo.BackupsDir -ItemType Directory -Force | Out-Null
+        $fallbackRoot = Join-Path $env:TEMP 'optikit'
+        $script:OptiKit.DataRoot   = $fallbackRoot
+        $script:OptiKit.LogsDir    = Join-Path $fallbackRoot 'logs'
+        $script:OptiKit.BackupsDir = Join-Path $fallbackRoot 'backups'
+        $script:OptiKit.StateFile  = Join-Path $fallbackRoot 'state.json'
+        New-Item -Path $script:OptiKit.LogsDir -ItemType Directory -Force | Out-Null
+        New-Item -Path $script:OptiKit.BackupsDir -ItemType Directory -Force | Out-Null
     }
 
-    if (-not $script:Redimo.SessionId) {
-        $script:Redimo.SessionId = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
+    if (-not $script:OptiKit.SessionId) {
+        $script:OptiKit.SessionId = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
     }
-    $script:Redimo.LogFile = Join-Path $script:Redimo.LogsDir ("redimo_{0}.log" -f $script:Redimo.SessionId)
-    return $script:Redimo
+    $script:OptiKit.LogFile = Join-Path $script:OptiKit.LogsDir ("optikit_{0}.log" -f $script:OptiKit.SessionId)
+    return $script:OptiKit
 }
 
 function Write-OptimizerLog {
@@ -79,22 +79,22 @@ function Write-OptimizerLog {
     $timestamp = Get-Date -Format 'HH:mm:ss'
     $line = "[{0}] [{1}] {2}" -f $timestamp, $Level, $Message
 
-    if ($script:Redimo -and $null -ne $script:Redimo.LogHistory) {
-        [void]$script:Redimo.LogHistory.Add($line)
+    if ($script:OptiKit -and $null -ne $script:OptiKit.LogHistory) {
+        [void]$script:OptiKit.LogHistory.Add($line)
     }
 
-    if ($script:Redimo -and $script:Redimo.LogFile) {
+    if ($script:OptiKit -and $script:OptiKit.LogFile) {
         try {
             $utf8Bom = New-Object System.Text.UTF8Encoding($true)
-            [System.IO.File]::AppendAllText($script:Redimo.LogFile, ($line + [Environment]::NewLine), $utf8Bom)
+            [System.IO.File]::AppendAllText($script:OptiKit.LogFile, ($line + [Environment]::NewLine), $utf8Bom)
         }
         catch {
             Write-Verbose ("Falha ao gravar arquivo de log: {0}" -f $_.Exception.Message)
         }
     }
 
-    if ($script:Redimo -and $script:Redimo.SyncHash) {
-        $sync = $script:Redimo.SyncHash
+    if ($script:OptiKit -and $script:OptiKit.SyncHash) {
+        $sync = $script:OptiKit.SyncHash
         if ($sync.LogQueue) {
             $entry = [pscustomobject]@{
                 Timestamp = $timestamp
@@ -118,7 +118,7 @@ function Invoke-Mutation {
         [scriptblock]$Action
     )
 
-    if ($script:Redimo -and $script:Redimo.DryRun) {
+    if ($script:OptiKit -and $script:OptiKit.DryRun) {
         Write-OptimizerLog -Level DRYRUN -Message $Description
         return $true
     }

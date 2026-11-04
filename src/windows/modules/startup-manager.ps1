@@ -6,7 +6,7 @@ if (-not (Get-Command Write-OptimizerLog -ErrorAction SilentlyContinue)) {
 }
 #endregion
 
-function Get-RedimoStartupItems {
+function Get-OptiKitStartupItems {
     [CmdletBinding()]
     param()
 
@@ -103,7 +103,7 @@ function Get-RedimoStartupItems {
     return $items.ToArray()
 }
 
-function Set-RedimoStartupItemState {
+function Set-OptiKitStartupItemState {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]

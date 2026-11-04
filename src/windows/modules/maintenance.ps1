@@ -50,8 +50,8 @@ function Invoke-CancelableProcess {
 
     [void]$proc.Start()
     while (-not $proc.HasExited) {
-        $cancel = ($script:Redimo -and $script:Redimo.CancelRequest) -or
-                  ($script:Redimo -and $script:Redimo.SyncHash -and $script:Redimo.SyncHash.CancelRequest)
+        $cancel = ($script:OptiKit -and $script:OptiKit.CancelRequest) -or
+                  ($script:OptiKit -and $script:OptiKit.SyncHash -and $script:OptiKit.SyncHash.CancelRequest)
         if ($cancel) {
             try {
                 $proc.Kill()
@@ -82,10 +82,10 @@ function Invoke-SystemIntegrityRepair {
     [CmdletBinding()]
     param()
 
-    if ($script:Redimo) {
-        $script:Redimo.CancelRequest = $false
-        if ($script:Redimo.SyncHash) {
-            $script:Redimo.SyncHash.CancelRequest = $false
+    if ($script:OptiKit) {
+        $script:OptiKit.CancelRequest = $false
+        if ($script:OptiKit.SyncHash) {
+            $script:OptiKit.SyncHash.CancelRequest = $false
         }
     }
 

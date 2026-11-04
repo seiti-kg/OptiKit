@@ -9,7 +9,7 @@ BeforeAll {
     . (Join-Path $script:RepoRoot 'src\windows\modules\tweak-engine.ps1')
     . (Join-Path $script:RepoRoot 'src\windows\core\state-checker.ps1')
 
-    $script:TestRegRoot = 'HKCU:\Software\redimo-tests'
+    $script:TestRegRoot = 'HKCU:\Software\optikit-tests'
 }
 
 AfterAll {
@@ -24,14 +24,14 @@ Describe 'Tweak Engine & State Checker (tweak-engine.ps1 / state-checker.ps1)' {
             Remove-Item -LiteralPath $script:TestRegRoot -Recurse -Force -ErrorAction SilentlyContinue
         }
         $testDataDir = Join-Path $TestDrive ("tweak_test_" + [Guid]::NewGuid().ToString('N'))
-        Initialize-RedimoEnvironment -DataRoot $testDataDir -DryRun:$false | Out-Null
-        New-RedimoBackupSession -SessionId '2026-11-02_16-30-00' | Out-Null
+        Initialize-OptiKitEnvironment -DataRoot $testDataDir -DryRun:$false | Out-Null
+        New-OptiKitBackupSession -SessionId '2026-11-02_16-30-00' | Out-Null
     }
 
     It 'Deve ser idempotente ao aplicar 3x e restaurar o valor real capturado no Undo (Híbrido)' {
         $subKey = "$script:TestRegRoot\GameDVR"
         New-Item -Path $subKey -Force | Out-Null
-        # Simula que o usuário tinha valor customizado 42 antes do redimo (diferente do originalValue=1 do JSON)
+        # Simula que o usuário tinha valor customizado 42 antes do OptiKit (diferente do originalValue=1 do JSON)
         Set-ItemProperty -LiteralPath $subKey -Name 'GameDVR_Enabled' -Value 42 -Type DWord
 
         $mockTweak = [pscustomobject]@{

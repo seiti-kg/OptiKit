@@ -96,9 +96,9 @@
     "services": [],
     "scheduledTasks": [],
     "appx": [],
-    "invokeScript": ["Set-RedimoSmartPowerPlan"],
-    "undoScript": ["Restore-RedimoPowerPlan"],
-    "checkScript": "Test-RedimoSmartPowerPlan"
+    "invokeScript": ["Set-OptiKitSmartPowerPlan"],
+    "undoScript": ["Restore-OptiKitPowerPlan"],
+    "checkScript": "Test-OptiKitSmartPowerPlan"
   },
   "WPFTweaksUltimatePowerPlan": {
     "title": "Ativar Plano Desempenho Máximo (Ultimate Performance)",
@@ -115,9 +115,9 @@
     "services": [],
     "scheduledTasks": [],
     "appx": [],
-    "invokeScript": ["Enable-RedimoUltimatePowerPlan"],
-    "undoScript": ["Restore-RedimoPowerPlan"],
-    "checkScript": "Test-RedimoUltimatePowerPlan"
+    "invokeScript": ["Enable-OptiKitUltimatePowerPlan"],
+    "undoScript": ["Restore-OptiKitPowerPlan"],
+    "checkScript": "Test-OptiKitUltimatePowerPlan"
   },
   "WPFTweaksDisableHibernation": {
     "title": "Desativar Hibernação e Liberar Espaço no SSD (hiberfil.sys)",
@@ -142,8 +142,8 @@
     "services": [],
     "scheduledTasks": [],
     "appx": [],
-    "invokeScript": ["Disable-RedimoHibernation"],
-    "undoScript": ["Enable-RedimoHibernation"],
+    "invokeScript": ["Disable-OptiKitHibernation"],
+    "undoScript": ["Enable-OptiKitHibernation"],
     "checkScript": null
   },
   "WPFTweaksDisableFastStartup": {
@@ -1054,9 +1054,9 @@
     "services": [],
     "scheduledTasks": [],
     "appx": [],
-    "invokeScript": ["Remove-RedimoOneDrive"],
-    "undoScript": ["Install-RedimoOneDrive"],
-    "checkScript": "Test-RedimoOneDriveRemoved"
+    "invokeScript": ["Remove-OptiKitOneDrive"],
+    "undoScript": ["Install-OptiKitOneDrive"],
+    "checkScript": "Test-OptiKitOneDriveRemoved"
   },
   "WPFTweaksDisableHVCI": {
     "title": "Desativar Integridade da Memória (HVCI / Isolamento de Núcleo)",

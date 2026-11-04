@@ -1,4 +1,4 @@
-﻿# Catálogo Técnico de Otimizações e Pacotes (`redimo`)
+﻿# Catálogo Técnico de Otimizações e Pacotes (`OptiKit`)
 
 > Documento gerado automaticamente por `./build.ps1 -Docs` a partir dos arquivos em `config/`.
 

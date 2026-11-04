@@ -32,17 +32,17 @@ Describe 'Compilador Monolítico (build.ps1 -> win.ps1)' {
     }
 
     It 'Deve preservar 100% dos acentos e emojis em memória ao carregar os catálogos embutidos do win.ps1' {
-        $script:RedimoSkipAutoStart = $true
+        $script:OptiKitSkipAutoStart = $true
         try {
             . $script:WinPs1Path
-            $catalogs = Get-RedimoCatalogConfigs
+            $catalogs = Get-OptiKitCatalogConfigs
             $catalogs.WinTweaks.WPFTweaksDisableGameDVR.title | Should -Match 'Gravação em 2º Plano'
             $catalogs.Apps.Discord.category | Should -Be 'Comunicação'
             $catalogs.Presets.MinimoSeguro.name | Should -Be 'Mínimo Seguro'
             $catalogs.ThemeXaml | Should -Match 'Instalar Apps'
         }
         finally {
-            $script:RedimoSkipAutoStart = $false
+            $script:OptiKitSkipAutoStart = $false
         }
     }
 }

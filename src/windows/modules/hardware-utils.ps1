@@ -9,14 +9,14 @@ if (-not (Get-Command Save-CapturedState -ErrorAction SilentlyContinue)) {
 }
 #endregion
 
-function Get-RedimoHardware {
+function Get-OptiKitHardware {
     [CmdletBinding()]
     param(
         [switch]$Force
     )
 
-    if ($script:RedimoHardwareCache -and -not $Force) {
-        return $script:RedimoHardwareCache
+    if ($script:OptiKitHardwareCache -and -not $Force) {
+        return $script:OptiKitHardwareCache
     }
 
     $cpuName = 'CPU Desconhecida'
@@ -98,7 +98,7 @@ function Get-RedimoHardware {
     $chassisLabel = if ($isLaptop) { 'Notebook' } else { 'Desktop' }
     $gpuPrimary = if ($gpuNames.Count -gt 0) { $gpuNames[0] } else { 'GPU Padrão' }
 
-    $script:RedimoHardwareCache = [pscustomobject]@{
+    $script:OptiKitHardwareCache = [pscustomobject]@{
         CpuName         = $cpuName
         IsX3D           = $isX3D
         IsLaptop        = $isLaptop
@@ -110,7 +110,7 @@ function Get-RedimoHardware {
         Summary         = "$cpuName | $gpuPrimary | $chassisLabel | $osLabel"
     }
 
-    return $script:RedimoHardwareCache
+    return $script:OptiKitHardwareCache
 }
 
 function Get-ActivePowerPlanGuid {
@@ -129,11 +129,11 @@ function Get-ActivePowerPlanGuid {
     return '381b4222-f694-41f0-9685-ff5bb260df2e'
 }
 
-function Set-RedimoSmartPowerPlan {
+function Set-OptiKitSmartPowerPlan {
     [CmdletBinding()]
     param()
 
-    $hw = Get-RedimoHardware
+    $hw = Get-OptiKitHardware
     $currentGuid = Get-ActivePowerPlanGuid
     Save-CapturedState -Id 'PowerPlanOriginal' -CapturedItems @(
         @{ kind = 'powerplan'; guid = $currentGuid }
@@ -160,14 +160,14 @@ function Set-RedimoSmartPowerPlan {
     }
 
     Invoke-Mutation -Description 'Ativar plano de energia Alto Desempenho (Desktop) e desativar suspensão automática' -Action {
-        if (-not (Test-RedimoUltimatePowerPlan)) {
+        if (-not (Test-OptiKitUltimatePowerPlan)) {
             & powercfg.exe /setactive $highPerfGuid | Out-Null
         }
         & powercfg.exe /change standby-timeout-ac 0 | Out-Null
     } | Out-Null
 }
 
-function Enable-RedimoUltimatePowerPlan {
+function Enable-OptiKitUltimatePowerPlan {
     [CmdletBinding()]
     param()
 
@@ -204,7 +204,7 @@ function Enable-RedimoUltimatePowerPlan {
     } | Out-Null
 }
 
-function Restore-RedimoPowerPlan {
+function Restore-OptiKitPowerPlan {
     [CmdletBinding()]
     param()
 
@@ -221,19 +221,19 @@ function Restore-RedimoPowerPlan {
     Remove-CapturedState -Id 'PowerPlanOriginal'
 }
 
-function Test-RedimoSmartPowerPlan {
+function Test-OptiKitSmartPowerPlan {
     [CmdletBinding()]
     param()
 
-    $hw = Get-RedimoHardware
+    $hw = Get-OptiKitHardware
     $active = Get-ActivePowerPlanGuid
     if ($hw.IsLaptop -or $hw.IsX3D) {
         return ($active -eq '381b4222-f694-41f0-9685-ff5bb260df2e')
     }
-    return (($active -eq '8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c') -or (Test-RedimoUltimatePowerPlan))
+    return (($active -eq '8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c') -or (Test-OptiKitUltimatePowerPlan))
 }
 
-function Test-RedimoUltimatePowerPlan {
+function Test-OptiKitUltimatePowerPlan {
     [CmdletBinding()]
     param()
 
@@ -246,7 +246,7 @@ function Test-RedimoUltimatePowerPlan {
     }
 }
 
-function Disable-RedimoHibernation {
+function Disable-OptiKitHibernation {
     [CmdletBinding()]
     param()
 
@@ -255,7 +255,7 @@ function Disable-RedimoHibernation {
     } | Out-Null
 }
 
-function Enable-RedimoHibernation {
+function Enable-OptiKitHibernation {
     [CmdletBinding()]
     param()
 

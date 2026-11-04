@@ -17,7 +17,7 @@ function ConvertFrom-HexBrush {
     return [System.Windows.Media.Brush]$conv.ConvertFromString($Hex)
 }
 
-function New-RedimoBadge {
+function New-OptiKitBadge {
     param(
         [Parameter(Mandatory = $true)][string]$Text,
         [string]$BgHex = '#27272A',
@@ -85,7 +85,7 @@ function Update-SelectionCounter {
     }
 }
 
-function Select-RedimoPreset {
+function Select-OptiKitPreset {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)][hashtable]$Ui,
@@ -134,7 +134,7 @@ function Select-RedimoPreset {
     }
 }
 
-function Update-RedimoStateBadges {
+function Update-OptiKitStateBadges {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)][hashtable]$Ui,
@@ -189,7 +189,7 @@ function Invoke-SearchFilter {
     }
 }
 
-function Initialize-RedimoUi {
+function Initialize-OptiKitUi {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)][System.Windows.Window]$Window,
@@ -224,7 +224,7 @@ function Initialize-RedimoUi {
         $ui[$name] = $Window.FindName($name)
     }
 
-    if ($script:Redimo -and $script:Redimo.DryRun -and $ui.BadgeDryRun) {
+    if ($script:OptiKit -and $script:OptiKit.DryRun -and $ui.BadgeDryRun) {
         $ui.BadgeDryRun.Visibility = 'Visible'
     }
     if ($ui.TxtHardwareSummary -and $Hardware.Summary) {
@@ -384,7 +384,7 @@ function Initialize-RedimoUi {
             $confirmText = $tweakVal.confirmMessage
             $cb.Add_Checked({
                 if (-not [string]::IsNullOrWhiteSpace($confirmText) -and (-not $ui.SuppressConfirmDialog)) {
-                    $ans = [System.Windows.MessageBox]::Show($ui.Window, $confirmText, 'Aviso de Segurança / Anti-Cheat (redimo)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+                    $ans = [System.Windows.MessageBox]::Show($ui.Window, $confirmText, 'Aviso de Segurança / Anti-Cheat (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
                     if ($ans -ne [System.Windows.MessageBoxResult]::Yes) {
                         $this.IsChecked = $false
                         return
@@ -401,17 +401,17 @@ function Initialize-RedimoUi {
             $badgesPanel.VerticalAlignment = 'Center'
             [System.Windows.Controls.Grid]::SetColumn($badgesPanel, 1)
 
-            $badgeApplied = New-RedimoBadge -Text '● Aplicado' -BgHex '#052E16' -BorderHex '#10B981' -FgHex '#34D399'
+            $badgeApplied = New-OptiKitBadge -Text '● Aplicado' -BgHex '#052E16' -BorderHex '#10B981' -FgHex '#34D399'
             $badgeApplied.Visibility = 'Collapsed'
             [void]$badgesPanel.Children.Add($badgeApplied)
 
             $impColors = Get-ImpactColors -Impact $tweakVal.impact
-            $badgeImpact = New-RedimoBadge -Text $tweakVal.impact -BgHex $impColors.Bg -BorderHex $impColors.Border -FgHex $impColors.Fg
+            $badgeImpact = New-OptiKitBadge -Text $tweakVal.impact -BgHex $impColors.Bg -BorderHex $impColors.Border -FgHex $impColors.Fg
             [void]$badgesPanel.Children.Add($badgeImpact)
 
             if ($tweakVal.riskLevel -ne 'Safe') {
                 $riskColors = Get-RiskColors -Risk $tweakVal.riskLevel
-                $badgeRisk = New-RedimoBadge -Text $tweakVal.riskLevel -BgHex $riskColors.Bg -BorderHex $riskColors.Border -FgHex $riskColors.Fg
+                $badgeRisk = New-OptiKitBadge -Text $tweakVal.riskLevel -BgHex $riskColors.Bg -BorderHex $riskColors.Border -FgHex $riskColors.Fg
                 [void]$badgesPanel.Children.Add($badgeRisk)
             }
 
@@ -472,11 +472,11 @@ function Initialize-RedimoUi {
         $metaPanel.Orientation = 'Horizontal'
         [System.Windows.Controls.DockPanel]::SetDock($metaPanel, 'Right')
 
-        [void]$metaPanel.Children.Add((New-RedimoBadge -Text $prof.engine -BgHex '#121212' -BorderHex '#3F3F46' -FgHex '#D4D4D8'))
-        [void]$metaPanel.Children.Add((New-RedimoBadge -Text $prof.antiCheat -BgHex '#121212' -BorderHex '#3F3F46' -FgHex '#00E5FF'))
+        [void]$metaPanel.Children.Add((New-OptiKitBadge -Text $prof.engine -BgHex '#121212' -BorderHex '#3F3F46' -FgHex '#D4D4D8'))
+        [void]$metaPanel.Children.Add((New-OptiKitBadge -Text $prof.antiCheat -BgHex '#121212' -BorderHex '#3F3F46' -FgHex '#00E5FF'))
 
         if ($prof.status -eq 'comingSoon') {
-            [void]$metaPanel.Children.Add((New-RedimoBadge -Text 'EM BREVE' -BgHex '#3B2F0B' -BorderHex '#F59E0B' -FgHex '#FBBF24'))
+            [void]$metaPanel.Children.Add((New-OptiKitBadge -Text 'EM BREVE' -BgHex '#3B2F0B' -BorderHex '#F59E0B' -FgHex '#FBBF24'))
         }
         [void]$titleDock.Children.Add($metaPanel)
         [void]$profStack.Children.Add($titleDock)
@@ -573,12 +573,12 @@ function Initialize-RedimoUi {
             $optBadges.VerticalAlignment = 'Center'
             [System.Windows.Controls.Grid]::SetColumn($optBadges, 1)
 
-            $optBadgeApp = New-RedimoBadge -Text '● Aplicado' -BgHex '#052E16' -BorderHex '#10B981' -FgHex '#34D399'
+            $optBadgeApp = New-OptiKitBadge -Text '● Aplicado' -BgHex '#052E16' -BorderHex '#10B981' -FgHex '#34D399'
             $optBadgeApp.Visibility = 'Collapsed'
             [void]$optBadges.Children.Add($optBadgeApp)
 
             $impCol = Get-ImpactColors -Impact $opt.impact
-            [void]$optBadges.Children.Add((New-RedimoBadge -Text $opt.impact -BgHex $impCol.Bg -BorderHex $impCol.Border -FgHex $impCol.Fg))
+            [void]$optBadges.Children.Add((New-OptiKitBadge -Text $opt.impact -BgHex $impCol.Bg -BorderHex $impCol.Border -FgHex $impCol.Fg))
             [void]$optTop.Children.Add($optBadges)
 
             $optDesc = New-Object System.Windows.Controls.TextBlock
@@ -630,7 +630,7 @@ function Initialize-RedimoUi {
         $ui.CmbPresets.Add_SelectionChanged({
             $sel = $ui.CmbPresets.SelectedItem
             if ($sel -and $null -ne $sel.Tag) {
-                Select-RedimoPreset -Ui $ui -PresetKey ([string]$sel.Tag)
+                Select-OptiKitPreset -Ui $ui -PresetKey ([string]$sel.Tag)
             }
         }.GetNewClosure())
     }
@@ -661,7 +661,7 @@ function Initialize-RedimoUi {
     if ($ui.BtnClearSelection) {
         $ui.BtnClearSelection.Add_Click({
             $ui.CmbPresets.SelectedIndex = 0
-            Select-RedimoPreset -Ui $ui -PresetKey ''
+            Select-OptiKitPreset -Ui $ui -PresetKey ''
         }.GetNewClosure())
     }
 
@@ -699,7 +699,7 @@ function Show-AppliedChangesDialog {
 
     [void]$lines.Add('')
     [void]$lines.Add('=== HISTÓRICO DE CAPTURA PARA REVERSÃO (state.json) ===')
-    $stateMap = Read-RedimoStateFile
+    $stateMap = Read-OptiKitStateFile
     if ($stateMap.Count -eq 0) {
         [void]$lines.Add('Nenhuma captura registrada no state.json.')
     }
@@ -711,5 +711,5 @@ function Show-AppliedChangesDialog {
     }
 
     $msg = ($lines -join [Environment]::NewLine)
-    [void][System.Windows.MessageBox]::Show($Ui.Window, $msg, 'Alterações Aplicadas no Sistema (redimo)', [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
+    [void][System.Windows.MessageBox]::Show($Ui.Window, $msg, 'Alterações Aplicadas no Sistema (OptiKit)', [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
 }

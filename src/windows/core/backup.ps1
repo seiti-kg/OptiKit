@@ -6,25 +6,25 @@ if (-not (Get-Command Write-OptimizerLog -ErrorAction SilentlyContinue)) {
 }
 #endregion
 
-function New-RedimoBackupSession {
+function New-OptiKitBackupSession {
     [CmdletBinding()]
     param(
         [string]$SessionId
     )
 
-    if (-not $script:Redimo) {
-        Initialize-RedimoEnvironment | Out-Null
+    if (-not $script:OptiKit) {
+        Initialize-OptiKitEnvironment | Out-Null
     }
 
     if ($SessionId) {
-        $script:Redimo.SessionId = $SessionId
+        $script:OptiKit.SessionId = $SessionId
     }
-    elseif (-not $script:Redimo.SessionId) {
-        $script:Redimo.SessionId = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
+    elseif (-not $script:OptiKit.SessionId) {
+        $script:OptiKit.SessionId = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
     }
 
-    $sessionDir = Join-Path $script:Redimo.BackupsDir $script:Redimo.SessionId
-    if (-not $script:Redimo.DryRun) {
+    $sessionDir = Join-Path $script:OptiKit.BackupsDir $script:OptiKit.SessionId
+    if (-not $script:OptiKit.DryRun) {
         if (-not (Test-Path -LiteralPath $sessionDir)) {
             New-Item -Path $sessionDir -ItemType Directory -Force | Out-Null
         }
@@ -33,7 +33,7 @@ function New-RedimoBackupSession {
         Write-OptimizerLog -Level DRYRUN -Message ("Criar diretório de sessão de backup: {0}" -f $sessionDir)
     }
 
-    $script:Redimo.SessionDir = $sessionDir
+    $script:OptiKit.SessionDir = $sessionDir
     return $sessionDir
 }
 
@@ -72,10 +72,10 @@ function Export-RegistryKeyBackup {
     }
 
     if (-not $DestinationDir) {
-        if (-not $script:Redimo.SessionDir) {
-            New-RedimoBackupSession | Out-Null
+        if (-not $script:OptiKit.SessionDir) {
+            New-OptiKitBackupSession | Out-Null
         }
-        $DestinationDir = $script:Redimo.SessionDir
+        $DestinationDir = $script:OptiKit.SessionDir
     }
 
     $exportedFiles = New-Object 'System.Collections.Generic.List[string]'
@@ -86,7 +86,7 @@ function Export-RegistryKeyBackup {
         $safeName = ($regPath -replace '[\\/:*?"<>|\s\{\}]', '_') + '.reg'
         $outFile = Join-Path $DestinationDir $safeName
 
-        if ($script:Redimo -and $script:Redimo.DryRun) {
+        if ($script:OptiKit -and $script:OptiKit.DryRun) {
             Write-OptimizerLog -Level DRYRUN -Message ("Exportar chave de registro '{0}' para '{1}'" -f $regPath, $outFile)
             [void]$exportedFiles.Add($outFile)
             continue
@@ -118,14 +118,14 @@ function Export-RegistryKeyBackup {
     return $exportedFiles.ToArray()
 }
 
-function Read-RedimoStateFile {
+function Read-OptiKitStateFile {
     [CmdletBinding()]
     param(
         [string]$StateFilePath
     )
 
     if (-not $StateFilePath) {
-        $StateFilePath = $script:Redimo.StateFile
+        $StateFilePath = $script:OptiKit.StateFile
     }
 
     $result = @{}
@@ -152,7 +152,7 @@ function Read-RedimoStateFile {
     return $result
 }
 
-function Write-RedimoStateFile {
+function Write-OptiKitStateFile {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -162,10 +162,10 @@ function Write-RedimoStateFile {
     )
 
     if (-not $StateFilePath) {
-        $StateFilePath = $script:Redimo.StateFile
+        $StateFilePath = $script:OptiKit.StateFile
     }
 
-    if ($script:Redimo -and $script:Redimo.DryRun) {
+    if ($script:OptiKit -and $script:OptiKit.DryRun) {
         Write-OptimizerLog -Level DRYRUN -Message ("Atualizar arquivo de estado '{0}' ({1} entradas)" -f $StateFilePath, $StateData.Count)
         return
     }
@@ -186,8 +186,8 @@ function Write-RedimoStateFile {
         }
         Move-Item -LiteralPath $tmpFile -Destination $StateFilePath -Force
 
-        if ($script:Redimo -and $script:Redimo.SessionDir -and (Test-Path -LiteralPath $script:Redimo.SessionDir)) {
-            $snapshotPath = Join-Path $script:Redimo.SessionDir 'state-snapshot.json'
+        if ($script:OptiKit -and $script:OptiKit.SessionDir -and (Test-Path -LiteralPath $script:OptiKit.SessionDir)) {
+            $snapshotPath = Join-Path $script:OptiKit.SessionDir 'state-snapshot.json'
             [System.IO.File]::WriteAllText($snapshotPath, $json, $utf8Bom)
         }
     }
@@ -214,12 +214,12 @@ function Save-CapturedState {
         [string]$StateFilePath
     )
 
-    if ($script:Redimo -and $script:Redimo.DryRun) {
+    if ($script:OptiKit -and $script:OptiKit.DryRun) {
         Write-OptimizerLog -Level DRYRUN -Message ("Capturar estado original para '{0}' ({1} itens)" -f $Id, $CapturedItems.Count)
         return
     }
 
-    $state = Read-RedimoStateFile -StateFilePath $StateFilePath
+    $state = Read-OptiKitStateFile -StateFilePath $StateFilePath
     if ($state.ContainsKey($Id) -and -not $ForceOverwrite) {
         Write-OptimizerLog -Level INFO -Message ("Estado original de '{0}' já está preservado no state.json (first-capture-wins)." -f $Id)
         return
@@ -227,11 +227,11 @@ function Save-CapturedState {
 
     $state[$Id] = [pscustomobject]@{
         appliedAt = (Get-Date -Format 'o')
-        session   = if ($script:Redimo -and $script:Redimo.SessionId) { $script:Redimo.SessionId } else { (Get-Date -Format 'yyyy-MM-dd_HH-mm-ss') }
+        session   = if ($script:OptiKit -and $script:OptiKit.SessionId) { $script:OptiKit.SessionId } else { (Get-Date -Format 'yyyy-MM-dd_HH-mm-ss') }
         captured  = @($CapturedItems)
     }
 
-    Write-RedimoStateFile -StateData $state -StateFilePath $StateFilePath
+    Write-OptiKitStateFile -StateData $state -StateFilePath $StateFilePath
 }
 
 function Get-CapturedState {
@@ -243,7 +243,7 @@ function Get-CapturedState {
         [string]$StateFilePath
     )
 
-    $state = Read-RedimoStateFile -StateFilePath $StateFilePath
+    $state = Read-OptiKitStateFile -StateFilePath $StateFilePath
     if ($state.ContainsKey($Id)) {
         return $state[$Id]
     }
@@ -259,26 +259,26 @@ function Remove-CapturedState {
         [string]$StateFilePath
     )
 
-    if ($script:Redimo -and $script:Redimo.DryRun) {
+    if ($script:OptiKit -and $script:OptiKit.DryRun) {
         Write-OptimizerLog -Level DRYRUN -Message ("Remover entrada '{0}' do state.json após Undo" -f $Id)
         return
     }
 
-    $state = Read-RedimoStateFile -StateFilePath $StateFilePath
+    $state = Read-OptiKitStateFile -StateFilePath $StateFilePath
     if ($state.ContainsKey($Id)) {
         [void]$state.Remove($Id)
-        Write-RedimoStateFile -StateData $state -StateFilePath $StateFilePath
+        Write-OptiKitStateFile -StateData $state -StateFilePath $StateFilePath
     }
 }
 
-function New-RedimoRestorePoint {
+function New-OptiKitRestorePoint {
     [CmdletBinding()]
     param(
-        [string]$Description = 'redimo - Antes de aplicar otimizações',
+        [string]$Description = 'OptiKit - Antes de aplicar otimizações',
         [scriptblock]$ConfirmEnableProtection
     )
 
-    if ($script:Redimo -and $script:Redimo.DryRun) {
+    if ($script:OptiKit -and $script:OptiKit.DryRun) {
         Write-OptimizerLog -Level DRYRUN -Message ("Criar Ponto de Restauração do Sistema: '{0}'" -f $Description)
         return $true
     }

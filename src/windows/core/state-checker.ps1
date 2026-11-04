@@ -10,10 +10,10 @@ if (-not (Get-Command Test-GameOptimizationApplied -ErrorAction SilentlyContinue
 #endregion
 
 $script:AllowedCheckScripts = @(
-    'Test-RedimoSmartPowerPlan',
-    'Test-RedimoUltimatePowerPlan',
+    'Test-OptiKitSmartPowerPlan',
+    'Test-OptiKitUltimatePowerPlan',
     'Test-UsbPowerOptimized',
-    'Test-RedimoOneDriveRemoved'
+    'Test-OptiKitOneDriveRemoved'
 )
 
 function Test-TweakApplied {
@@ -126,6 +126,6 @@ function Get-AllTweaksState {
     return [pscustomobject]@{
         Tweaks        = $tweakStates
         GameOpts      = $gameStates
-        CapturedState = Read-RedimoStateFile
+        CapturedState = Read-OptiKitStateFile
     }
 }

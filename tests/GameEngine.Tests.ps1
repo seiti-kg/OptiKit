@@ -13,8 +13,8 @@ BeforeAll {
 Describe 'Game Engine (game-engine.ps1)' {
     BeforeEach {
         $testRoot = Join-Path $TestDrive ("game_test_" + [Guid]::NewGuid().ToString('N'))
-        Initialize-RedimoEnvironment -DataRoot $testRoot -DryRun:$false | Out-Null
-        New-RedimoBackupSession -SessionId '2026-11-02_16-35-00' | Out-Null
+        Initialize-OptiKitEnvironment -DataRoot $testRoot -DryRun:$false | Out-Null
+        New-OptiKitBackupSession -SessionId '2026-11-02_16-35-00' | Out-Null
     }
 
     It 'Deve detectar o executável do jogo via defaultPaths e via RiotClientInstalls.json' {
@@ -75,6 +75,6 @@ Describe 'Game Engine (game-engine.ps1)' {
 
         @(Get-ChildItem -LiteralPath $fakeCache1 -File).Count | Should -Be 0
         @(Get-ChildItem -LiteralPath $fakeCache2 -File).Count | Should -Be 0
-        ($script:Redimo.LogHistory -join "`n") | Should -Match '2 arquivos removidos'
+        ($script:OptiKit.LogHistory -join "`n") | Should -Match '2 arquivos removidos'
     }
 }

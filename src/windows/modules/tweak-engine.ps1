@@ -7,10 +7,10 @@ if (-not (Get-Command Write-OptimizerLog -ErrorAction SilentlyContinue)) {
 if (-not (Get-Command Save-CapturedState -ErrorAction SilentlyContinue)) {
     . (Join-Path $PSScriptRoot '..\core\backup.ps1')
 }
-if (-not (Get-Command Get-RedimoHardware -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command Get-OptiKitHardware -ErrorAction SilentlyContinue)) {
     . (Join-Path $PSScriptRoot 'hardware-utils.ps1')
 }
-if (-not (Get-Command Install-RedimoApp -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command Install-OptiKitApp -ErrorAction SilentlyContinue)) {
     . (Join-Path $PSScriptRoot 'winget-engine.ps1')
 }
 #endregion
@@ -29,15 +29,15 @@ $script:ProtectedAppxPackages = @(
 )
 
 $script:AllowedTweakScripts = @(
-    'Set-RedimoSmartPowerPlan',
-    'Enable-RedimoUltimatePowerPlan',
-    'Restore-RedimoPowerPlan',
-    'Disable-RedimoHibernation',
-    'Enable-RedimoHibernation',
+    'Set-OptiKitSmartPowerPlan',
+    'Enable-OptiKitUltimatePowerPlan',
+    'Restore-OptiKitPowerPlan',
+    'Disable-OptiKitHibernation',
+    'Enable-OptiKitHibernation',
     'Optimize-UsbPower',
     'Restore-UsbPower',
-    'Remove-RedimoOneDrive',
-    'Install-RedimoOneDrive'
+    'Remove-OptiKitOneDrive',
+    'Install-OptiKitOneDrive'
 )
 
 function Test-AntiCheatGuardrail {

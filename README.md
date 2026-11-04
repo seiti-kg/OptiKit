@@ -1,6 +1,6 @@
-# ⚡ redimo — Multi-OS System & Gaming Optimizer
+﻿# ⚡ OptiKit — Multi-OS System & Gaming Optimizer
 
-[![CI Build & Verify](https://img.shields.io/github/actions/workflow/status/SEU_USUARIO/redimo/ci-build.yml?branch=main&label=CI%20Build&style=flat-square)](https://github.com/SEU_USUARIO/redimo/actions)
+[![CI Build & Verify](https://img.shields.io/github/actions/workflow/status/SEU_USUARIO/optikit/ci-build.yml?branch=main&label=CI%20Build&style=flat-square)](https://github.com/SEU_USUARIO/optikit/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-00E5FF.svg?style=flat-square)](LICENSE)
 [![PowerShell 5.1+](https://img.shields.io/badge/PowerShell-5.1%20%7C%207%2B-5391FE?style=flat-square&logo=powershell)](win.ps1)
 [![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?style=flat-square&logo=windows)](win.ps1)
@@ -14,7 +14,7 @@ Utilitário open-source, modular, transparente e **100% reversível** de pós-fo
 Abra o **PowerShell como Administrador** e execute:
 
 ```powershell
-irm https://raw.githubusercontent.com/SEU_USUARIO/redimo/main/win.ps1 | iex
+irm https://raw.githubusercontent.com/SEU_USUARIO/optikit/main/win.ps1 | iex
 ```
 
 ### Execução Local / Modo de Simulação (`-DryRun`)
@@ -36,7 +36,7 @@ powershell -ExecutionPolicy Bypass -File .\win.ps1 -Preset GamerRecomendado
 ## 🎯 Filosofia do Projeto ("Anti-Placebo")
 
 1. **Zero Efeito Placebo:** Todo ajuste em [`config/win-tweaks.json`](config/win-tweaks.json) e [`config/game-profiles.json`](config/game-profiles.json) possui classificação honesta de **Impacto** (`Alto`, `Médio`, `Baixo`, `Situacional`), **Nível de Risco** (`Safe`, `Moderate`, `Advanced`) e **Justificativa Técnica (`rationale`)** documentada. Ajustes situacionais ou de ganho marginal ficam sempre **desmarcados por padrão** em todos os presets.
-2. **Reversibilidade Total (Híbrido `state.json` + Fallback):** Antes de aplicar qualquer ajuste, o motor de backup captura o valor real presente na máquina em `%ProgramData%\redimo\state.json` (seguindo a regra *first-capture-wins* para preservar o valor original mesmo se aplicado várias vezes), exporta as chaves `.reg` em `%ProgramData%\redimo\backups\<sessão>\` e cria um Ponto de Restauração do Sistema. Ao clicar em **Reverter Selecionados (Undo)**, o valor original capturado é restaurado (ou o padrão de fábrica do Windows caso não haja captura prévia).
+2. **Reversibilidade Total (Híbrido `state.json` + Fallback):** Antes de aplicar qualquer ajuste, o motor de backup captura o valor real presente na máquina em `%ProgramData%\optikit\state.json` (seguindo a regra *first-capture-wins* para preservar o valor original mesmo se aplicado várias vezes), exporta as chaves `.reg` em `%ProgramData%\optikit\backups\<sessão>\` e cria um Ponto de Restauração do Sistema. Ao clicar em **Reverter Selecionados (Undo)**, o valor original capturado é restaurado (ou o padrão de fábrica do Windows caso não haja captura prévia).
 3. **Compatibilidade com Anti-Cheats Kernel-Level (Riot Vanguard / FACEIT / EAC):** Guardrails estáticos (validados em CI) e em tempo de execução proíbem qualquer alteração nos serviços `vgc` / `vgk.sys`, TPM 2.0, Secure Boot ou desativação global do VBS. O único ajuste avançado que toca em virtualização (`WPFTweaksDisableHVCI`) exige confirmação explícita em diálogo modal alertando sobre requisitos do Riot Vanguard no Windows 11.
 4. **Arquitetura 100% Orientada a Dados (Data-Driven):** A interface gráfica WPF em modo escuro (`#121212` / `#1E1E1E` / `#00E5FF` / `#FF4655`) é gerada dinamicamente a partir dos catálogos em [`config/`](config/).
 

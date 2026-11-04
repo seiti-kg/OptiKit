@@ -15,10 +15,10 @@ Describe 'Execução via One-Liner (irm | iex)' {
 
         try {
             $winBytes = [System.IO.File]::ReadAllBytes($script:WinPs1Path)
-            $clientCmd = "`$RedimoInitDryRun = `$true; `$RedimoInitSmokeTest = `$true; `$RedimoInitNoElevate = `$true; Invoke-RestMethod -Uri 'http://127.0.0.1:$port/win.ps1' | Invoke-Expression"
+            $clientCmd = "`$OptiKitInitDryRun = `$true; `$OptiKitInitSmokeTest = `$true; `$OptiKitInitNoElevate = `$true; Invoke-RestMethod -Uri 'http://127.0.0.1:$port/win.ps1' | Invoke-Expression"
 
             $psi = New-Object System.Diagnostics.ProcessStartInfo
-            $psi.FileName = 'powershell.exe'
+            $psi.FileName = "C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe"
             $psi.Arguments = ('-NoProfile -ExecutionPolicy Bypass -STA -Command "{0}"' -f $clientCmd)
             $psi.UseShellExecute = $false
             $psi.CreateNoWindow = $true

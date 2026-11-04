@@ -48,7 +48,7 @@ function Install-WingetBootstrap {
     [CmdletBinding()]
     param()
 
-    if ($script:Redimo -and $script:Redimo.DryRun) {
+    if ($script:OptiKit -and $script:OptiKit.DryRun) {
         Write-OptimizerLog -Level DRYRUN -Message 'Instalar/reparar Microsoft App Installer (Winget Bootstrap)'
         return $true
     }
@@ -68,7 +68,7 @@ function Install-WingetBootstrap {
         }
     }
 
-    $tempDir = Join-Path $env:TEMP ("redimo_winget_" + [Guid]::NewGuid().ToString('N'))
+    $tempDir = Join-Path $env:TEMP ("optikit_winget_" + [Guid]::NewGuid().ToString('N'))
     New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
 
     try {
@@ -114,7 +114,7 @@ function Install-WingetBootstrap {
     }
 }
 
-function Install-RedimoApp {
+function Install-OptiKitApp {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -132,7 +132,7 @@ function Install-RedimoApp {
         return $false
     }
 
-    if ($script:Redimo -and $script:Redimo.DryRun) {
+    if ($script:OptiKit -and $script:OptiKit.DryRun) {
         Write-OptimizerLog -Level DRYRUN -Message ("Instalar aplicativo via Winget: {0} ({1})" -f $displayName, $wingetId)
         return $true
     }
@@ -208,7 +208,7 @@ function Test-OneDriveKfmActive {
     return $false
 }
 
-function Remove-RedimoOneDrive {
+function Remove-OptiKitOneDrive {
     [CmdletBinding()]
     param()
 
@@ -232,7 +232,7 @@ function Remove-RedimoOneDrive {
     } | Out-Null
 }
 
-function Install-RedimoOneDrive {
+function Install-OptiKitOneDrive {
     [CmdletBinding()]
     param()
 
@@ -254,7 +254,7 @@ function Install-RedimoOneDrive {
     } | Out-Null
 }
 
-function Test-RedimoOneDriveRemoved {
+function Test-OptiKitOneDriveRemoved {
     [CmdletBinding()]
     param()
 
