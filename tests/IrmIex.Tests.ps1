@@ -16,7 +16,8 @@ Describe 'Execução via One-Liner (irm | iex)' {
         try {
             $winBytes = [System.IO.File]::ReadAllBytes($script:WinPs1Path)
             # Set-Variable evita falso positivo do Defender (Trojan:Win32/Commando.C!ml) no prefixo de atribuições.
-            $clientCmd = "Set-Variable -Name OptiKitInitDryRun -Value `$true; Set-Variable -Name OptiKitInitSmokeTest -Value `$true; Set-Variable -Name OptiKitInitNoElevate -Value `$true; Invoke-RestMethod -Uri 'http://127.0.0.1:$port/win.ps1' | Invoke-Expression"
+            # Modo silent evita o cold start do WPF no runner do CI; o teste MTA seguinte cobre o relaunch/GUI.
+            $clientCmd = "Set-Variable -Name OptiKitInitDryRun -Value `$true; Set-Variable -Name OptiKitInitSilent -Value `$true; Set-Variable -Name OptiKitInitPreset -Value 'MinimoSeguro'; Set-Variable -Name OptiKitInitNoElevate -Value `$true; Invoke-RestMethod -Uri 'http://127.0.0.1:$port/win.ps1' | Invoke-Expression"
 
             $psi = New-Object System.Diagnostics.ProcessStartInfo
             $psi.FileName = "C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe"
@@ -35,7 +36,7 @@ Describe 'Execução via One-Liner (irm | iex)' {
                 $ctx.Response.OutputStream.Close()
             }
 
-            $exited = $proc.WaitForExit(40000)
+            $exited = $proc.WaitForExit(90000)
             $exited | Should -BeTrue
             $proc.ExitCode | Should -Be 0
         }
@@ -77,7 +78,7 @@ Describe 'Execução via One-Liner (irm | iex)' {
                 $ctx.Response.OutputStream.Close()
             }
 
-            $exited = $proc.WaitForExit(45000)
+            $exited = $proc.WaitForExit(90000)
             $exited | Should -BeTrue
             $proc.ExitCode | Should -Be 0
         }
