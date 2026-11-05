@@ -43,10 +43,30 @@ $hardware = Get-OptiKitHardware
 $window = [Windows.Markup.XamlReader]::Parse([IO.File]::ReadAllText((Join-Path $repo 'docs\plans\ui-redesign\theme.xaml'), [Text.Encoding]::UTF8))
 
 $ui = @{ Window = $window; Configs = $configs; AppCheckboxes = @{}; TweakCheckboxes = @{}; GameOptCheckboxes = @{}; ResponsiveGrids = @{}; SearchGroups = (New-Object 'System.Collections.Generic.List[object]') }
-foreach ($n in 'MainTabControl', 'AppsCategoriesHost', 'TweaksCategoriesHost', 'GameProfilesHost', 'DiagnosticsHost', 'TxtDiagnosticsSummary', 'GridStartupItems', 'CmbPresets', 'CmbDohProvider', 'TxtSelectionCounter', 'TxtHardwareSummary', 'TxtStatusMessage', 'TxtConsoleOutput', 'LogPanel', 'TxtSearchBox', 'TxtAppsEmpty', 'TxtTweaksEmpty', 'TxtGamesEmpty', 'BadgeDryRun', 'BadgeUpdate', 'TxtUpdateBadge', 'CmbTweakSort', 'CmbTweakImpact', 'CmbTweakRisk', 'CmbTweakStatus', 'BtnClearTweakFilters', 'TxtTweakCount') {
+foreach ($n in 'MainTabControl', 'AppsCategoriesHost', 'TweaksCategoriesHost', 'GameProfilesHost', 'DiagnosticsHost', 'TxtDiagnosticsSummary', 'GridStartupItems', 'CmbPresets', 'CmbDohProvider', 'TxtSelectionCounter', 'TxtHardwareSummary', 'TxtStatusMessage', 'TxtConsoleOutput', 'LogPanel', 'TxtSearchBox', 'TxtAppsEmpty', 'TxtTweaksEmpty', 'TxtGamesEmpty', 'BadgeDryRun', 'BadgeUpdate', 'TxtUpdateBadge', 'CmbTweakSort', 'CmbTweakImpact', 'CmbTweakRisk', 'CmbTweakStatus', 'BtnClearTweakFilters', 'TxtTweakCount', 'ImgOptiKitLogo', 'TxtBrandFallback') {
     $ui[$n] = $window.FindName($n)
 }
 $ui.TxtHardwareSummary.Text = Format-OptiKitHardwareSummary -Summary $hardware.Summary
+
+if ($ui.ImgOptiKitLogo -and $configs.LogoBase64) {
+    $logoBytes = [Convert]::FromBase64String([string]$configs.LogoBase64)
+    $logoStream = New-Object System.IO.MemoryStream
+    $logoStream.Write($logoBytes, 0, $logoBytes.Length)
+    $logoStream.Position = 0
+    $logoImage = New-Object System.Windows.Media.Imaging.BitmapImage
+    $logoImage.BeginInit()
+    $logoImage.CacheOption = [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad
+    $logoImage.StreamSource = $logoStream
+    $logoImage.EndInit()
+    $logoImage.Freeze()
+    $ui.ImgOptiKitLogo.Source = $logoImage
+    $logoStream.Dispose()
+    if ($ui.TxtBrandFallback) { $ui.TxtBrandFallback.Visibility = 'Collapsed' }
+}
+elseif ($ui.TxtBrandFallback) {
+    if ($ui.ImgOptiKitLogo) { $ui.ImgOptiKitLogo.Visibility = 'Collapsed' }
+    $ui.TxtBrandFallback.Visibility = 'Visible'
+}
 
 if ($ui.CmbTweakSort) {
     Add-OptiKitComboOption -Combo $ui.CmbTweakSort -Text 'Organizar: categoria' -Value 'Category'

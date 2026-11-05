@@ -1257,6 +1257,7 @@ function Initialize-OptiKitUi {
 
     $controlNames = @(
         'BadgeDryRun', 'BadgeUpdate', 'TxtUpdateBadge', 'TxtHardwareSummary', 'TxtSearchBox', 'BtnClearSearch',
+        'ImgOptiKitLogo', 'TxtBrandFallback',
         'MainTabControl', 'AppsCategoriesHost', 'BtnUncheckAllApps',
         'TweaksCategoriesHost', 'BtnRefreshState', 'BtnUncheckAllTweaks',
         'CmbTweakSort', 'CmbTweakImpact', 'CmbTweakRisk', 'CmbTweakStatus', 'BtnClearTweakFilters', 'TxtTweakCount',
@@ -1276,6 +1277,33 @@ function Initialize-OptiKitUi {
     }
 
     $ui.DohSupported = Test-OptiKitDohSupported -Hardware $Hardware
+
+    if ($ui.ImgOptiKitLogo -and $ui.Configs -and -not [string]::IsNullOrWhiteSpace([string]$ui.Configs.LogoBase64)) {
+        try {
+            $logoBytes = [Convert]::FromBase64String([string]$ui.Configs.LogoBase64)
+            $logoStream = New-Object System.IO.MemoryStream
+            $logoStream.Write($logoBytes, 0, $logoBytes.Length)
+            $logoStream.Position = 0
+            $logoImage = New-Object System.Windows.Media.Imaging.BitmapImage
+            $logoImage.BeginInit()
+            $logoImage.CacheOption = [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad
+            $logoImage.StreamSource = $logoStream
+            $logoImage.EndInit()
+            $logoImage.Freeze()
+            $ui.ImgOptiKitLogo.Source = $logoImage
+            $logoStream.Dispose()
+            if ($ui.TxtBrandFallback) { $ui.TxtBrandFallback.Visibility = 'Collapsed' }
+        }
+        catch {
+            Write-OptimizerLog -Level WARN -Message ("Falha ao carregar a logo: {0}" -f $_.Exception.Message)
+            if ($ui.ImgOptiKitLogo) { $ui.ImgOptiKitLogo.Visibility = 'Collapsed' }
+            if ($ui.TxtBrandFallback) { $ui.TxtBrandFallback.Visibility = 'Visible' }
+        }
+    }
+    elseif ($ui.TxtBrandFallback) {
+        if ($ui.ImgOptiKitLogo) { $ui.ImgOptiKitLogo.Visibility = 'Collapsed' }
+        $ui.TxtBrandFallback.Visibility = 'Visible'
+    }
     if ($ui.CmbDohProvider) {
         foreach ($provider in Get-OptiKitDohProviders) {
             $item = New-Object System.Windows.Controls.ComboBoxItem

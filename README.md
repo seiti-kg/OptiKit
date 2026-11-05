@@ -1,9 +1,25 @@
-# OptiKit
+<p align="center">
+  <img src="assets/optikit_logo.jpg" alt="OptiKit" width="360">
+</p>
 
-[![CI Build & Verify](https://img.shields.io/github/actions/workflow/status/seiti-kg/OptiKit/ci-build.yml?branch=main&label=CI%20Build&style=flat-square)](https://github.com/seiti-kg/OptiKit/actions)
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-00E5FF.svg?style=flat-square)](LICENSE)
-[![PowerShell 5.1+](https://img.shields.io/badge/PowerShell-5.1%20%7C%207%2B-5391FE?style=flat-square&logo=powershell)](win.ps1)
-[![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?style=flat-square&logo=windows)](win.ps1)
+<h1 align="center">OptiKit</h1>
+
+<p align="center">
+  <em>pós-formatação, debloat e otimização de sistema e jogos para Windows 10/11</em>
+</p>
+
+<p align="center">
+  <a href="VERSION"><img src="https://img.shields.io/badge/version-0.3.0-blue" alt="version"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-green" alt="license"></a>
+  <a href="win.ps1"><img src="https://img.shields.io/badge/PowerShell-5.1%20%7C%207%2B-5391FE" alt="PowerShell"></a>
+  <a href="win.ps1"><img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6" alt="Windows"></a>
+  <a href="https://github.com/seiti-kg/OptiKit/actions"><img src="https://img.shields.io/github/actions/workflow/status/seiti-kg/OptiKit/ci-build.yml?branch=main&label=CI" alt="CI"></a>
+</p>
+
+<p align="center">
+  aplica <strong>tweaks reversíveis</strong>, remove bloatware e ajusta energia, rede e jogos<br>
+  interface WPF nativa. modo desatendido para pós-formatação.
+</p>
 
 Utilitário open-source de pós-formatação, debloat e otimização de sistema e jogos para Windows 10/11. Construído com foco em ajustes reais (zero efeito placebo), reversão via `state.json`/Undo (com limitações documentadas para pacotes Appx) e compatibilidade com anti-cheats de nível de kernel.
 

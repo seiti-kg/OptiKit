@@ -40,6 +40,7 @@ Describe 'Compilador Monolítico (build.ps1 -> win.ps1)' {
             $catalogs.Apps.Discord.category | Should -Be 'Comunicação'
             $catalogs.Presets.MinimoSeguro.name | Should -Be 'Mínimo Seguro'
             $catalogs.GameLogos.ProfileValorant | Should -Not -BeNullOrEmpty
+            $catalogs.LogoBase64 | Should -Not -BeNullOrEmpty
             $catalogs.ThemeXaml | Should -Match 'Instalar Apps'
         }
         finally {

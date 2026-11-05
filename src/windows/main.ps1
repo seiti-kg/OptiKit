@@ -126,7 +126,7 @@ function Invoke-OptiKitRelaunch {
 }
 
 function Get-OptiKitCatalogConfigs {
-    if ($script:EmbeddedAppsJson -and $script:EmbeddedWinTweaksJson -and $script:EmbeddedGameProfilesJson -and $script:EmbeddedGameLogosJson -and $script:EmbeddedPresetsJson) {
+    if ($script:EmbeddedAppsJson -and $script:EmbeddedWinTweaksJson -and $script:EmbeddedGameProfilesJson -and $script:EmbeddedGameLogosJson -and $script:EmbeddedPresetsJson -and $script:EmbeddedLogoBase64) {
         return @{
             Apps         = $script:EmbeddedAppsJson | ConvertFrom-Json
             WinTweaks    = $script:EmbeddedWinTweaksJson | ConvertFrom-Json
@@ -134,6 +134,7 @@ function Get-OptiKitCatalogConfigs {
             GameLogos    = $script:EmbeddedGameLogosJson | ConvertFrom-Json
             Presets      = $script:EmbeddedPresetsJson | ConvertFrom-Json
             ThemeXaml    = $script:EmbeddedThemeXaml
+            LogoBase64   = $script:EmbeddedLogoBase64
         }
     }
 
@@ -145,6 +146,9 @@ function Get-OptiKitCatalogConfigs {
         GameLogos    = [System.IO.File]::ReadAllText((Join-Path $baseDir 'config\game-logos.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         Presets      = [System.IO.File]::ReadAllText((Join-Path $baseDir 'config\presets.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         ThemeXaml    = [System.IO.File]::ReadAllText((Join-Path $baseDir 'src\windows\ui\theme.xaml'), [System.Text.Encoding]::UTF8)
+        LogoBase64   = if (Test-Path -LiteralPath (Join-Path $baseDir 'assets\optikit_logo_ui.jpg')) {
+            [Convert]::ToBase64String([System.IO.File]::ReadAllBytes((Join-Path $baseDir 'assets\optikit_logo_ui.jpg')))
+        } else { $null }
     }
 }
 

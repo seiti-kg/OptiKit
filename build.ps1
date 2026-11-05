@@ -140,6 +140,12 @@ $configFiles = @{
     Presets      = Join-Path $repoRoot 'config\presets.json'
 }
 
+$logoPath = Join-Path $repoRoot 'assets\optikit_logo_ui.jpg'
+if (-not (Test-Path -LiteralPath $logoPath)) {
+    throw "Logo compacto obrigatório ausente: $logoPath"
+}
+$logoBase64 = [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($logoPath))
+
 $rawConfigs = @{}
 $parsedConfigs = @{}
 foreach ($key in $configFiles.Keys) {
@@ -222,6 +228,7 @@ $outBuilder = New-Object System.Text.StringBuilder
 [void]$outBuilder.AppendLine('')
 [void]$outBuilder.AppendLine("`$script:OptiKitVersion = '$version'")
 [void]$outBuilder.AppendLine("`$script:OptiKitRepo = '$repoSlug'")
+[void]$outBuilder.AppendLine("`$script:EmbeddedLogoBase64 = '$logoBase64'")
 [void]$outBuilder.AppendLine('')
 [void]$outBuilder.AppendLine('$script:EmbeddedAppsJson = @''')
 [void]$outBuilder.AppendLine($rawConfigs['Apps'])
