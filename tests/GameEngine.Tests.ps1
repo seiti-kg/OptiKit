@@ -44,11 +44,31 @@ Describe 'Game Engine (game-engine.ps1)' {
         $profileViaJson = [pscustomobject]@{
             gameName            = 'VALORANT'
             executableDetection = [pscustomobject]@{
-                defaultPaths     = @('C:\Caminho\Inexistente\VALORANT.exe')
-                registryFallback = $null
+                defaultPaths       = @('C:\Caminho\Inexistente\VALORANT.exe')
+                registryFallback   = $null
+                riotClientFallback = $true
             }
         }
         (Find-GameExecutable -ProfileConfig $profileViaJson -RiotInstallsPath $riotInstallsFile) | Should -Be $fakeExe
+    }
+
+    It 'Não deve usar o RiotClientInstalls.json para perfis que não são do Riot Client' {
+        $fakeRiotDir = Join-Path $TestDrive 'Riot Games\VALORANT\live'
+        $fakeBinDir = Join-Path $fakeRiotDir 'ShooterGame\Binaries\Win64'
+        New-Item -Path $fakeBinDir -ItemType Directory -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $fakeBinDir 'VALORANT-Win64-Shipping.exe') -Value 'dummy-binary'
+        $riotInstallsFile = Join-Path $TestDrive 'RiotClientInstalls.json'
+        @{ associated_client = @{ ($fakeRiotDir -replace '\\', '/') = 'C:/Riot Games/Riot Client/RiotClientServices.exe' } } |
+            ConvertTo-Json | Set-Content -LiteralPath $riotInstallsFile -Encoding UTF8
+
+        $cs2Profile = [pscustomobject]@{
+            gameName            = 'Counter-Strike 2'
+            executableDetection = [pscustomobject]@{
+                defaultPaths     = @('C:\Caminho\Inexistente\cs2.exe')
+                registryFallback = $null
+            }
+        }
+        (Find-GameExecutable -ProfileConfig $cs2Profile -RiotInstallsPath $riotInstallsFile) | Should -BeNullOrEmpty
     }
 
     It 'Deve rejeitar qualquer action que não esteja na whitelist de segurança' {

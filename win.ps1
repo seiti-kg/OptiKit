@@ -2310,7 +2310,8 @@ $script:EmbeddedGameProfilesJson = @'
         "C:\\Riot Games\\VALORANT\\live\\ShooterGame\\Binaries\\Win64\\VALORANT-Win64-Shipping.exe",
         "D:\\Riot Games\\VALORANT\\live\\ShooterGame\\Binaries\\Win64\\VALORANT-Win64-Shipping.exe"
       ],
-      "registryFallback": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Riot Game valorant.live"
+      "registryFallback": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Riot Game valorant.live",
+      "riotClientFallback": true
     },
     "optimizations": [
       {
@@ -5185,27 +5186,29 @@ function Find-GameExecutable {
         }
     }
 
-    if (-not $RiotInstallsPath) {
-        $RiotInstallsPath = Join-Path $env:ProgramData 'Riot Games\RiotClientInstalls.json'
-    }
+    if ($det.riotClientFallback -eq $true) {
+        if (-not $RiotInstallsPath) {
+            $RiotInstallsPath = Join-Path $env:ProgramData 'Riot Games\RiotClientInstalls.json'
+        }
 
-    if (Test-Path -LiteralPath $RiotInstallsPath) {
-        try {
-            $riotJson = [System.IO.File]::ReadAllText($RiotInstallsPath, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
-            if ($riotJson -and $riotJson.associated_client) {
-                foreach ($prop in $riotJson.associated_client.PSObject.Properties) {
-                    $installDir = ($prop.Name -replace '/', '\').TrimEnd('\')
-                    if ($installDir -match '(?i)VALORANT') {
-                        $candidateExe = Join-Path $installDir 'ShooterGame\Binaries\Win64\VALORANT-Win64-Shipping.exe'
-                        if (Test-Path -LiteralPath $candidateExe) {
-                            return $candidateExe
+        if (Test-Path -LiteralPath $RiotInstallsPath) {
+            try {
+                $riotJson = [System.IO.File]::ReadAllText($RiotInstallsPath, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+                if ($riotJson -and $riotJson.associated_client) {
+                    foreach ($prop in $riotJson.associated_client.PSObject.Properties) {
+                        $installDir = ($prop.Name -replace '/', '\').TrimEnd('\')
+                        if ($installDir -match '(?i)VALORANT') {
+                            $candidateExe = Join-Path $installDir 'ShooterGame\Binaries\Win64\VALORANT-Win64-Shipping.exe'
+                            if (Test-Path -LiteralPath $candidateExe) {
+                                return $candidateExe
+                            }
                         }
                     }
                 }
             }
-        }
-        catch {
-            Write-Verbose ("Erro ao ler RiotClientInstalls.json: {0}" -f $_.Exception.Message)
+            catch {
+                Write-Verbose ("Erro ao ler RiotClientInstalls.json: {0}" -f $_.Exception.Message)
+            }
         }
     }
 
