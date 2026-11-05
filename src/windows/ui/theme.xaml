@@ -679,8 +679,8 @@
         <!-- Navegação lateral: identidade, busca, seções e resumo de hardware. -->
         <Border Grid.Row="0" Grid.Column="0" Background="{StaticResource Brush.Bg.Rail}" BorderBrush="{StaticResource Brush.Border.Subtle}" BorderThickness="0,0,1,0">
             <DockPanel Margin="12,20,12,16">
-                <StackPanel DockPanel.Dock="Top" Margin="8,0,8,20">
-                    <Image x:Name="ImgOptiKitLogo" Width="164" Height="92" Stretch="Uniform" HorizontalAlignment="Left" Margin="0,0,0,4" ToolTip="OptiKit" AutomationProperties.Name="OptiKit" />
+                <StackPanel DockPanel.Dock="Top" Margin="0,0,0,20">
+                    <Image x:Name="ImgOptiKitLogo" Width="204" Height="55" Stretch="Uniform" HorizontalAlignment="Left" Margin="0,0,0,4" ToolTip="OptiKit" AutomationProperties.Name="OptiKit" />
                     <TextBlock x:Name="TxtBrandFallback" Text="OptiKit" Style="{StaticResource Text.Title}" Visibility="Collapsed" />
                     <Border x:Name="BadgeDryRun" Visibility="Collapsed" HorizontalAlignment="Left" Margin="0,8,0,0" Padding="8,2" CornerRadius="4" BorderThickness="1" BorderBrush="{StaticResource Brush.Warning}">
                         <TextBlock Text="Modo simulação" Style="{StaticResource Text.Caption}" Foreground="{StaticResource Brush.Warning}" />
