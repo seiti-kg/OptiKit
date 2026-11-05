@@ -129,7 +129,7 @@ O ciano passou de #00E5FF (neon, saturação 100%) para #2BC4E0 e deixou de colo
 | Cabeçalho de grupo | Nome 16 SemiBold + contagem 12 terciária | Apps, Ajustes |
 | Barra de organização | Quatro ComboBoxes compactos (organizar, impacto, risco, estado), contagem 12 à direita e "Limpar filtros" discreto quando há filtro ativo. Agrupa e ordena sem card | Ajustes |
 | Grade responsiva | UniformGrid; colunas = largura / mínimo (apps 260 px, ajustes e jogos 560 px) | Apps (2 a 5 col.), Ajustes e Jogos (1 col. até ~1450 px de janela) |
-| Seção de jogo | Nome 16 + "engine · anti-cheat" à direita; aviso 12; linha "Executável: arquivo.exe" + botão discreto Alterar/Selecionar; linhas de otimização. Sem card | Jogos |
+| Seção de jogo | Tile 36x36 com monograma (VAL/CS2/UE5/GLB) e cor de identidade + nome 16 + contagem; à direita "engine · anti-cheat" e status ("Executável detectado", "Executável não encontrado", "Ferramentas globais"). Aviso 12; linha "Executável: arquivo.exe" + botão discreto Alterar/Selecionar; linhas de otimização. Sem card | Jogos |
 | Linha de diagnóstico | Ícone de estado colorido + título 14 SemiBold + rótulo de estado à direita; resumo; detalhe; link de ação. Ordenado por gravidade, separado por divisória | Diagnóstico |
 | Linha de ação | Título 14 + descrição 12 à esquerda; botões com verbo curto à direita; divisória entre linhas | Manutenção |
 | Tooltip | Título, descrição, "Justificativa técnica", metadados, alerta de bloqueio. Fica 30 s; aparece também em item desabilitado | Todas as linhas |
@@ -498,10 +498,11 @@ As linhas seguintes do timer (`$ui.BtnUndoAll.IsEnabled = ...` em diante) contin
 
 ### F3. Jogos e Diagnóstico sem cards
 
-**Arquivo:** `src/windows/ui/ui-builder.ps1`.
+**Arquivos:** `src/windows/ui/ui-builder.ps1`, `config/game-profiles.json`.
 
-1. Cole de `components.ps1`, logo depois de `Register-OptiKitResponsiveHost`: `Get-OptiKitDiagnosticVisual`, `Format-OptiKitDiagnosticsSummary`, `New-OptiKitDiagnosticRow`, `New-OptiKitGameSection`, `Set-OptiKitGameExeLabel`.
-2. Substitua todo o trecho de `# 3. Construir Aba de Perfis de Jogos` até a linha anterior a `# 4. Popular ComboBox de Presets` por:
+1. Cole de `components.ps1`, logo depois de `Register-OptiKitResponsiveHost`: `Get-OptiKitDiagnosticVisual`, `Format-OptiKitDiagnosticsSummary`, `New-OptiKitDiagnosticRow`, `Get-OptiKitGameIdentity`, `New-OptiKitGameSection`, `Set-OptiKitGameExeLabel`.
+2. Em `config/game-profiles.json`, adicione `shortName` e `accent` em cada perfil: VALORANT (`VAL`, `Valorant`), CS2 (`CS2`, `CS2`), UE5 (`UE5`, `UE5`), Ferramentas Globais (`GLB`, `Global`). `accent` mapeia para `Brush.Danger`, `Brush.Warning`, `Brush.Accent` e `Brush.Success`; o fallback é `Brush.Text.Tertiary`.
+3. Substitua todo o trecho de `# 3. Construir Aba de Perfis de Jogos` até a linha anterior a `# 4. Popular ComboBox de Presets` por:
 
 ```powershell
     # 3. Jogos
@@ -518,7 +519,7 @@ As linhas seguintes do timer (`$ui.BtnUndoAll.IsEnabled = ...` em diante) contin
             }
         }
 
-        $section = New-OptiKitGameSection -Ui $ui -GameProfile $prof -ExePath $detectedExe -First:$firstSection
+        $section = New-OptiKitGameSection -Ui $ui -ProfileKey $profKey -GameProfile $prof -ExePath $detectedExe -First:$firstSection
         $firstSection = $false
 
         if ($section.BrowseButton) {
@@ -607,9 +608,10 @@ function Update-OptiKitDiagnosticsUi {
 **Aceite (além dos gates):**
 - `OffPalette` vazio e `EmojiTexts` vazio no relatório inteiro.
 - Páginas 2 e 3: `AuthoredBorders` até 4 e `FontSizes` contido em 12, 14, 16, 20.
+- Jogos: cada perfil tem tile com monograma e cor própria (VAL vermelho, CS2 âmbar, UE5 ciano, GLB verde), contagem de otimizações, engine/anti-cheat e status à direita. O status alterna entre "Executável detectado" (verde), "Executável não encontrado" (âmbar) e "Ferramentas globais" (terciário).
 - Jogos: CS2 e UE5 mostram "Executável não encontrado no caminho padrão." (depende de F0) e o botão "Selecionar executável" troca o texto para "Executável: arquivo.exe" depois da escolha.
 
-**Commit:** `style(ui): jogos e diagnóstico sem cards aninhados`
+**Commit:** `style(ui): identidade por jogo e diagnóstico sem cards`
 
 ### F4. Texto e limpeza de código
 
@@ -762,8 +764,9 @@ O plano foi executado de ponta a ponta (F0 a F5) num worktree descartável a par
 
 - `.\build.ps1 -Docs`: OK. PSScriptAnalyzer em `src`, `build.ps1` e `tools`: 0 problemas.
 - Verificações da F4 (emoji, hex, helpers mortos): vazias.
-- Pester completo: 78 de 78 (69 existentes, 1 novo da F0, 8 de `UiAudit.Tests.ps1`) em 87 s.
+- Pester completo: 79 de 79 (69 existentes, 1 novo da F0, 8 de `UiAudit.Tests.ps1`, 1 de identidade dos jogos) em 87 s.
 - Auditor com dados reais: fontes 12/14/16/20, 15 cores e todas da paleta, nenhum emoji, nada fora da janela, 2 contornos por página, tabela de inicialização com 440 px em 980x660.
+- Jogos: VAL/CS2/UE5/GLB com tile, cor de identidade, contagem de otimizações, engine/anti-cheat e status próprio (detectado, não encontrado ou ferramentas globais).
 - Ordenação/filtros validados no ensaio: 6 grupos por categoria; 4 por impacto; 4 por risco; `Impacto: alto` = 4 de 60; `Risco: avançado` = 2 de 60; estado Aplicado/Desconhecido; nome = "Todos os ajustes". Com filtro de impacto alto, o preset `GamerRecomendado` marcou 23 tweaks (4 visíveis) e o rodapé mostrou 28 itens; a seleção sobreviveu à troca de ordenação.
 
 Se um passo não bater com o código (marcador não encontrado, função com outro nome), pare e reporte em vez de improvisar: o código-alvo é o de `90b14a0` mais as fases anteriores.

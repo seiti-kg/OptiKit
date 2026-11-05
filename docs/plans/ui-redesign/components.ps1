@@ -721,10 +721,46 @@ function New-OptiKitDiagnosticRow {
     return $grid
 }
 
+function Get-OptiKitGameIdentity {
+    param(
+        [Parameter(Mandatory = $true)][string]$ProfileKey,
+        [Parameter(Mandatory = $true)][pscustomobject]$GameProfile
+    )
+
+    $shortName = [string]$GameProfile.shortName
+    if ([string]::IsNullOrWhiteSpace($shortName)) {
+        $shortName = switch ($ProfileKey) {
+            'ProfileValorant' { 'VAL' }
+            'ProfileCS2' { 'CS2' }
+            'ProfileUE5' { 'UE5' }
+            'GlobalGamingTools' { 'GLB' }
+            default {
+                $words = @(([string]$GameProfile.gameName -split '\s+') | Where-Object { $_ })
+                $initials = ($words | ForEach-Object { $_.Substring(0, 1) } | Select-Object -First 3) -join ''
+                if ($initials) { $initials } else { 'GAME' }
+            }
+        }
+    }
+
+    $accentBrush = switch ([string]$GameProfile.accent) {
+        'Valorant' { 'Brush.Danger' }
+        'CS2' { 'Brush.Warning' }
+        'UE5' { 'Brush.Accent' }
+        'Global' { 'Brush.Success' }
+        default { 'Brush.Text.Tertiary' }
+    }
+
+    return @{
+        ShortName   = $shortName.ToUpperInvariant()
+        AccentBrush = $accentBrush
+    }
+}
+
 function New-OptiKitGameSection {
     param(
         [Parameter(Mandatory = $true)][hashtable]$Ui,
         [Parameter(Mandatory = $true)][pscustomobject]$GameProfile,
+        [string]$ProfileKey = '',
         [string]$ExePath,
         [switch]$First
     )
@@ -733,15 +769,59 @@ function New-OptiKitGameSection {
     $top = if ($First) { 0 } else { 32 }
     $panel.Margin = New-Object System.Windows.Thickness(0, $top, 0, 0)
 
-    $head = New-Object System.Windows.Controls.DockPanel
-    $head.LastChildFill = $true
-    $metaText = (@($GameProfile.engine, $GameProfile.antiCheat) | Where-Object { $_ }) -join ' · '
-    $meta = New-OptiKitText -Ui $Ui -Text $metaText -Style 'Text.Meta'
-    $meta.Margin = New-Object System.Windows.Thickness(16, 0, 0, 0)
-    $meta.VerticalAlignment = 'Center'
-    [System.Windows.Controls.DockPanel]::SetDock($meta, 'Right')
-    [void]$head.Children.Add($meta)
+    $identity = Get-OptiKitGameIdentity -ProfileKey $ProfileKey -GameProfile $GameProfile
+    $optimizationCount = @($GameProfile.optimizations).Count
+    $countLabel = if ($GameProfile.status -eq 'global') {
+        Format-OptiKitCount -Count $optimizationCount -Singular 'ferramenta' -Plural 'ferramentas'
+    }
+    else {
+        Format-OptiKitCount -Count $optimizationCount -Singular 'otimização' -Plural 'otimizações'
+    }
 
+    $statusText = 'Executável detectado'
+    $statusBrush = 'Brush.Success'
+    if ($GameProfile.status -eq 'comingSoon') {
+        $statusText = 'Em breve'
+        $statusBrush = 'Brush.Text.Tertiary'
+    }
+    elseif ($GameProfile.status -eq 'global') {
+        $statusText = 'Ferramentas globais'
+        $statusBrush = 'Brush.Text.Tertiary'
+    }
+    elseif ([string]::IsNullOrWhiteSpace($ExePath)) {
+        $statusText = 'Executável não encontrado'
+        $statusBrush = 'Brush.Warning'
+    }
+
+    $head = New-Object System.Windows.Controls.Grid
+    $colTile = New-Object System.Windows.Controls.ColumnDefinition
+    $colTile.Width = [System.Windows.GridLength]::Auto
+    $colTitle = New-Object System.Windows.Controls.ColumnDefinition
+    $colTitle.Width = New-Object System.Windows.GridLength(1, [System.Windows.GridUnitType]::Star)
+    $colMeta = New-Object System.Windows.Controls.ColumnDefinition
+    $colMeta.Width = [System.Windows.GridLength]::Auto
+    [void]$head.ColumnDefinitions.Add($colTile)
+    [void]$head.ColumnDefinitions.Add($colTitle)
+    [void]$head.ColumnDefinitions.Add($colMeta)
+
+    $tile = New-Object System.Windows.Controls.Border
+    $tile.Width = 36
+    $tile.Height = 36
+    $tile.CornerRadius = New-Object System.Windows.CornerRadius(4)
+    $tile.Background = Get-OptiKitUiResource -Ui $Ui -Key 'Brush.Bg.Surface'
+    $tile.Margin = New-Object System.Windows.Thickness(0, 0, 12, 0)
+    $tile.VerticalAlignment = 'Top'
+    $monogram = New-OptiKitText -Ui $Ui -Text $identity.ShortName -Style 'Text.Meta' -Brush $identity.AccentBrush
+    $monogram.FontWeight = 'SemiBold'
+    $monogram.HorizontalAlignment = 'Center'
+    $monogram.VerticalAlignment = 'Center'
+    $tile.Child = $monogram
+    [System.Windows.Controls.Grid]::SetColumn($tile, 0)
+    [void]$head.Children.Add($tile)
+
+    $titleStack = New-Object System.Windows.Controls.StackPanel
+    $titleStack.Orientation = 'Vertical'
+    $titleStack.VerticalAlignment = 'Center'
     $titleRow = New-Object System.Windows.Controls.StackPanel
     $titleRow.Orientation = 'Horizontal'
     [void]$titleRow.Children.Add((New-OptiKitText -Ui $Ui -Text ([string]$GameProfile.gameName) -Style 'Text.Subtitle' -Overflow Trim))
@@ -751,7 +831,30 @@ function New-OptiKitGameSection {
         $soon.VerticalAlignment = 'Center'
         [void]$titleRow.Children.Add($soon)
     }
-    [void]$head.Children.Add($titleRow)
+    [void]$titleStack.Children.Add($titleRow)
+    $countText = New-OptiKitText -Ui $Ui -Text $countLabel -Style 'Text.Meta'
+    $countText.Margin = New-Object System.Windows.Thickness(0, 2, 0, 0)
+    [void]$titleStack.Children.Add($countText)
+    [System.Windows.Controls.Grid]::SetColumn($titleStack, 1)
+    [void]$head.Children.Add($titleStack)
+
+    $rightStack = New-Object System.Windows.Controls.StackPanel
+    $rightStack.Orientation = 'Vertical'
+    $rightStack.HorizontalAlignment = 'Right'
+    $rightStack.VerticalAlignment = 'Center'
+    $metaText = (@($GameProfile.engine, $GameProfile.antiCheat) | Where-Object { $_ }) -join ' · '
+    if (-not [string]::IsNullOrWhiteSpace($metaText)) {
+        $meta = New-OptiKitText -Ui $Ui -Text $metaText -Style 'Text.Meta'
+        $meta.HorizontalAlignment = 'Right'
+        [void]$rightStack.Children.Add($meta)
+    }
+    $status = New-OptiKitText -Ui $Ui -Text $statusText -Style 'Text.Meta' -Brush $statusBrush
+    $status.HorizontalAlignment = 'Right'
+    $status.Margin = New-Object System.Windows.Thickness(0, 2, 0, 0)
+    [void]$rightStack.Children.Add($status)
+    [System.Windows.Controls.Grid]::SetColumn($rightStack, 2)
+    [void]$head.Children.Add($rightStack)
+
     [void]$panel.Children.Add($head)
 
     if (-not [string]::IsNullOrWhiteSpace([string]$GameProfile.warning)) {

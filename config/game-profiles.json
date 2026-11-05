@@ -1,6 +1,8 @@
 ﻿{
   "ProfileValorant": {
     "gameName": "VALORANT",
+    "shortName": "VAL",
+    "accent": "Valorant",
     "status": "active",
     "engine": "Unreal Engine 4",
     "antiCheat": "Riot Vanguard (Kernel)",
@@ -55,6 +57,8 @@
   },
   "ProfileCS2": {
     "gameName": "Counter-Strike 2",
+    "shortName": "CS2",
+    "accent": "CS2",
     "status": "active",
     "engine": "Source 2",
     "antiCheat": "VAC / FACEIT Anti-Cheat",
@@ -100,6 +104,8 @@
   },
   "ProfileUE5": {
     "gameName": "Jogos Unreal Engine 5 / AAA",
+    "shortName": "UE5",
+    "accent": "UE5",
     "status": "active",
     "engine": "Unreal Engine 5",
     "antiCheat": "Easy Anti-Cheat / BattlEye",
@@ -141,6 +147,8 @@
   },
   "GlobalGamingTools": {
     "gameName": "Ferramentas Globais de Gaming",
+    "shortName": "GLB",
+    "accent": "Global",
     "status": "global",
     "engine": "DirectX / Vulkan / Hardware",
     "antiCheat": "Universal (Compatível)",

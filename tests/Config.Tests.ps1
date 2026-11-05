@@ -122,6 +122,18 @@ Describe 'Validação de Schema e Integridade dos Catálogos JSON' {
 
             $script:Games.GlobalGamingTools.status | Should -Be 'global'
         }
+
+        It 'Deve ter identidade visual única (shortName/accent) por perfil' {
+            $validAccents = @('Valorant', 'CS2', 'UE5', 'Global')
+            $shortNames = @()
+            foreach ($p in $script:Games.PSObject.Properties) {
+                $p.Value.shortName | Should -Not -BeNullOrEmpty
+                $p.Value.shortName.Length | Should -BeLessOrEqual 3
+                $validAccents | Should -Contain $p.Value.accent
+                $shortNames += $p.Value.shortName
+            }
+            @($shortNames | Sort-Object -Unique).Count | Should -Be @($script:Games.PSObject.Properties).Count
+        }
     }
 
     Context 'config/presets.json' {
