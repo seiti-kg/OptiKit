@@ -24,6 +24,8 @@ Describe 'Execução via One-Liner (irm | iex)' {
             $psi.Arguments = ('-NoProfile -ExecutionPolicy Bypass -STA -Command "{0}"' -f $clientCmd)
             $psi.UseShellExecute = $false
             $psi.CreateNoWindow = $true
+            $psi.RedirectStandardOutput = $true
+            $psi.RedirectStandardError = $true
 
             $proc = [System.Diagnostics.Process]::Start($psi)
 
@@ -37,6 +39,16 @@ Describe 'Execução via One-Liner (irm | iex)' {
             }
 
             $exited = $proc.WaitForExit(90000)
+            $stdout = ''
+            $stderr = ''
+            if ($exited) {
+                $stdout = $proc.StandardOutput.ReadToEnd()
+                $stderr = $proc.StandardError.ReadToEnd()
+            }
+            if (-not $exited -or $proc.ExitCode -ne 0) {
+                $diag = ("IRM exit={0} timedout={1} stdout={2} stderr={3}" -f $(if ($exited) { $proc.ExitCode } else { 'n/a' }), (-not $exited), $stdout.Trim(), $stderr.Trim())
+                Write-Host ("::error::" + $diag.Substring(0, [Math]::Min(2000, $diag.Length)))
+            }
             $exited | Should -BeTrue
             $proc.ExitCode | Should -Be 0
         }
@@ -66,6 +78,8 @@ Describe 'Execução via One-Liner (irm | iex)' {
             $psi.Arguments = ('-NoProfile -ExecutionPolicy Bypass -MTA -Command "{0}"' -f $clientCmd)
             $psi.UseShellExecute = $false
             $psi.CreateNoWindow = $true
+            $psi.RedirectStandardOutput = $true
+            $psi.RedirectStandardError = $true
 
             $proc = [System.Diagnostics.Process]::Start($psi)
 
@@ -79,6 +93,16 @@ Describe 'Execução via One-Liner (irm | iex)' {
             }
 
             $exited = $proc.WaitForExit(90000)
+            $stdout = ''
+            $stderr = ''
+            if ($exited) {
+                $stdout = $proc.StandardOutput.ReadToEnd()
+                $stderr = $proc.StandardError.ReadToEnd()
+            }
+            if (-not $exited -or $proc.ExitCode -ne 0) {
+                $diag = ("IRM exit={0} timedout={1} stdout={2} stderr={3}" -f $(if ($exited) { $proc.ExitCode } else { 'n/a' }), (-not $exited), $stdout.Trim(), $stderr.Trim())
+                Write-Host ("::error::" + $diag.Substring(0, [Math]::Min(2000, $diag.Length)))
+            }
             $exited | Should -BeTrue
             $proc.ExitCode | Should -Be 0
         }
