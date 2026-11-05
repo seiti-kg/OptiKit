@@ -139,6 +139,24 @@ function Invoke-SystemIntegrityRepair {
     } | Out-Null
 }
 
+function Restart-OptiKitToUefi {
+    [CmdletBinding()]
+    param()
+
+    Invoke-Mutation -Description 'Reiniciar para a BIOS/UEFI' -Action {
+        if (-not (Get-Command Confirm-SecureBootUEFI -ErrorAction SilentlyContinue)) {
+            throw 'Confirm-SecureBootUEFI indisponível; não é possível confirmar o modo UEFI.'
+        }
+        try {
+            $null = Confirm-SecureBootUEFI -ErrorAction Stop
+        }
+        catch {
+            throw 'O Windows não está em modo UEFI ou não foi possível confirmar. Reinicie manualmente e acesse a BIOS pela tecla do fabricante.'
+        }
+        Invoke-NativeStep -FilePath 'shutdown.exe' -ArgumentList @('/r', '/fw', '/t', '0') -StepName 'Reiniciar para a BIOS/UEFI'
+    } | Out-Null
+}
+
 function Clear-OptiKitDirectory {
     [CmdletBinding()]
     param(

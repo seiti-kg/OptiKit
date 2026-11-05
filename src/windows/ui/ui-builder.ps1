@@ -1262,7 +1262,7 @@ function Initialize-OptiKitUi {
         'CmbTweakSort', 'CmbTweakImpact', 'CmbTweakRisk', 'CmbTweakStatus', 'BtnClearTweakFilters', 'TxtTweakCount',
         'GameProfilesHost',
         'BtnRefreshDiagnostics', 'TxtDiagnosticsSummary', 'DiagnosticsHost',
-        'BtnResetNetwork', 'BtnRunSfcDism', 'BtnCancelMaintenance', 'BtnClearTemp', 'BtnOpenBackupsDir',
+        'BtnResetNetwork', 'BtnRunSfcDism', 'BtnCancelMaintenance', 'BtnRebootUefi', 'BtnClearTemp', 'BtnOpenBackupsDir',
         'BtnExportProfile', 'BtnImportProfile', 'BtnExportReport',
         'CmbDohProvider', 'BtnApplyDoh', 'BtnUndoDoh', 'BtnWingetUpgrade', 'BtnAdvancedCleanup',
         'GridStartupItems', 'BtnEnableStartup', 'BtnDisableStartup', 'BtnRefreshStartup',

@@ -91,4 +91,23 @@ Describe 'Manutenção (maintenance.ps1)' {
 
         { Invoke-SystemIntegrityRepair } | Should -Throw '*cancelada pelo usuário durante o DISM*'
     }
+
+    It 'Restart-OptiKitToUefi deve usar shutdown /fw quando o sistema é UEFI' {
+        Mock Confirm-SecureBootUEFI { $true }
+        Mock Invoke-NativeStep {}
+
+        Restart-OptiKitToUefi
+
+        Should -Invoke Invoke-NativeStep -Times 1 -Exactly -ParameterFilter {
+            $FilePath -eq 'shutdown.exe' -and ($ArgumentList -contains '/fw') -and ($ArgumentList -contains '/r')
+        }
+    }
+
+    It 'Restart-OptiKitToUefi deve recusar quando não consegue confirmar UEFI' {
+        Mock Confirm-SecureBootUEFI { throw 'não suportado' }
+        Mock Invoke-NativeStep {}
+
+        { Restart-OptiKitToUefi } | Should -Throw '*UEFI*'
+        Should -Invoke Invoke-NativeStep -Times 0 -Exactly
+    }
 }

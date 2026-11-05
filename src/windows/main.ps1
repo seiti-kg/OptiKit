@@ -182,6 +182,9 @@ function Start-OptiKitWorkerTask {
         'Set-OptiKitTargetRelease', 'Restore-OptiKitTargetRelease', 'Test-OptiKitTargetRelease',
         'Disable-OptiKitReservedStorage', 'Enable-OptiKitReservedStorage', 'Test-OptiKitReservedStorage',
         'Get-OptiKitHardwareDiagnostics', 'New-OptiKitDiagnosticItem',
+        'Get-OptiKitDiagnosticBios', 'Get-OptiKitDiagnosticDisk', 'Get-OptiKitDiagnosticStability',
+        'Test-OptiKitPendingReboot', 'Get-OptiKitDiagnosticPendingReboot', 'Get-OptiKitDiagnosticDefender',
+        'Format-OptiKitDiagnosticSize',
         'Get-OptiKitDiagnosticRam', 'Get-OptiKitDisplayModes', 'Get-OptiKitDiagnosticMonitor',
         'Get-OptiKitDiagnosticDeviceGuard', 'Get-OptiKitDiagnosticGamingToggles',
         'Get-OptiKitDiagnosticX3dService', 'Get-OptiKitDiagnosticGpuDriver',
@@ -197,6 +200,7 @@ function Start-OptiKitWorkerTask {
         'Optimize-NetworkAdapterGaming', 'Disable-RiotClientStartup', 'Clear-ShaderCache',
         'Invoke-GameOptimization', 'Test-GameOptimizationApplied',
         'Invoke-NetworkReset', 'Invoke-NativeStep', 'Invoke-CancelableProcess', 'Invoke-SystemIntegrityRepair', 'Clear-TemporaryFiles',
+        'Restart-OptiKitToUefi',
         'Clear-OptiKitDirectory', 'Invoke-AdvancedCleanup',
         'Get-OptiKitDohProviders', 'Get-OptiKitDnsAdapters', 'Test-OptiKitDohSupported',
         'Set-OptiKitDnsFamily', 'Remove-OptiKitDohEncryption', 'Set-OptiKitDohEncryption', 'Set-OptiKitDohProvider', 'Restore-OptiKitDns',
@@ -594,6 +598,15 @@ function Start-OptiKitMain {
         }
     }.GetNewClosure())
 
+    $ui.BtnRebootUefi.Add_Click({
+        $confirm = [System.Windows.MessageBox]::Show($window, "Reiniciar agora para a BIOS/UEFI?`r`n`r`nSalve seu trabalho. O OptiKit não altera configurações da BIOS; a tela de firmware abre na próxima inicialização.", 'Reiniciar para a BIOS (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
+
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
+            Restart-OptiKitToUefi
+        }
+    }.GetNewClosure())
+
     $ui.BtnCancelMaintenance.Add_Click({
         $sync.CancelRequest = $true
         $script:OptiKit.CancelRequest = $true
@@ -862,6 +875,7 @@ function Start-OptiKitMain {
         $ui.BtnUndoAll.IsEnabled = (-not $busy)
         $ui.BtnResetNetwork.IsEnabled = (-not $busy)
         $ui.BtnRunSfcDism.IsEnabled = (-not $busy)
+        $ui.BtnRebootUefi.IsEnabled = (-not $busy)
         $ui.BtnClearTemp.IsEnabled = (-not $busy)
         $ui.BtnRefreshDiagnostics.IsEnabled = (-not $busy)
         $ui.BtnExportReport.IsEnabled = (-not $busy)

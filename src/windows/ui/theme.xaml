@@ -901,6 +901,16 @@
                                     <TextBlock Text="Winsock, pilha TCP/IP e cache DNS. Requer reinicialização." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
                                 </StackPanel>
                             </DockPanel>
+                            <Border Style="{StaticResource Divider}" />
+                            <DockPanel Style="{StaticResource Action.Row}">
+                                <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
+                                    <Button x:Name="BtnRebootUefi" Style="{StaticResource Button.Subtle}" Content="Reiniciar" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Action.Text}">
+                                    <TextBlock Text="Reiniciar para a BIOS (UEFI)" />
+                                    <TextBlock Text="Abre a tela de firmware na próxima inicialização. O OptiKit não altera configurações da BIOS; use-a para XMP/EXPO, Secure Boot, TPM e fan curve." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
 
                             <TextBlock Text="Limpeza" Style="{StaticResource Section.Header}" />
                             <DockPanel Style="{StaticResource Action.Row}">

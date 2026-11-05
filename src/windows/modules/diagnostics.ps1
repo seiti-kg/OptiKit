@@ -345,12 +345,286 @@ function Get-OptiKitDiagnosticGpuDriver {
     }
 }
 
+function Format-OptiKitDiagnosticSize {
+    param([double]$Bytes)
+    if ($Bytes -ge 1TB) { return ('{0:N1} TB' -f ($Bytes / 1TB)) }
+    if ($Bytes -ge 1GB) { return ('{0:N0} GB' -f ($Bytes / 1GB)) }
+    if ($Bytes -ge 1MB) { return ('{0:N0} MB' -f ($Bytes / 1MB)) }
+    return ('{0:N0} KB' -f ($Bytes / 1KB))
+}
+
+function Get-OptiKitDiagnosticBios {
+    [CmdletBinding()]
+    param()
+
+    try {
+        $bios = Get-CimInstance -ClassName Win32_BIOS -ErrorAction Stop
+        $computer = Get-CimInstance -ClassName Win32_ComputerSystem -ErrorAction Stop
+
+        $manufacturer = [string]$computer.Manufacturer
+        $model = [string]$computer.Model
+        $version = [string]$bios.SMBIOSBIOSVersion
+        $releaseDate = $null
+        try { $releaseDate = [datetime]$bios.ReleaseDate } catch { $releaseDate = $null }
+
+        $secureBoot = $null
+        if (Get-Command Confirm-SecureBootUEFI -ErrorAction SilentlyContinue) {
+            try { $secureBoot = [bool](Confirm-SecureBootUEFI -ErrorAction Stop) } catch { $secureBoot = $null }
+        }
+
+        $tpm = $null
+        if (Get-Command Get-Tpm -ErrorAction SilentlyContinue) {
+            try { $tpm = Get-Tpm -ErrorAction Stop } catch { $tpm = $null }
+        }
+
+        $secureBootText = if ($null -eq $secureBoot) { 'Secure Boot indisponível' } elseif ($secureBoot) { 'Secure Boot ativo' } else { 'Secure Boot desativado' }
+        $tpmText = 'TPM indisponível'
+        $tpmOk = $false
+        if ($tpm) {
+            $tpmVersion = if ($tpm.SpecVersion) { [string]$tpm.SpecVersion } elseif ($tpm.TpmVersion) { [string]$tpm.TpmVersion } else { 'versão desconhecida' }
+            $tpmPresent = [bool]$tpm.TpmPresent
+            $tpmReady = [bool]$tpm.TpmReady
+            $tpmOk = ($tpmPresent -and $tpmReady)
+            $tpmText = if (-not $tpmPresent) { 'TPM ausente' } elseif (-not $tpmReady) { ("TPM {0} presente, não pronto" -f $tpmVersion) } else { ("TPM {0} pronto" -f $tpmVersion) }
+        }
+
+        $summaryParts = @($secureBootText, $tpmText)
+        $summary = $summaryParts -join ' · '
+        $detailParts = @()
+        if ($manufacturer -or $model) { $detailParts += ("{0} {1}" -f $manufacturer, $model).Trim() }
+        if ($version) {
+            $dateText = if ($releaseDate) { $releaseDate.ToString('yyyy-MM-dd') } else { 'data desconhecida' }
+            $detailParts += ("BIOS {0} ({1})" -f $version, $dateText)
+        }
+        $detailParts += 'Secure Boot, TPM, XMP/EXPO, fan curve e tensões são ajustados na BIOS/UEFI.'
+        $detail = $detailParts -join '. '
+
+        if ($null -eq $secureBoot) {
+            return New-OptiKitDiagnosticItem -Id 'BiosFirmware' -Title 'BIOS / Firmware e Segurança' -Status 'Info' -Summary 'Leitura parcial: Secure Boot/TPM exigem UEFI e execução como Administrador.' -Detail $detail -ActionText 'Abra o OptiKit como Administrador para ler Secure Boot e TPM.'
+        }
+        if (-not $secureBoot -or ($tpm -and -not $tpmOk)) {
+            return New-OptiKitDiagnosticItem -Id 'BiosFirmware' -Title 'BIOS / Firmware e Segurança' -Status 'Warn' -Summary $summary -Detail $detail -ActionText 'Use Manutenção > Reiniciar para a BIOS (UEFI) para ajustar Secure Boot, TPM e XMP/EXPO.'
+        }
+        if ($null -eq $tpm) {
+            return New-OptiKitDiagnosticItem -Id 'BiosFirmware' -Title 'BIOS / Firmware e Segurança' -Status 'Info' -Summary $summary -Detail $detail -ActionText 'Leitura parcial: TPM indisponível; verifique no firmware.'
+        }
+        return New-OptiKitDiagnosticItem -Id 'BiosFirmware' -Title 'BIOS / Firmware e Segurança' -Status 'OK' -Summary $summary -Detail $detail
+    }
+    catch {
+        return New-OptiKitDiagnosticItem -Id 'BiosFirmware' -Title 'BIOS / Firmware e Segurança' -Status 'Unknown' -Summary 'Falha ao consultar BIOS/firmware.' -Detail $_.Exception.Message
+    }
+}
+
+function Get-OptiKitDiagnosticDisk {
+    [CmdletBinding()]
+    param(
+        [object[]]$Disks,
+        [hashtable]$ReliabilityCounters,
+        [object]$SystemVolume
+    )
+
+    if ($null -eq $Disks) {
+        if (-not (Get-Command Get-PhysicalDisk -ErrorAction SilentlyContinue)) {
+            return New-OptiKitDiagnosticItem -Id 'DiskHealth' -Title 'Saúde do Armazenamento' -Status 'Unknown' -Summary 'Cmdlets de armazenamento indisponíveis.' -Detail 'Get-PhysicalDisk não está disponível nesta edição do Windows.'
+        }
+        try {
+            $Disks = @(Get-PhysicalDisk -ErrorAction Stop)
+        }
+        catch {
+            return New-OptiKitDiagnosticItem -Id 'DiskHealth' -Title 'Saúde do Armazenamento' -Status 'Unknown' -Summary 'Falha ao consultar os discos.' -Detail $_.Exception.Message
+        }
+    }
+    else {
+        $Disks = @($Disks)
+    }
+
+    try {
+        if ($Disks.Count -eq 0) {
+            return New-OptiKitDiagnosticItem -Id 'DiskHealth' -Title 'Saúde do Armazenamento' -Status 'Unknown' -Summary 'Nenhum disco físico reportado.' -Detail 'Get-PhysicalDisk retornou vazio.'
+        }
+
+        $details = New-Object 'System.Collections.Generic.List[string]'
+        $warnings = New-Object 'System.Collections.Generic.List[string]'
+        $errors = New-Object 'System.Collections.Generic.List[string]'
+
+        foreach ($disk in $Disks) {
+            $health = [string]$disk.HealthStatus
+            $media = [string]$disk.MediaType
+            $size = [double]$disk.Size
+            $wear = $null
+            $deviceId = [string]$disk.DeviceId
+            try {
+                if ($ReliabilityCounters -and $ReliabilityCounters.ContainsKey($deviceId)) {
+                    $counter = [pscustomobject]$ReliabilityCounters[$deviceId]
+                }
+                else {
+                    $counter = Get-StorageReliabilityCounter -DeviceNumber ([int]$disk.DeviceId) -ErrorAction Stop
+                }
+                if ($null -ne $counter.Wear) { $wear = [int]$counter.Wear }
+            }
+            catch {
+                Write-Verbose ("Reliability counter indisponível para {0}: {1}" -f $disk.FriendlyName, $_.Exception.Message)
+            }
+
+            $wearText = if ($null -ne $wear) { ", desgaste {0}%" -f $wear } else { '' }
+            [void]$details.Add(("{0} ({1}, {2}{3})" -f $disk.FriendlyName, $media, (Format-OptiKitDiagnosticSize -Bytes $size), $wearText))
+
+            if ($health -eq 'Unhealthy') {
+                [void]$errors.Add(("{0}: saúde {1}" -f $disk.FriendlyName, $health))
+            }
+            elseif ($health -eq 'Warning') {
+                [void]$warnings.Add(("{0}: saúde {1}" -f $disk.FriendlyName, $health))
+            }
+            if ($null -ne $wear -and $wear -ge 80) {
+                [void]$warnings.Add(("{0}: desgaste {1}%" -f $disk.FriendlyName, $wear))
+            }
+        }
+
+        try {
+            $volume = $SystemVolume
+            if (-not $volume) {
+                $systemLetter = ($env:SystemDrive -replace ':', '')
+                $volume = Get-Volume -DriveLetter $systemLetter -ErrorAction Stop
+            }
+            if ($volume -and $volume.Size -gt 0) {
+                $freePct = [math]::Round(([double]$volume.SizeRemaining / [double]$volume.Size) * 100, 1)
+                $freeText = "{0} livres de {1} ({2}%)" -f (Format-OptiKitDiagnosticSize -Bytes $volume.SizeRemaining), (Format-OptiKitDiagnosticSize -Bytes $volume.Size), $freePct
+                [void]$details.Add(("Unidade {0}: {1}" -f $env:SystemDrive, $freeText))
+                if ($freePct -lt 10) {
+                    [void]$warnings.Add(("Unidade {0}: apenas {1}% livres" -f $env:SystemDrive, $freePct))
+                }
+            }
+        }
+        catch {
+            Write-Verbose ("Falha ao consultar volume do sistema: {0}" -f $_.Exception.Message)
+        }
+
+        $detail = $details -join '; '
+        if ($errors.Count -gt 0) {
+            return New-OptiKitDiagnosticItem -Id 'DiskHealth' -Title 'Saúde do Armazenamento' -Status 'Error' -Summary ($errors -join '; ') -Detail $detail -ActionText 'Faça backup dos dados e verifique a saúde do disco com o fabricante.'
+        }
+        if ($warnings.Count -gt 0) {
+            return New-OptiKitDiagnosticItem -Id 'DiskHealth' -Title 'Saúde do Armazenamento' -Status 'Warn' -Summary ($warnings -join '; ') -Detail $detail -ActionText 'Libere espaço e monitore o desgaste do SSD.'
+        }
+        return New-OptiKitDiagnosticItem -Id 'DiskHealth' -Title 'Saúde do Armazenamento' -Status 'OK' -Summary 'Discos saudáveis e espaço livre suficiente.' -Detail $detail
+    }
+    catch {
+        return New-OptiKitDiagnosticItem -Id 'DiskHealth' -Title 'Saúde do Armazenamento' -Status 'Unknown' -Summary 'Falha ao consultar os discos.' -Detail $_.Exception.Message
+    }
+}
+
+function Get-OptiKitDiagnosticStability {
+    [CmdletBinding()]
+    param()
+
+    try {
+        $since = (Get-Date).AddDays(-7)
+        $whea = @(Get-WinEvent -FilterHashtable @{ LogName = 'System'; ProviderName = 'Microsoft-Windows-WHEA-Logger'; StartTime = $since } -ErrorAction SilentlyContinue)
+        $kernelPower = @(Get-WinEvent -FilterHashtable @{ LogName = 'System'; Id = 41; StartTime = $since } -ErrorAction SilentlyContinue)
+
+        $details = New-Object 'System.Collections.Generic.List[string]'
+        [void]$details.Add(("WHEA: {0} evento(s)" -f $whea.Count))
+        [void]$details.Add(("Kernel-Power 41: {0} evento(s)" -f $kernelPower.Count))
+        if ($whea.Count -gt 0) {
+            [void]$details.Add(("Último WHEA: {0:yyyy-MM-dd HH:mm}" -f $whea[0].TimeCreated))
+        }
+        if ($kernelPower.Count -gt 0) {
+            [void]$details.Add(("Último Kernel-Power 41: {0:yyyy-MM-dd HH:mm}" -f $kernelPower[0].TimeCreated))
+        }
+        $detail = $details -join '; '
+
+        if ($whea.Count -gt 0) {
+            return New-OptiKitDiagnosticItem -Id 'Stability' -Title 'Estabilidade (WHEA / Kernel-Power)' -Status 'Error' -Summary ("{0} erro(s) de hardware WHEA nos últimos 7 dias." -f $whea.Count) -Detail $detail -ActionText 'Atualize BIOS/drivers e remova overclock/undervolt antes de investigar.'
+        }
+        if ($kernelPower.Count -gt 0) {
+            return New-OptiKitDiagnosticItem -Id 'Stability' -Title 'Estabilidade (WHEA / Kernel-Power)' -Status 'Warn' -Summary ("{0} desligamento(s) inesperado(s) nos últimos 7 dias." -f $kernelPower.Count) -Detail $detail -ActionText 'Verifique fonte, temperatura e estabilidade de RAM/CPU.'
+        }
+        return New-OptiKitDiagnosticItem -Id 'Stability' -Title 'Estabilidade (WHEA / Kernel-Power)' -Status 'OK' -Summary 'Nenhum erro WHEA ou desligamento inesperado nos últimos 7 dias.' -Detail $detail
+    }
+    catch {
+        return New-OptiKitDiagnosticItem -Id 'Stability' -Title 'Estabilidade (WHEA / Kernel-Power)' -Status 'Unknown' -Summary 'Falha ao consultar o log de eventos.' -Detail $_.Exception.Message
+    }
+}
+
+function Test-OptiKitPendingReboot {
+    [CmdletBinding()]
+    param()
+
+    $reasons = New-Object 'System.Collections.Generic.List[string]'
+    if (Test-Path -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending') {
+        [void]$reasons.Add('Componentes do Windows')
+    }
+    if (Test-Path -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired') {
+        [void]$reasons.Add('Windows Update')
+    }
+    try {
+        $sessionManager = Get-ItemProperty -LiteralPath 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations' -ErrorAction Stop
+        if ($sessionManager -and @($sessionManager.PendingFileRenameOperations).Count -gt 0) {
+            [void]$reasons.Add('Renomeação de arquivos')
+        }
+    }
+    catch {
+        Write-Verbose 'Sem PendingFileRenameOperations.'
+    }
+
+    return [pscustomobject]@{
+        Pending = ($reasons.Count -gt 0)
+        Reasons = $reasons.ToArray()
+    }
+}
+
+function Get-OptiKitDiagnosticPendingReboot {
+    [CmdletBinding()]
+    param()
+
+    try {
+        $state = Test-OptiKitPendingReboot
+        if ($state.Pending) {
+            return New-OptiKitDiagnosticItem -Id 'PendingReboot' -Title 'Reinicialização Pendente' -Status 'Warn' -Summary 'O Windows tem alterações pendentes que exigem reinício.' -Detail ($state.Reasons -join '; ') -ActionText 'Reinicie o computador para concluir as alterações.'
+        }
+        return New-OptiKitDiagnosticItem -Id 'PendingReboot' -Title 'Reinicialização Pendente' -Status 'OK' -Summary 'Nenhuma reinicialização pendente.' -Detail 'Nenhuma chave de reboot pendente encontrada.'
+    }
+    catch {
+        return New-OptiKitDiagnosticItem -Id 'PendingReboot' -Title 'Reinicialização Pendente' -Status 'Unknown' -Summary 'Falha ao verificar reinicialização pendente.' -Detail $_.Exception.Message
+    }
+}
+
+function Get-OptiKitDiagnosticDefender {
+    [CmdletBinding()]
+    param()
+
+    if (-not (Get-Command Get-MpComputerStatus -ErrorAction SilentlyContinue)) {
+        return New-OptiKitDiagnosticItem -Id 'Defender' -Title 'Microsoft Defender' -Status 'Unknown' -Summary 'Módulo do Defender indisponível.' -Detail 'Get-MpComputerStatus não está disponível; pode haver antivírus de terceiros.'
+    }
+
+    try {
+        $mp = Get-MpComputerStatus -ErrorAction Stop
+        $av = [bool]$mp.AntivirusEnabled
+        $rtp = [bool]$mp.RealTimeProtectionEnabled
+        $signatureAge = [int]$mp.AntivirusSignatureAge
+        $detail = ("Antivírus={0}; Tempo real={1}; Assinaturas com {2} dia(s)." -f $(if ($av) { 'on' } else { 'off' }), $(if ($rtp) { 'on' } else { 'off' }), $signatureAge)
+
+        if (-not $av -or -not $rtp -or $signatureAge -gt 7) {
+            return New-OptiKitDiagnosticItem -Id 'Defender' -Title 'Microsoft Defender' -Status 'Warn' -Summary 'Proteção em tempo real desligada ou assinaturas desatualizadas.' -Detail $detail -ActionText 'Abra a Segurança do Windows e atualize/reative a proteção.'
+        }
+        return New-OptiKitDiagnosticItem -Id 'Defender' -Title 'Microsoft Defender' -Status 'OK' -Summary 'Proteção ativa e assinaturas atualizadas.' -Detail $detail
+    }
+    catch {
+        return New-OptiKitDiagnosticItem -Id 'Defender' -Title 'Microsoft Defender' -Status 'Unknown' -Summary 'Falha ao consultar o Defender.' -Detail $_.Exception.Message
+    }
+}
+
 function Get-OptiKitHardwareDiagnostics {
     [CmdletBinding()]
     param()
 
     $items = New-Object 'System.Collections.Generic.List[pscustomobject]'
     foreach ($check in @(
+        'Get-OptiKitDiagnosticBios',
+        'Get-OptiKitDiagnosticDisk',
+        'Get-OptiKitDiagnosticStability',
+        'Get-OptiKitDiagnosticPendingReboot',
+        'Get-OptiKitDiagnosticDefender',
         'Get-OptiKitDiagnosticRam',
         'Get-OptiKitDiagnosticMonitor',
         'Get-OptiKitDiagnosticDeviceGuard',
