@@ -483,8 +483,8 @@ function Start-OptiKitMain {
 
     $ui.BtnExportProfile.Add_Click({
         $tweaks = New-Object 'System.Collections.Generic.List[string]'
-        foreach ($tid in $ui.TweakCheckboxes.Keys) {
-            if ($ui.TweakCheckboxes[$tid].CheckBox.IsChecked -eq $true) { [void]$tweaks.Add($tid) }
+        foreach ($tid in $ui.SelectedTweakIds) {
+            [void]$tweaks.Add($tid)
         }
         $gameOpts = New-Object 'System.Collections.Generic.List[string]'
         foreach ($gid in $ui.GameOptCheckboxes.Keys) {
@@ -524,7 +524,7 @@ function Start-OptiKitMain {
             }
             catch {
                 Write-OptimizerLog -Level ERROR -Message ("Falha ao importar perfil: {0}" -f $_.Exception.Message)
-                [void][System.Windows.MessageBox]::Show($window, $_.Exception.Message, 'Importar Perfil (OptiKit)', [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
+                [void][System.Windows.MessageBox]::Show($window, $_.Exception.Message, 'Importar perfil', [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
             }
         }
     }.GetNewClosure())
@@ -546,7 +546,7 @@ function Start-OptiKitMain {
             return
         }
 
-        $confirm = [System.Windows.MessageBox]::Show($window, ("Reverter TODOS os {0} estado(s) capturados? Isso desfaz tweaks, otimizações de jogos, plano de energia, USB, DirectX, DNS/DoH e Windows Update." -f $state.Count), 'Reverter Tudo (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        $confirm = [System.Windows.MessageBox]::Show($window, ("Reverter {0}?`r`n`r`nIsso desfaz ajustes, otimizações de jogos, plano de energia, USB, DirectX, DNS e Windows Update registrados pelo OptiKit." -f (Format-OptiKitCount -Count $state.Count -Singular 'alteração registrada' -Plural 'alterações registradas')), 'Reverter tudo', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
         if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) {
             return
         }
@@ -607,7 +607,7 @@ function Start-OptiKitMain {
         }
         $providerKey = [string]$selected.Tag
         $providerName = [string]$selected.Content
-        $confirm = [System.Windows.MessageBox]::Show($window, ("Aplicar DNS over HTTPS via {0}?`r`n`r`nOs servidores DNS dos adaptadores físicos ativos serão alterados. O DNS original será salvo para o Undo." -f $providerName), 'DNS over HTTPS (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+        $confirm = [System.Windows.MessageBox]::Show($window, ("Aplicar DNS over HTTPS com {0}?`r`n`r`nO DNS dos adaptadores físicos ativos será alterado. O DNS atual fica salvo para reverter." -f $providerName), 'Aplicar DNS over HTTPS', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
         if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
 
         Start-OptiKitWorkerTask -SyncHash $sync -Arguments @{ ProviderKey = $providerKey } -WorkerScript {
@@ -617,7 +617,7 @@ function Start-OptiKitMain {
 
     $ui.BtnUndoDoh.Add_Click({
         if (-not $ui.DohSupported) { return }
-        $confirm = [System.Windows.MessageBox]::Show($window, 'Restaurar o DNS original dos adaptadores e remover os templates DoH aplicados pelo OptiKit?', 'Reverter DNS over HTTPS (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        $confirm = [System.Windows.MessageBox]::Show($window, 'Restaurar o DNS original dos adaptadores e remover os templates DoH aplicados pelo OptiKit?', 'Reverter DNS over HTTPS', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
         if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
 
         Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
@@ -626,7 +626,7 @@ function Start-OptiKitMain {
     }.GetNewClosure())
 
     $ui.BtnWingetUpgrade.Add_Click({
-        $confirm = [System.Windows.MessageBox]::Show($window, 'Atualizar TODOS os aplicativos gerenciados pelo Winget?`r`n`r`nA operação pode demorar e alguns aplicativos podem exigir reinicialização.', 'Atualizar Apps (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+        $confirm = [System.Windows.MessageBox]::Show($window, "Atualizar todos os aplicativos gerenciados pelo winget?`r`n`r`nPode demorar, e alguns aplicativos podem pedir reinicialização.", 'Atualizar aplicativos', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
         if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
 
         Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
@@ -635,7 +635,7 @@ function Start-OptiKitMain {
     }.GetNewClosure())
 
     $ui.BtnAdvancedCleanup.Add_Click({
-        $confirm = [System.Windows.MessageBox]::Show($window, "Limpeza avançada:`r`n`r`n• Cache do Windows Update`r`n• Cache do Delivery Optimization`r`n• Lixeira`r`n• Prefetch`r`n• Component Store via DISM`r`n`r`nPode demorar vários minutos. Continuar?", 'Limpeza Avançada (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        $confirm = [System.Windows.MessageBox]::Show($window, "Limpeza avançada:`r`n`r`n• Cache do Windows Update`r`n• Cache do Delivery Optimization`r`n• Lixeira`r`n• Prefetch`r`n• Component Store via DISM`r`n`r`nPode demorar vários minutos. Continuar?", 'Limpeza avançada', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
         if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
 
         Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
@@ -680,10 +680,10 @@ function Start-OptiKitMain {
         param([string]$ActionMode)
 
         $selectedTweaks = New-Object 'System.Collections.Generic.List[hashtable]'
-        foreach ($tid in $ui.TweakCheckboxes.Keys) {
-            $entry = $ui.TweakCheckboxes[$tid]
-            if ($entry.CheckBox.IsChecked -eq $true) {
-                [void]$selectedTweaks.Add(@{ Id = $tid; Config = $entry.Config })
+        foreach ($tid in $ui.SelectedTweakIds) {
+            $definition = if ($ui.TweakDefinitionMap) { $ui.TweakDefinitionMap[$tid] } else { $null }
+            if ($definition) {
+                [void]$selectedTweaks.Add(@{ Id = $tid; Config = $definition.Config })
             }
         }
 
@@ -718,21 +718,21 @@ function Start-OptiKitMain {
         }
 
         $rebootItems = @($selectedTweaks | Where-Object { $_.Config.requiresReboot } | ForEach-Object { $_.Config.title })
-        $modeTitle = if ($ActionMode -eq 'Apply') { 'Aplicar Selecionados' } else { 'Reverter Selecionados (Undo)' }
+        $modeTitle = if ($ActionMode -eq 'Apply') { 'Aplicar selecionados' } else { 'Reverter selecionados' }
 
         if (-not $IsSmokeTest) {
-            $summaryText = "Operação: $modeTitle`r`n• Tweaks de Sistema: $($selectedTweaks.Count)`r`n• Otimizações de Jogos: $($selectedGameOpts.Count)"
+            $summaryText = "Operação: $modeTitle`r`n• Ajustes do Windows: $($selectedTweaks.Count)`r`n• Otimizações de jogos: $($selectedGameOpts.Count)"
             if ($ActionMode -eq 'Apply') {
-                $summaryText += "`r`n• Aplicativos Winget: $($selectedApps.Count)"
+                $summaryText += "`r`n• Aplicativos (winget): $($selectedApps.Count)"
             }
             if ($rebootItems.Count -gt 0) {
-                $summaryText += "`r`n`r`n⚠️ Itens que exigem reinicialização:`r`n- " + ($rebootItems -join "`r`n- ")
+                $summaryText += "`r`n`r`nExigem reinicialização:`r`n- " + ($rebootItems -join "`r`n- ")
             }
             if ($script:OptiKit -and $script:OptiKit.DryRun) {
-                $summaryText += "`r`n`r`n⚠️ MODO DRY-RUN (SIMULAÇÃO) ATIVO:`r`nNenhuma alteração real será gravada no Windows. Para aplicar de verdade, execute o win.ps1 sem a flag -DryRun."
+                $summaryText += "`r`n`r`nModo simulação ativo: nada será gravado no Windows. Para aplicar de verdade, execute o win.ps1 sem -DryRun."
             }
             $summaryText += "`r`n`r`nDeseja prosseguir?"
-            $confirm = [System.Windows.MessageBox]::Show($window, $summaryText, "Confirmar Execução (OptiKit)", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+            $confirm = [System.Windows.MessageBox]::Show($window, $summaryText, 'Confirmar', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
             if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) {
                 return
             }
@@ -828,20 +828,35 @@ function Start-OptiKitMain {
     $uiTimer.Add_Tick({
         $logItem = $null
         $appended = $false
+        $lastLevel = $null
         while ($sync.LogQueue.TryDequeue([ref]$logItem)) {
             $ui.TxtConsoleOutput.AppendText($logItem.Formatted + [Environment]::NewLine)
             $appended = $true
+            $lastLevel = [string]$logItem.Level
+            if (($lastLevel -eq 'ERROR') -and $ui.LogPanel) {
+                $ui.LogPanel.Visibility = 'Visible'
+            }
         }
         if ($appended) {
             $ui.TxtConsoleOutput.ScrollToEnd()
+        }
+        if ($lastLevel) {
+            $statusBrushKey = switch ($lastLevel) {
+                'ERROR' { 'Brush.Danger' }
+                'WARN' { 'Brush.Warning' }
+                default { 'Brush.Text.Secondary' }
+            }
+            $ui.TxtStatusMessage.Foreground = $window.FindResource($statusBrushKey)
         }
 
         $ui.MainProgressBar.Value = [double]$sync.Progress
         $ui.TxtStatusMessage.Text = [string]$sync.StatusText
 
         $busy = [bool]$sync.IsBusy
-        $ui.BtnApplySelected.IsEnabled = (-not $busy)
-        $ui.BtnUndoSelected.IsEnabled = (-not $busy)
+        $ui.MainProgressBar.Visibility = if ($busy) { 'Visible' } else { 'Hidden' }
+        $hasSelection = ([int]$ui.SelectionCount -gt 0)
+        $ui.BtnApplySelected.IsEnabled = ((-not $busy) -and $hasSelection)
+        $ui.BtnUndoSelected.IsEnabled = ((-not $busy) -and $hasSelection)
         $ui.BtnUndoAll.IsEnabled = (-not $busy)
         $ui.BtnResetNetwork.IsEnabled = (-not $busy)
         $ui.BtnRunSfcDism.IsEnabled = (-not $busy)
@@ -876,7 +891,7 @@ function Start-OptiKitMain {
             $update = $sync.PendingUpdateInfo
             $sync.PendingUpdateInfo = $null
             if ($update -and $ui.BadgeUpdate) {
-                $ui.TxtUpdateBadge.Text = ("Nova versão v{0} disponível" -f $update.Version)
+                $ui.TxtUpdateBadge.Text = ("Versão {0} disponível" -f $update.Version)
                 $ui.BadgeUpdate.ToolTip = 'Clique para abrir a página de releases do OptiKit.'
                 $ui.BadgeUpdate.Visibility = 'Visible'
             }

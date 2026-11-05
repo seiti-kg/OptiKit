@@ -40,6 +40,7 @@ jobs:
           $issues = @(
             Invoke-ScriptAnalyzer -Path .\src -Recurse -Settings .\PSScriptAnalyzerSettings.psd1
             Invoke-ScriptAnalyzer -Path .\build.ps1 -Settings .\PSScriptAnalyzerSettings.psd1
+            Invoke-ScriptAnalyzer -Path .\tools -Recurse -Settings .\PSScriptAnalyzerSettings.psd1
           )
           if ($issues.Count -gt 0) {
             $issues | Format-Table -AutoSize

@@ -17,89 +17,829 @@ if (-not (Get-Command Test-OptiKitDohSupported -ErrorAction SilentlyContinue)) {
 
 Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase, System.Windows.Forms
 
-function ConvertFrom-HexBrush {
-    param([Parameter(Mandatory = $true)][string]$Hex)
-    $conv = New-Object System.Windows.Media.BrushConverter
-    return [System.Windows.Media.Brush]$conv.ConvertFromString($Hex)
+function Get-OptiKitUiResource {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][string]$Key
+    )
+    return $Ui.Window.FindResource($Key)
 }
 
-function New-OptiKitBadge {
+function Format-OptiKitCount {
     param(
-        [Parameter(Mandatory = $true)][string]$Text,
-        [string]$BgHex = '#27272A',
-        [string]$BorderHex = '#3F3F46',
-        [string]$FgHex = '#E4E4E7'
+        [Parameter(Mandatory = $true)][int]$Count,
+        [Parameter(Mandatory = $true)][string]$Singular,
+        [Parameter(Mandatory = $true)][string]$Plural
     )
+    if ($Count -eq 1) { return ('1 {0}' -f $Singular) }
+    return ('{0} {1}' -f $Count, $Plural)
+}
 
-    $border = New-Object System.Windows.Controls.Border
-    $border.Background = ConvertFrom-HexBrush $BgHex
-    $border.BorderBrush = ConvertFrom-HexBrush $BorderHex
-    $border.BorderThickness = New-Object System.Windows.Thickness(1)
-    $border.CornerRadius = New-Object System.Windows.CornerRadius(4)
-    $border.Padding = New-Object System.Windows.Thickness(5, 1, 5, 1)
-    $border.Margin = New-Object System.Windows.Thickness(4, 0, 0, 0)
-    $border.VerticalAlignment = 'Center'
-    $border.HorizontalAlignment = 'Right'
+function Format-OptiKitSelectionCount {
+    param([int]$Count)
+    if ($Count -le 0) { return 'Nenhum item selecionado' }
+    return (Format-OptiKitCount -Count $Count -Singular 'item selecionado' -Plural 'itens selecionados')
+}
+
+function Format-OptiKitHardwareSummary {
+    param([AllowEmptyString()][string]$Summary)
+    return ((@($Summary -split '\s*\|\s*') | Where-Object { $_ }) -join [Environment]::NewLine)
+}
+
+function New-OptiKitText {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [AllowEmptyString()][string]$Text = '',
+        [string]$Style = 'Text.Body',
+        [ValidateSet('None', 'Wrap', 'Trim')][string]$Overflow = 'None',
+        [string]$Brush
+    )
 
     $tb = New-Object System.Windows.Controls.TextBlock
     $tb.Text = $Text
-    $tb.Foreground = ConvertFrom-HexBrush $FgHex
-    $tb.FontSize = 10.5
-    $tb.FontWeight = 'SemiBold'
-    $border.Child = $tb
-
-    return $border
+    $tb.Style = Get-OptiKitUiResource -Ui $Ui -Key $Style
+    switch ($Overflow) {
+        'Wrap' { $tb.TextWrapping = 'Wrap' }
+        'Trim' {
+            $tb.TextWrapping = 'NoWrap'
+            $tb.TextTrimming = 'CharacterEllipsis'
+        }
+    }
+    if ($Brush) {
+        $tb.Foreground = Get-OptiKitUiResource -Ui $Ui -Key $Brush
+    }
+    return $tb
 }
 
-function Get-ImpactColors {
+function New-OptiKitRun {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][string]$Text,
+        [string]$Brush
+    )
+
+    $run = New-Object System.Windows.Documents.Run($Text)
+    if ($Brush) {
+        $run.Foreground = Get-OptiKitUiResource -Ui $Ui -Key $Brush
+    }
+    return $run
+}
+
+function Get-OptiKitImpactLabel {
     param([string]$Impact)
     switch ($Impact) {
-        'Alto'        { return @{ Bg = '#082F38'; Border = '#00E5FF'; Fg = '#00E5FF' } }
-        'Médio'       { return @{ Bg = '#172554'; Border = '#3B82F6'; Fg = '#60A5FA' } }
-        'Baixo'       { return @{ Bg = '#27272A'; Border = '#52525B'; Fg = '#A1A1AA' } }
-        'Situacional' { return @{ Bg = '#3B2F0B'; Border = '#F59E0B'; Fg = '#FBBF24' } }
-        default       { return @{ Bg = '#27272A'; Border = '#52525B'; Fg = '#D4D4D8' } }
+        'Alto' { return 'Impacto alto' }
+        'Médio' { return 'Impacto médio' }
+        'Baixo' { return 'Impacto baixo' }
+        'Situacional' { return 'Situacional' }
+        default { return [string]$Impact }
     }
 }
 
-function Get-RiskColors {
+function Get-OptiKitRiskLabel {
     param([string]$Risk)
     switch ($Risk) {
-        'Safe'     { return @{ Bg = '#052E16'; Border = '#10B981'; Fg = '#34D399' } }
-        'Moderate' { return @{ Bg = '#3B2F0B'; Border = '#F59E0B'; Fg = '#FBBF24' } }
-        'Advanced' { return @{ Bg = '#3B1219'; Border = '#FF4655'; Fg = '#FF6B78' } }
-        default    { return @{ Bg = '#27272A'; Border = '#52525B'; Fg = '#D4D4D8' } }
+        'Moderate' { return @{ Text = 'Risco moderado'; Brush = 'Brush.Warning' } }
+        'Advanced' { return @{ Text = 'Risco avançado'; Brush = 'Brush.Danger' } }
+        default { return $null }
     }
 }
 
-function Get-DiagnosticColors {
-    param([string]$Status)
+function New-OptiKitToolTipContent {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][string]$Title,
+        [string]$Body,
+        [string]$DetailLabel,
+        [string]$Detail,
+        [string]$Footer,
+        [string]$Alert
+    )
 
-    switch ($Status) {
-        'OK'    { return @{ Bg = '#052E16'; Border = '#10B981'; Fg = '#34D399' } }
-        'Warn'  { return @{ Bg = '#3B2F0B'; Border = '#F59E0B'; Fg = '#FBBF24' } }
-        'Error' { return @{ Bg = '#3B1219'; Border = '#FF4655'; Fg = '#FF6B78' } }
-        'Info'  { return @{ Bg = '#082F38'; Border = '#00E5FF'; Fg = '#00E5FF' } }
-        default { return @{ Bg = '#27272A'; Border = '#52525B'; Fg = '#A1A1AA' } }
+    $sp = New-Object System.Windows.Controls.StackPanel
+    $sp.MaxWidth = 416
+    [void]$sp.Children.Add((New-OptiKitText -Ui $Ui -Text $Title -Style 'Text.BodyStrong' -Overflow Wrap))
+
+    if (-not [string]::IsNullOrWhiteSpace($Body)) {
+        $bodyTb = New-OptiKitText -Ui $Ui -Text $Body -Style 'Text.Caption' -Overflow Wrap
+        $bodyTb.Margin = New-Object System.Windows.Thickness(0, 4, 0, 0)
+        [void]$sp.Children.Add($bodyTb)
     }
+    if (-not [string]::IsNullOrWhiteSpace($Detail)) {
+        if (-not [string]::IsNullOrWhiteSpace($DetailLabel)) {
+            $labelTb = New-OptiKitText -Ui $Ui -Text $DetailLabel -Style 'Text.Caption' -Brush 'Brush.Text.Primary'
+            $labelTb.FontWeight = 'SemiBold'
+            $labelTb.Margin = New-Object System.Windows.Thickness(0, 10, 0, 2)
+            [void]$sp.Children.Add($labelTb)
+        }
+        [void]$sp.Children.Add((New-OptiKitText -Ui $Ui -Text $Detail -Style 'Text.Caption' -Overflow Wrap))
+    }
+    if (-not [string]::IsNullOrWhiteSpace($Footer)) {
+        $footerTb = New-OptiKitText -Ui $Ui -Text $Footer -Style 'Text.Meta' -Overflow Wrap
+        $footerTb.Margin = New-Object System.Windows.Thickness(0, 10, 0, 0)
+        [void]$sp.Children.Add($footerTb)
+    }
+    if (-not [string]::IsNullOrWhiteSpace($Alert)) {
+        $alertTb = New-OptiKitText -Ui $Ui -Text $Alert -Style 'Text.Caption' -Overflow Wrap -Brush 'Brush.Danger'
+        $alertTb.Margin = New-Object System.Windows.Thickness(0, 8, 0, 0)
+        [void]$sp.Children.Add($alertTb)
+    }
+    return $sp
+}
+
+function New-OptiKitItemRow {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][string]$Title,
+        [AllowEmptyString()][string]$Description = '',
+        [string]$Impact,
+        [string]$Risk = 'Safe',
+        [switch]$RequiresReboot,
+        [string]$BlockReason,
+        $ToolTipContent,
+        [string]$Tag
+    )
+
+    $stack = New-Object System.Windows.Controls.StackPanel
+
+    $line1 = New-Object System.Windows.Controls.DockPanel
+    $line1.LastChildFill = $true
+    $statusPanel = New-Object System.Windows.Controls.StackPanel
+    $statusPanel.Orientation = 'Horizontal'
+    $statusPanel.VerticalAlignment = 'Center'
+    $statusPanel.Margin = New-Object System.Windows.Thickness(12, 0, 0, 0)
+    [System.Windows.Controls.DockPanel]::SetDock($statusPanel, 'Right')
+
+    $isBlocked = -not [string]::IsNullOrWhiteSpace($BlockReason)
+    if ($isBlocked) {
+        [void]$statusPanel.Children.Add((New-OptiKitText -Ui $Ui -Text 'Bloqueado' -Style 'Text.Caption' -Brush 'Brush.Danger'))
+    }
+    $applied = New-OptiKitText -Ui $Ui -Text 'Aplicado' -Style 'Text.Caption' -Brush 'Brush.Success'
+    $applied.Visibility = 'Collapsed'
+    if ($isBlocked) {
+        $applied.Margin = New-Object System.Windows.Thickness(8, 0, 0, 0)
+    }
+    [void]$statusPanel.Children.Add($applied)
+    [void]$line1.Children.Add($statusPanel)
+    $titleTb = New-OptiKitText -Ui $Ui -Text $Title -Style 'Text.Body' -Overflow Trim
+    [void]$line1.Children.Add($titleTb)
+    [void]$stack.Children.Add($line1)
+
+    $meta = New-Object System.Windows.Controls.TextBlock
+    $meta.Style = Get-OptiKitUiResource -Ui $Ui -Key 'Text.Meta'
+    $meta.Margin = New-Object System.Windows.Thickness(12, 0, 0, 0)
+    [System.Windows.Controls.DockPanel]::SetDock($meta, 'Right')
+    $riskInfo = Get-OptiKitRiskLabel -Risk $Risk
+    if ($riskInfo) {
+        [void]$meta.Inlines.Add((New-OptiKitRun -Ui $Ui -Text $riskInfo.Text -Brush $riskInfo.Brush))
+    }
+    $tail = New-Object 'System.Collections.Generic.List[string]'
+    if (-not [string]::IsNullOrWhiteSpace($Impact)) { [void]$tail.Add((Get-OptiKitImpactLabel -Impact $Impact)) }
+    if ($RequiresReboot) { [void]$tail.Add('Requer reinício') }
+    foreach ($part in $tail) {
+        if ($meta.Inlines.Count -gt 0) { [void]$meta.Inlines.Add((New-OptiKitRun -Ui $Ui -Text ' · ')) }
+        [void]$meta.Inlines.Add((New-OptiKitRun -Ui $Ui -Text $part))
+    }
+    $hasDescription = -not [string]::IsNullOrWhiteSpace($Description)
+    if ($hasDescription -or ($meta.Inlines.Count -gt 0)) {
+        $line2 = New-Object System.Windows.Controls.DockPanel
+        $line2.LastChildFill = $true
+        $line2.Margin = New-Object System.Windows.Thickness(0, 2, 0, 0)
+        if ($meta.Inlines.Count -gt 0) { [void]$line2.Children.Add($meta) }
+        if ($hasDescription) {
+            [void]$line2.Children.Add((New-OptiKitText -Ui $Ui -Text $Description -Style 'Text.Caption' -Overflow Trim))
+        }
+        [void]$stack.Children.Add($line2)
+    }
+
+    $cb = New-Object System.Windows.Controls.CheckBox
+    $cb.Content = $stack
+    $cb.Margin = New-Object System.Windows.Thickness(0, 0, 8, 2)
+    if ($Tag) { $cb.Tag = $Tag }
+    if ($null -ne $ToolTipContent) { $cb.ToolTip = $ToolTipContent }
+    if ($isBlocked) { $cb.IsEnabled = $false }
+
+    return @{
+        CheckBox     = $cb
+        BadgeApplied = $applied
+        TitleText    = $titleTb
+    }
+}
+
+function New-OptiKitGroupHeader {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][string]$Text,
+        [int]$Count = 0,
+        [switch]$First
+    )
+
+    $sp = New-Object System.Windows.Controls.StackPanel
+    $sp.Orientation = 'Horizontal'
+    $top = if ($First) { 0 } else { 28 }
+    $sp.Margin = New-Object System.Windows.Thickness(0, $top, 0, 8)
+    [void]$sp.Children.Add((New-OptiKitText -Ui $Ui -Text $Text -Style 'Text.Subtitle'))
+    if ($Count -gt 0) {
+        $countTb = New-OptiKitText -Ui $Ui -Text ([string]$Count) -Style 'Text.Meta'
+        $countTb.Margin = New-Object System.Windows.Thickness(8, 0, 0, 0)
+        $countTb.VerticalAlignment = 'Center'
+        [void]$sp.Children.Add($countTb)
+    }
+    return $sp
+}
+
+function New-OptiKitResponsiveGrid {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][string]$Container,
+        [Parameter(Mandatory = $true)][double]$MinColumnWidth
+    )
+
+    $grid = New-Object System.Windows.Controls.Primitives.UniformGrid
+    $grid.Columns = 1
+    $grid.Tag = $MinColumnWidth
+    if (-not $Ui.ResponsiveGrids) { $Ui.ResponsiveGrids = @{} }
+    if (-not $Ui.ResponsiveGrids.ContainsKey($Container)) {
+        $Ui.ResponsiveGrids[$Container] = New-Object 'System.Collections.Generic.List[object]'
+    }
+    [void]$Ui.ResponsiveGrids[$Container].Add($grid)
+    return $grid
+}
+
+function Update-OptiKitResponsiveGrids {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][string]$Container,
+        [Parameter(Mandatory = $true)][double]$Width
+    )
+
+    if (-not $Ui.ResponsiveGrids -or -not $Ui.ResponsiveGrids.ContainsKey($Container)) { return }
+    foreach ($grid in $Ui.ResponsiveGrids[$Container]) {
+        $cols = [int][Math]::Max(1, [Math]::Floor($Width / [double]$grid.Tag))
+        if ($grid.Columns -ne $cols) { $grid.Columns = $cols }
+    }
+}
+
+function Register-OptiKitResponsiveHost {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][string]$Container
+    )
+
+    $element = $Ui[$Container]
+    if (-not $element) { return }
+    $name = $Container
+    $element.Add_SizeChanged({
+        param($sizeSender, $sizeArgs)
+        Update-OptiKitResponsiveGrids -Ui $Ui -Container $name -Width $sizeArgs.NewSize.Width
+    }.GetNewClosure())
+}
+
+function Add-OptiKitComboOption {
+    param(
+        [Parameter(Mandatory = $true)]$Combo,
+        [Parameter(Mandatory = $true)][string]$Text,
+        [Parameter(Mandatory = $true)][string]$Value
+    )
+
+    $item = New-Object System.Windows.Controls.ComboBoxItem
+    $item.Content = $Text
+    $item.Tag = $Value
+    [void]$Combo.Items.Add($item)
+}
+
+function Get-OptiKitTweakCategoryOrder {
+    return @(
+        'Desempenho & Energia',
+        'Privacidade & Telemetria',
+        'Windows Update',
+        'Interface & Windows 11',
+        'Remoção de Bloatware (Appx)',
+        'Avançado'
+    )
+}
+
+function Get-OptiKitTweakImpactOrder {
+    param([string]$Impact)
+    switch ($Impact) {
+        'Alto' { return 0 }
+        'Médio' { return 1 }
+        'Baixo' { return 2 }
+        'Situacional' { return 3 }
+        default { return 4 }
+    }
+}
+
+function Get-OptiKitTweakRiskOrder {
+    param([string]$Risk)
+    switch ($Risk) {
+        'Advanced' { return 0 }
+        'Moderate' { return 1 }
+        'Safe' { return 2 }
+        default { return 3 }
+    }
+}
+
+function Get-OptiKitTweakStatusOrder {
+    param([string]$Status)
+    switch ($Status) {
+        'Applied' { return 0 }
+        'Partial' { return 1 }
+        'NotApplied' { return 2 }
+        default { return 3 }
+    }
+}
+
+function Get-OptiKitTweakStatusLabel {
+    param([string]$Status)
+    switch ($Status) {
+        'Applied' { return 'Aplicado' }
+        'Partial' { return 'Parcial' }
+        'NotApplied' { return 'Não aplicado' }
+        default { return 'Desconhecido' }
+    }
+}
+
+function Get-OptiKitTweakGroupInfo {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Definition,
+        [Parameter(Mandatory = $true)][string]$Sort,
+        [string]$Status = 'Unknown'
+    )
+
+    $categoryOrder = Get-OptiKitTweakCategoryOrder
+    $categoryIndex = [array]::IndexOf($categoryOrder, [string]$Definition.Category)
+    if ($categoryIndex -lt 0) { $categoryIndex = 99 }
+
+    switch ($Sort) {
+        'Impact' {
+            return @{
+                Key   = ('Impact:{0}' -f $Definition.Impact)
+                Label = (Get-OptiKitImpactLabel -Impact $Definition.Impact)
+                Order = (Get-OptiKitTweakImpactOrder -Impact $Definition.Impact)
+            }
+        }
+        'Risk' {
+            $risk = Get-OptiKitRiskLabel -Risk $Definition.Risk
+            $label = if ($risk) { [string]$risk.Text } else { 'Seguro' }
+            return @{
+                Key   = ('Risk:{0}' -f $Definition.Risk)
+                Label = $label
+                Order = (Get-OptiKitTweakRiskOrder -Risk $Definition.Risk)
+            }
+        }
+        'Status' {
+            return @{
+                Key   = ('Status:{0}' -f $Status)
+                Label = (Get-OptiKitTweakStatusLabel -Status $Status)
+                Order = (Get-OptiKitTweakStatusOrder -Status $Status)
+            }
+        }
+        'Reboot' {
+            $reboot = [bool]$Definition.RequiresReboot
+            return @{
+                Key   = ('Reboot:{0}' -f $reboot)
+                Label = if ($reboot) { 'Requer reinício' } else { 'Não requer reinício' }
+                Order = if ($reboot) { 0 } else { 1 }
+            }
+        }
+        'Title' {
+            return @{ Key = 'All'; Label = 'Todos os ajustes'; Order = 0 }
+        }
+        default {
+            return @{
+                Key   = ('Category:{0}' -f $Definition.Category)
+                Label = [string]$Definition.Category
+                Order = $categoryIndex
+            }
+        }
+    }
+}
+
+function Update-OptiKitTweakFilterButton {
+    param([Parameter(Mandatory = $true)][hashtable]$Ui)
+
+    if (-not $Ui.BtnClearTweakFilters -or -not $Ui.TweakViewState) { return }
+    $view = $Ui.TweakViewState
+    $active = ($view.Impact -ne 'All') -or ($view.Risk -ne 'All') -or ($view.Status -ne 'All')
+    $Ui.BtnClearTweakFilters.Visibility = if ($active) { 'Visible' } else { 'Collapsed' }
+}
+
+function Update-OptiKitTweakPage {
+    param([Parameter(Mandatory = $true)][hashtable]$Ui)
+
+    if (-not $Ui.TweaksCategoriesHost) { return }
+    if (-not $Ui.TweakViewState) {
+        $Ui.TweakViewState = @{ Sort = 'Category'; Impact = 'All'; Risk = 'All'; Status = 'All' }
+    }
+    if (-not $Ui.TweakStatuses) { $Ui.TweakStatuses = @{} }
+
+    $view = $Ui.TweakViewState
+    $categoryOrder = Get-OptiKitTweakCategoryOrder
+    $filtered = New-Object 'System.Collections.Generic.List[object]'
+
+    foreach ($def in $Ui.TweakDefinitions) {
+        if ($view.Impact -ne 'All' -and $def.Impact -ne $view.Impact) { continue }
+        if ($view.Risk -ne 'All' -and $def.Risk -ne $view.Risk) { continue }
+
+        $status = if ($Ui.TweakStatuses.ContainsKey($def.Key)) { [string]$Ui.TweakStatuses[$def.Key] } else { 'Unknown' }
+        if ($view.Status -ne 'All' -and $status -ne $view.Status) { continue }
+        [void]$filtered.Add($def)
+    }
+
+    $prepared = New-Object 'System.Collections.Generic.List[object]'
+    foreach ($def in $filtered) {
+        $status = if ($Ui.TweakStatuses.ContainsKey($def.Key)) { [string]$Ui.TweakStatuses[$def.Key] } else { 'Unknown' }
+        $group = Get-OptiKitTweakGroupInfo -Definition $def -Sort $view.Sort -Status $status
+        $categoryIndex = [array]::IndexOf($categoryOrder, [string]$def.Category)
+        if ($categoryIndex -lt 0) { $categoryIndex = 99 }
+        $impactOrder = Get-OptiKitTweakImpactOrder -Impact $def.Impact
+        $riskOrder = Get-OptiKitTweakRiskOrder -Risk $def.Risk
+
+        $secondary = switch ($view.Sort) {
+            'Impact' { ($categoryIndex * 100) + ($riskOrder * 10) }
+            'Risk' { ($impactOrder * 100) + ($categoryIndex * 10) }
+            'Status' { ($impactOrder * 100) + ($categoryIndex * 10) }
+            'Reboot' { ($impactOrder * 100) + ($categoryIndex * 10) }
+            'Title' { 0 }
+            default { ($impactOrder * 100) + ($riskOrder * 10) }
+        }
+
+        [void]$prepared.Add([pscustomobject]@{
+            Definition = $def
+            Status     = $status
+            GroupKey   = $group.Key
+            GroupLabel = $group.Label
+            GroupOrder = [int]$group.Order
+            Secondary  = [int]$secondary
+        })
+    }
+
+    $sorted = @($prepared | Sort-Object @{ Expression = { $_.GroupOrder } }, @{ Expression = { $_.Secondary } }, @{ Expression = { $_.Definition.Title } })
+
+    $groupCounts = @{}
+    foreach ($item in $sorted) {
+        if ($groupCounts.ContainsKey($item.GroupKey)) {
+            $groupCounts[$item.GroupKey]++
+        }
+        else {
+            $groupCounts[$item.GroupKey] = 1
+        }
+    }
+
+    $Ui.TweaksCategoriesHost.Children.Clear()
+    if ($Ui.ResponsiveGrids -and $Ui.ResponsiveGrids.ContainsKey('TweaksCategoriesHost')) {
+        $Ui.ResponsiveGrids['TweaksCategoriesHost'].Clear()
+    }
+    for ($i = $Ui.SearchGroups.Count - 1; $i -ge 0; $i--) {
+        if ($Ui.SearchGroups[$i].Page -eq 'Tweaks') {
+            $Ui.SearchGroups.RemoveAt($i)
+        }
+    }
+
+    $newEntries = @{}
+    $firstGroup = $true
+    $currentGroupKey = $null
+    $grid = $null
+    $entries = $null
+
+    foreach ($item in $sorted) {
+        $def = $item.Definition
+        if ($item.GroupKey -ne $currentGroupKey) {
+            $header = New-OptiKitGroupHeader -Ui $Ui -Text $item.GroupLabel -Count $groupCounts[$item.GroupKey] -First:$firstGroup
+            $firstGroup = $false
+            $grid = New-OptiKitResponsiveGrid -Ui $Ui -Container 'TweaksCategoriesHost' -MinColumnWidth 560
+            $entries = New-Object 'System.Collections.Generic.List[object]'
+            [void]$Ui.TweaksCategoriesHost.Children.Add($header)
+            [void]$Ui.TweaksCategoriesHost.Children.Add($grid)
+            [void]$Ui.SearchGroups.Add(@{ Page = 'Tweaks'; Header = $header; Container = $grid; Entries = $entries })
+            $currentGroupKey = $item.GroupKey
+        }
+
+        $tweakVal = $def.Config
+        $blockReason = $def.BlockReason
+        $footerParts = New-Object 'System.Collections.Generic.List[string]'
+        [void]$footerParts.Add((Get-OptiKitImpactLabel -Impact $tweakVal.impact))
+        $riskInfo = Get-OptiKitRiskLabel -Risk $tweakVal.riskLevel
+        if ($riskInfo) { [void]$footerParts.Add($riskInfo.Text) }
+        if ($tweakVal.requiresReboot) { [void]$footerParts.Add('Requer reinício') }
+        $alert = if ($blockReason) { 'Bloqueado neste hardware: {0}' -f $blockReason } else { $null }
+        $tip = New-OptiKitToolTipContent -Ui $Ui -Title $tweakVal.title -Body $tweakVal.description -DetailLabel 'Justificativa técnica' -Detail $tweakVal.rationale -Footer ($footerParts -join ' · ') -Alert $alert
+
+        $row = New-OptiKitItemRow -Ui $Ui -Title $tweakVal.title -Description $tweakVal.description -Impact $tweakVal.impact -Risk $tweakVal.riskLevel -RequiresReboot:([bool]$tweakVal.requiresReboot) -BlockReason $blockReason -ToolTipContent $tip -Tag $def.Key
+        $cb = $row.CheckBox
+        $cb.IsChecked = $Ui.SelectedTweakIds.Contains($def.Key)
+
+        $key = [string]$def.Key
+        $confirmText = $tweakVal.confirmMessage
+        $cb.Add_Checked({
+            if (-not [string]::IsNullOrWhiteSpace($confirmText) -and (-not $Ui.SuppressConfirmDialog)) {
+                $ans = [System.Windows.MessageBox]::Show($Ui.Window, $confirmText, 'Confirmar ajuste', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+                if ($ans -ne [System.Windows.MessageBoxResult]::Yes) {
+                    $this.IsChecked = $false
+                    return
+                }
+            }
+            [void]$Ui.SelectedTweakIds.Add($key)
+            Update-SelectionCounter -Ui $Ui
+        }.GetNewClosure())
+        $cb.Add_Unchecked({
+            [void]$Ui.SelectedTweakIds.Remove($key)
+            Update-SelectionCounter -Ui $Ui
+        }.GetNewClosure())
+
+        if ($item.Status -eq 'Applied') {
+            $row.BadgeApplied.Visibility = 'Visible'
+        }
+        else {
+            $row.BadgeApplied.Visibility = 'Collapsed'
+        }
+
+        [void]$grid.Children.Add($cb)
+        $entry = @{
+            CheckBox     = $cb
+            Card         = $cb
+            BadgeApplied = $row.BadgeApplied
+            Config       = $tweakVal
+            BlockReason  = $blockReason
+            SearchText   = $def.SearchText
+            Category     = $def.Category
+            Impact       = $def.Impact
+            Risk         = $def.Risk
+            RequiresReboot = $def.RequiresReboot
+        }
+        $newEntries[$key] = $entry
+        [void]$entries.Add($entry)
+    }
+
+    $Ui.TweakCheckboxes = $newEntries
+    $Ui.TweaksFilteredEmpty = ($sorted.Count -eq 0)
+
+    if ($Ui.TxtTweakCount) {
+        $total = $Ui.TweakDefinitions.Count
+        $shown = $sorted.Count
+        $Ui.TxtTweakCount.Text = if ($shown -eq $total) {
+            Format-OptiKitCount -Count $total -Singular 'ajuste' -Plural 'ajustes'
+        }
+        else {
+            ('{0} de {1} ajustes' -f $shown, $total)
+        }
+    }
+
+    if ($Ui.TxtTweaksEmpty) {
+        if ($Ui.TweaksFilteredEmpty) {
+            $Ui.TxtTweaksEmpty.Text = 'Nenhum ajuste com esses filtros. Ajuste a organização ou limpe os filtros.'
+            $Ui.TxtTweaksEmpty.Visibility = 'Visible'
+        }
+        else {
+            $Ui.TxtTweaksEmpty.Visibility = 'Collapsed'
+        }
+    }
+
+    if ($Ui.TweaksCategoriesHost.ActualWidth -gt 0) {
+        Update-OptiKitResponsiveGrids -Ui $Ui -Container 'TweaksCategoriesHost' -Width $Ui.TweaksCategoriesHost.ActualWidth
+    }
+
+    Update-OptiKitTweakFilterButton -Ui $Ui
+    Update-SelectionCounter -Ui $Ui
+}
+
+function Set-OptiKitTweakView {
+    param([Parameter(Mandatory = $true)][hashtable]$Ui)
+
+    if (-not $Ui.TweakViewState) {
+        $Ui.TweakViewState = @{ Sort = 'Category'; Impact = 'All'; Risk = 'All'; Status = 'All' }
+    }
+    if ($Ui.CmbTweakSort -and $Ui.CmbTweakSort.SelectedItem) {
+        $Ui.TweakViewState.Sort = [string]$Ui.CmbTweakSort.SelectedItem.Tag
+    }
+    if ($Ui.CmbTweakImpact -and $Ui.CmbTweakImpact.SelectedItem) {
+        $Ui.TweakViewState.Impact = [string]$Ui.CmbTweakImpact.SelectedItem.Tag
+    }
+    if ($Ui.CmbTweakRisk -and $Ui.CmbTweakRisk.SelectedItem) {
+        $Ui.TweakViewState.Risk = [string]$Ui.CmbTweakRisk.SelectedItem.Tag
+    }
+    if ($Ui.CmbTweakStatus -and $Ui.CmbTweakStatus.SelectedItem) {
+        $Ui.TweakViewState.Status = [string]$Ui.CmbTweakStatus.SelectedItem.Tag
+    }
+
+    Update-OptiKitTweakPage -Ui $Ui
+    if ($Ui.TxtSearchBox) {
+        Invoke-SearchFilter -Ui $Ui -Query $Ui.TxtSearchBox.Text
+    }
+    Update-OptiKitTweakFilterButton -Ui $Ui
+}
+
+function Get-OptiKitDiagnosticVisual {
+    param([string]$Status)
+    switch ($Status) {
+        'Error' { return @{ Glyph = [char]0xEA39; Brush = 'Brush.Danger'; Label = 'Problema'; Order = 0 } }
+        'Warn' { return @{ Glyph = [char]0xE7BA; Brush = 'Brush.Warning'; Label = 'Aviso'; Order = 1 } }
+        'Info' { return @{ Glyph = [char]0xE946; Brush = 'Brush.Text.Tertiary'; Label = 'Informativo'; Order = 3 } }
+        'OK' { return @{ Glyph = [char]0xE930; Brush = 'Brush.Success'; Label = 'OK'; Order = 4 } }
+        default { return @{ Glyph = [char]0xE9CE; Brush = 'Brush.Text.Tertiary'; Label = 'Não verificado'; Order = 2 } }
+    }
+}
+
+function Format-OptiKitDiagnosticsSummary {
+    param([array]$Items)
+
+    $all = @($Items)
+    if ($all.Count -eq 0) { return 'Somente leitura. Nenhuma verificação disponível.' }
+    $parts = New-Object 'System.Collections.Generic.List[string]'
+    $err = @($all | Where-Object { $_.Status -eq 'Error' }).Count
+    $warn = @($all | Where-Object { $_.Status -eq 'Warn' }).Count
+    $ok = @($all | Where-Object { $_.Status -eq 'OK' }).Count
+    $other = $all.Count - $err - $warn - $ok
+    if ($err -gt 0) { [void]$parts.Add((Format-OptiKitCount -Count $err -Singular 'problema' -Plural 'problemas')) }
+    if ($warn -gt 0) { [void]$parts.Add((Format-OptiKitCount -Count $warn -Singular 'aviso' -Plural 'avisos')) }
+    if ($ok -gt 0) { [void]$parts.Add(('{0} OK' -f $ok)) }
+    if ($other -gt 0) { [void]$parts.Add((Format-OptiKitCount -Count $other -Singular 'informativo' -Plural 'informativos')) }
+    $joined = if ($parts.Count -gt 1) { (($parts[0..($parts.Count - 2)]) -join ', ') + ' e ' + $parts[$parts.Count - 1] } else { $parts[0] }
+    return ('Somente leitura. {0}.' -f $joined)
+}
+
+function New-OptiKitDiagnosticRow {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][pscustomobject]$Item
+    )
+
+    $visual = Get-OptiKitDiagnosticVisual -Status $Item.Status
+    $grid = New-Object System.Windows.Controls.Grid
+    $grid.Margin = New-Object System.Windows.Thickness(0, 14, 0, 14)
+    $colIcon = New-Object System.Windows.Controls.ColumnDefinition
+    $colIcon.Width = [System.Windows.GridLength]::Auto
+    $colBody = New-Object System.Windows.Controls.ColumnDefinition
+    $colBody.Width = New-Object System.Windows.GridLength(1, [System.Windows.GridUnitType]::Star)
+    [void]$grid.ColumnDefinitions.Add($colIcon)
+    [void]$grid.ColumnDefinitions.Add($colBody)
+
+    $icon = New-OptiKitText -Ui $Ui -Text ([string]$visual.Glyph) -Style 'Text.Icon' -Brush $visual.Brush
+    $icon.VerticalAlignment = 'Top'
+    $icon.Margin = New-Object System.Windows.Thickness(0, 2, 12, 0)
+    [void]$grid.Children.Add($icon)
+
+    $body = New-Object System.Windows.Controls.StackPanel
+    [System.Windows.Controls.Grid]::SetColumn($body, 1)
+
+    $head = New-Object System.Windows.Controls.DockPanel
+    $head.LastChildFill = $true
+    $label = New-OptiKitText -Ui $Ui -Text $visual.Label -Style 'Text.Caption' -Brush $visual.Brush
+    $label.Margin = New-Object System.Windows.Thickness(12, 0, 0, 0)
+    $label.VerticalAlignment = 'Center'
+    [System.Windows.Controls.DockPanel]::SetDock($label, 'Right')
+    [void]$head.Children.Add($label)
+    [void]$head.Children.Add((New-OptiKitText -Ui $Ui -Text ([string]$Item.Title) -Style 'Text.BodyStrong' -Overflow Trim))
+    [void]$body.Children.Add($head)
+
+    $summary = New-OptiKitText -Ui $Ui -Text ([string]$Item.Summary) -Style 'Text.Caption' -Overflow Wrap -Brush 'Brush.Text.Primary'
+    $summary.Margin = New-Object System.Windows.Thickness(0, 4, 0, 0)
+    [void]$body.Children.Add($summary)
+
+    if (-not [string]::IsNullOrWhiteSpace([string]$Item.Detail)) {
+        $detail = New-OptiKitText -Ui $Ui -Text ([string]$Item.Detail) -Style 'Text.Meta' -Overflow Wrap
+        $detail.Margin = New-Object System.Windows.Thickness(0, 2, 0, 0)
+        [void]$body.Children.Add($detail)
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace([string]$Item.ActionText)) {
+        $action = New-OptiKitText -Ui $Ui -Style 'Text.Caption' -Overflow Wrap
+        $action.Margin = New-Object System.Windows.Thickness(0, 6, 0, 0)
+        if (-not [string]::IsNullOrWhiteSpace([string]$Item.ActionUrl)) {
+            $link = New-Object System.Windows.Documents.Hyperlink
+            [void]$link.Inlines.Add((New-Object System.Windows.Documents.Run([string]$Item.ActionText)))
+            $link.Foreground = Get-OptiKitUiResource -Ui $Ui -Key 'Brush.Accent'
+            $link.NavigateUri = [Uri]$Item.ActionUrl
+            $link.Add_RequestNavigate({
+                param($linkSender, $navigateArgs)
+                try {
+                    Start-Process -FilePath $navigateArgs.Uri.AbsoluteUri
+                }
+                catch {
+                    Write-Verbose $_.Exception.Message
+                }
+                $navigateArgs.Handled = $true
+            }.GetNewClosure())
+            [void]$action.Inlines.Add($link)
+        }
+        else {
+            $action.Text = ('Recomendação: {0}' -f $Item.ActionText)
+        }
+        [void]$body.Children.Add($action)
+    }
+
+    [void]$grid.Children.Add($body)
+    return $grid
+}
+
+function New-OptiKitGameSection {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][pscustomobject]$GameProfile,
+        [string]$ExePath,
+        [switch]$First
+    )
+
+    $panel = New-Object System.Windows.Controls.StackPanel
+    $top = if ($First) { 0 } else { 32 }
+    $panel.Margin = New-Object System.Windows.Thickness(0, $top, 0, 0)
+
+    $head = New-Object System.Windows.Controls.DockPanel
+    $head.LastChildFill = $true
+    $metaText = (@($GameProfile.engine, $GameProfile.antiCheat) | Where-Object { $_ }) -join ' · '
+    $meta = New-OptiKitText -Ui $Ui -Text $metaText -Style 'Text.Meta'
+    $meta.Margin = New-Object System.Windows.Thickness(16, 0, 0, 0)
+    $meta.VerticalAlignment = 'Center'
+    [System.Windows.Controls.DockPanel]::SetDock($meta, 'Right')
+    [void]$head.Children.Add($meta)
+
+    $titleRow = New-Object System.Windows.Controls.StackPanel
+    $titleRow.Orientation = 'Horizontal'
+    [void]$titleRow.Children.Add((New-OptiKitText -Ui $Ui -Text ([string]$GameProfile.gameName) -Style 'Text.Subtitle' -Overflow Trim))
+    if ($GameProfile.status -eq 'comingSoon') {
+        $soon = New-OptiKitText -Ui $Ui -Text 'Em breve' -Style 'Text.Meta'
+        $soon.Margin = New-Object System.Windows.Thickness(8, 0, 0, 0)
+        $soon.VerticalAlignment = 'Center'
+        [void]$titleRow.Children.Add($soon)
+    }
+    [void]$head.Children.Add($titleRow)
+    [void]$panel.Children.Add($head)
+
+    if (-not [string]::IsNullOrWhiteSpace([string]$GameProfile.warning)) {
+        $warning = New-OptiKitText -Ui $Ui -Text ([string]$GameProfile.warning) -Style 'Text.Caption' -Overflow Wrap
+        $warning.Margin = New-Object System.Windows.Thickness(0, 4, 0, 12)
+        $warning.MaxWidth = 760
+        $warning.HorizontalAlignment = 'Left'
+        [void]$panel.Children.Add($warning)
+    }
+
+    $exeText = $null
+    $browse = $null
+    if ($GameProfile.status -eq 'active') {
+        $exeRow = New-Object System.Windows.Controls.DockPanel
+        $exeRow.LastChildFill = $true
+        $exeRow.Margin = New-Object System.Windows.Thickness(0, 0, 8, 8)
+
+        $browse = New-Object System.Windows.Controls.Button
+        $browse.Style = Get-OptiKitUiResource -Ui $Ui -Key 'Button.Subtle'
+        [System.Windows.Controls.DockPanel]::SetDock($browse, 'Right')
+        [void]$exeRow.Children.Add($browse)
+
+        $exeText = New-OptiKitText -Ui $Ui -Style 'Text.Caption' -Overflow Trim
+        $exeText.VerticalAlignment = 'Center'
+        [void]$exeRow.Children.Add($exeText)
+        Set-OptiKitGameExeLabel -Ui $Ui -Label $exeText -Button $browse -ExePath $ExePath
+        [void]$panel.Children.Add($exeRow)
+    }
+
+    $grid = New-OptiKitResponsiveGrid -Ui $Ui -Container 'GameProfilesHost' -MinColumnWidth 560
+    [void]$panel.Children.Add($grid)
+
+    return @{
+        Panel        = $panel
+        Grid         = $grid
+        ExeText      = $exeText
+        BrowseButton = $browse
+    }
+}
+
+function Set-OptiKitGameExeLabel {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][System.Windows.Controls.TextBlock]$Label,
+        [System.Windows.Controls.Button]$Button,
+        [string]$ExePath
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ExePath)) {
+        $Label.Text = 'Executável não encontrado no caminho padrão.'
+        $Label.Foreground = Get-OptiKitUiResource -Ui $Ui -Key 'Brush.Warning'
+        $Label.ToolTip = $null
+        if ($Button) { $Button.Content = 'Selecionar executável' }
+        return
+    }
+    $Label.Text = ('Executável: {0}' -f (Split-Path -Path $ExePath -Leaf))
+    $Label.Foreground = Get-OptiKitUiResource -Ui $Ui -Key 'Brush.Text.Secondary'
+    $Label.ToolTip = $ExePath
+    if ($Button) { $Button.Content = 'Alterar' }
 }
 
 function Update-SelectionCounter {
     param([Parameter(Mandatory = $true)][hashtable]$Ui)
 
     $count = 0
+    if ($Ui.SelectedTweakIds) { $count += $Ui.SelectedTweakIds.Count }
     foreach ($entry in $Ui.AppCheckboxes.Values) {
-        if ($entry.CheckBox.IsChecked -eq $true) { $count++ }
-    }
-    foreach ($entry in $Ui.TweakCheckboxes.Values) {
         if ($entry.CheckBox.IsChecked -eq $true) { $count++ }
     }
     foreach ($entry in $Ui.GameOptCheckboxes.Values) {
         if ($entry.CheckBox.IsChecked -eq $true) { $count++ }
     }
 
+    $Ui.SelectionCount = $count
     if ($Ui.TxtSelectionCounter) {
-        $Ui.TxtSelectionCounter.Text = ("{0} itens selecionados" -f $count)
+        $Ui.TxtSelectionCounter.Text = Format-OptiKitSelectionCount -Count $count
     }
 }
 
@@ -113,10 +853,11 @@ function Select-OptiKitPreset {
     $Ui.SuppressConfirmDialog = $true
     try {
         foreach ($entry in $Ui.AppCheckboxes.Values) { $entry.CheckBox.IsChecked = $false }
-        foreach ($entry in $Ui.TweakCheckboxes.Values) { $entry.CheckBox.IsChecked = $false }
         foreach ($entry in $Ui.GameOptCheckboxes.Values) { $entry.CheckBox.IsChecked = $false }
+        if ($Ui.SelectedTweakIds) { $Ui.SelectedTweakIds.Clear() }
 
         if ([string]::IsNullOrWhiteSpace($PresetKey)) {
+            Update-OptiKitTweakPage -Ui $Ui
             Update-SelectionCounter -Ui $Ui
             return
         }
@@ -124,20 +865,23 @@ function Select-OptiKitPreset {
         $presetProp = $Ui.Configs.Presets.PSObject.Properties[$PresetKey]
         if (-not $presetProp) {
             Write-OptimizerLog -Level WARN -Message ("Preset '{0}' não encontrado em presets.json." -f $PresetKey)
+            Update-OptiKitTweakPage -Ui $Ui
+            Update-SelectionCounter -Ui $Ui
             return
         }
 
         $preset = $presetProp.Value
         foreach ($tid in @($preset.tweaks)) {
-            if ($Ui.TweakCheckboxes.ContainsKey($tid)) {
-                $entry = $Ui.TweakCheckboxes[$tid]
-                if ($entry.CheckBox.IsEnabled) {
-                    $entry.CheckBox.IsChecked = $true
-                }
-                else {
-                    Write-OptimizerLog -Level WARN -Message ("Tweak '{0}' ignorado no preset '{1}': {2}" -f $tid, $PresetKey, $entry.BlockReason)
-                }
+            $definition = if ($Ui.TweakDefinitionMap) { $Ui.TweakDefinitionMap[$tid] } else { $null }
+            if (-not $definition) {
+                Write-OptimizerLog -Level WARN -Message ("Tweak '{0}' do preset '{1}' não está disponível neste Windows." -f $tid, $PresetKey)
+                continue
             }
+            if ($definition.BlockReason) {
+                Write-OptimizerLog -Level WARN -Message ("Tweak '{0}' ignorado no preset '{1}': {2}" -f $tid, $PresetKey, $definition.BlockReason)
+                continue
+            }
+            [void]$Ui.SelectedTweakIds.Add($tid)
         }
         foreach ($gid in @($preset.gameOptimizations)) {
             if ($Ui.GameOptCheckboxes.ContainsKey($gid)) {
@@ -150,6 +894,7 @@ function Select-OptiKitPreset {
             }
         }
 
+        Update-OptiKitTweakPage -Ui $Ui
         Update-SelectionCounter -Ui $Ui
         Write-OptimizerLog -Level INFO -Message ("Preset '{0}' selecionado: {1}" -f $preset.name, $preset.description)
     }
@@ -172,21 +917,20 @@ function Set-OptiKitSelectionFromProfile {
             $Ui.SuppressConfirmDialog = $true
         }
         foreach ($entry in $Ui.AppCheckboxes.Values) { $entry.CheckBox.IsChecked = $false }
-        foreach ($entry in $Ui.TweakCheckboxes.Values) { $entry.CheckBox.IsChecked = $false }
         foreach ($entry in $Ui.GameOptCheckboxes.Values) { $entry.CheckBox.IsChecked = $false }
+        if ($Ui.SelectedTweakIds) { $Ui.SelectedTweakIds.Clear() }
 
         foreach ($tweakId in @($Selection.Tweaks)) {
-            if (-not $Ui.TweakCheckboxes.ContainsKey($tweakId)) {
+            $definition = if ($Ui.TweakDefinitionMap) { $Ui.TweakDefinitionMap[$tweakId] } else { $null }
+            if (-not $definition) {
                 Write-OptimizerLog -Level WARN -Message ("Tweak '{0}' do perfil não está disponível neste Windows." -f $tweakId)
                 continue
             }
-            $entry = $Ui.TweakCheckboxes[$tweakId]
-            if ($entry.CheckBox.IsEnabled) {
-                $entry.CheckBox.IsChecked = $true
+            if ($definition.BlockReason) {
+                Write-OptimizerLog -Level WARN -Message ("Tweak '{0}' ignorado ao importar perfil: {1}" -f $tweakId, $definition.BlockReason)
+                continue
             }
-            else {
-                Write-OptimizerLog -Level WARN -Message ("Tweak '{0}' ignorado ao importar perfil: {1}" -f $tweakId, $entry.BlockReason)
-            }
+            [void]$Ui.SelectedTweakIds.Add($tweakId)
         }
 
         foreach ($gameOptId in @($Selection.GameOptimizations)) {
@@ -207,6 +951,7 @@ function Set-OptiKitSelectionFromProfile {
             }
         }
 
+        Update-OptiKitTweakPage -Ui $Ui
         Update-SelectionCounter -Ui $Ui
         Write-OptimizerLog -Level OK -Message ("Perfil importado: {0} tweak(s), {1} otimização(ões), {2} app(s)." -f @($Selection.Tweaks).Count, @($Selection.GameOptimizations).Count, @($Selection.Apps).Count)
     }
@@ -223,8 +968,22 @@ function Update-OptiKitStateBadges {
     )
 
     $Ui.LastStateReport = $StateReport
+    $Ui.TweakStatuses = @{}
 
     if ($StateReport.Tweaks) {
+        foreach ($tid in $StateReport.Tweaks.Keys) {
+            $Ui.TweakStatuses[$tid] = [string]$StateReport.Tweaks[$tid]
+        }
+    }
+
+    $needsTweakRebuild = ($Ui.TweakViewState -and (($Ui.TweakViewState.Sort -eq 'Status') -or ($Ui.TweakViewState.Status -ne 'All')))
+    if ($needsTweakRebuild) {
+        Update-OptiKitTweakPage -Ui $Ui
+        if ($Ui.TxtSearchBox) {
+            Invoke-SearchFilter -Ui $Ui -Query $Ui.TxtSearchBox.Text
+        }
+    }
+    elseif ($StateReport.Tweaks) {
         foreach ($tid in $StateReport.Tweaks.Keys) {
             if ($Ui.TweakCheckboxes.ContainsKey($tid)) {
                 $st = $StateReport.Tweaks[$tid]
@@ -262,105 +1021,26 @@ function Update-OptiKitDiagnosticsUi {
     }
     $Ui.DiagnosticsHost.Children.Clear()
 
-    $ok = @($Items | Where-Object { $_.Status -eq 'OK' }).Count
-    $warn = @($Items | Where-Object { $_.Status -eq 'Warn' }).Count
-    $err = @($Items | Where-Object { $_.Status -eq 'Error' }).Count
-    $info = @($Items | Where-Object { $_.Status -in @('Info', 'Unknown') }).Count
-
     if ($Ui.TxtDiagnosticsSummary) {
-        $Ui.TxtDiagnosticsSummary.Text = ("{0} ok | {1} avisos | {2} erros | {3} info/desconhecido" -f $ok, $warn, $err, $info)
+        $Ui.TxtDiagnosticsSummary.Text = Format-OptiKitDiagnosticsSummary -Items $Items
     }
 
-    foreach ($item in $Items) {
-        $colors = Get-DiagnosticColors -Status $item.Status
-        $statusLabel = switch ($item.Status) {
-            'OK'    { 'OK' }
-            'Warn'  { 'Aviso' }
-            'Error' { 'Erro' }
-            'Info'  { 'Info' }
-            default { 'Desconhecido' }
+    $ordered = for ($i = 0; $i -lt $Items.Count; $i++) {
+        [pscustomobject]@{
+            Item  = $Items[$i]
+            Order = (Get-OptiKitDiagnosticVisual -Status $Items[$i].Status).Order
+            Index = $i
         }
+    }
+    $sorted = @($ordered | Sort-Object Order, Index)
 
-        $card = New-Object System.Windows.Controls.Border
-        $card.Background = ConvertFrom-HexBrush '#1E1E1E'
-        $card.BorderBrush = ConvertFrom-HexBrush $colors.Border
-        $card.BorderThickness = New-Object System.Windows.Thickness(1)
-        $card.CornerRadius = New-Object System.Windows.CornerRadius(5)
-        $card.Padding = New-Object System.Windows.Thickness(10, 7, 10, 7)
-        $card.Margin = New-Object System.Windows.Thickness(0, 0, 0, 6)
-
-        $stack = New-Object System.Windows.Controls.StackPanel
-        $stack.Orientation = 'Vertical'
-
-        $header = New-Object System.Windows.Controls.DockPanel
-        $header.LastChildFill = $false
-
-        $title = New-Object System.Windows.Controls.TextBlock
-        $title.Text = $item.Title
-        $title.FontSize = 13
-        $title.FontWeight = 'SemiBold'
-        $title.Foreground = ConvertFrom-HexBrush '#F3F4F6'
-        $title.VerticalAlignment = 'Center'
-        [System.Windows.Controls.DockPanel]::SetDock($title, 'Left')
-        [void]$header.Children.Add($title)
-        [void]$header.Children.Add((New-OptiKitBadge -Text $statusLabel -BgHex $colors.Bg -BorderHex $colors.Border -FgHex $colors.Fg))
-        [void]$stack.Children.Add($header)
-
-        $summary = New-Object System.Windows.Controls.TextBlock
-        $summary.Text = [string]$item.Summary
-        $summary.Foreground = ConvertFrom-HexBrush '#D4D4D8'
-        $summary.FontSize = 12
-        $summary.TextWrapping = 'Wrap'
-        $summary.Margin = New-Object System.Windows.Thickness(0, 2, 0, 0)
-        [void]$stack.Children.Add($summary)
-
-        if (-not [string]::IsNullOrWhiteSpace([string]$item.Detail)) {
-            $detail = New-Object System.Windows.Controls.TextBlock
-            $detail.Text = [string]$item.Detail
-            $detail.Foreground = ConvertFrom-HexBrush '#9CA3AF'
-            $detail.FontSize = 11
-            $detail.TextWrapping = 'Wrap'
-            $detail.Margin = New-Object System.Windows.Thickness(0, 2, 0, 0)
-            [void]$stack.Children.Add($detail)
+    for ($i = 0; $i -lt $sorted.Count; $i++) {
+        if ($i -gt 0) {
+            $divider = New-Object System.Windows.Controls.Border
+            $divider.Style = Get-OptiKitUiResource -Ui $Ui -Key 'Divider'
+            [void]$Ui.DiagnosticsHost.Children.Add($divider)
         }
-
-        if (-not [string]::IsNullOrWhiteSpace([string]$item.ActionText)) {
-            if (-not [string]::IsNullOrWhiteSpace([string]$item.ActionUrl)) {
-                $link = New-Object System.Windows.Documents.Hyperlink
-                $run = New-Object System.Windows.Documents.Run
-                $run.Text = ("→ {0}" -f $item.ActionText)
-                $link.Inlines.Add($run)
-                $link.Foreground = ConvertFrom-HexBrush $colors.Fg
-                $link.NavigateUri = [Uri]$item.ActionUrl
-                $link.Add_RequestNavigate({
-                    param($linkSender, $navigateArgs)
-                    try {
-                        Start-Process -FilePath $navigateArgs.Uri.AbsoluteUri
-                    }
-                    catch {
-                        Write-Verbose $_.Exception.Message
-                    }
-                    $navigateArgs.Handled = $true
-                }.GetNewClosure())
-
-                $actionBlock = New-Object System.Windows.Controls.TextBlock
-                $actionBlock.Margin = New-Object System.Windows.Thickness(0, 4, 0, 0)
-                $actionBlock.Inlines.Add($link)
-                [void]$stack.Children.Add($actionBlock)
-            }
-            else {
-                $action = New-Object System.Windows.Controls.TextBlock
-                $action.Text = ("→ {0}" -f $item.ActionText)
-                $action.Foreground = ConvertFrom-HexBrush $colors.Fg
-                $action.FontSize = 11.5
-                $action.TextWrapping = 'Wrap'
-                $action.Margin = New-Object System.Windows.Thickness(0, 4, 0, 0)
-                [void]$stack.Children.Add($action)
-            }
-        }
-
-        $card.Child = $stack
-        [void]$Ui.DiagnosticsHost.Children.Add($card)
+        [void]$Ui.DiagnosticsHost.Children.Add((New-OptiKitDiagnosticRow -Ui $Ui -Item $sorted[$i].Item))
     }
 }
 
@@ -371,17 +1051,48 @@ function Invoke-SearchFilter {
     )
 
     $q = if ($Query) { $Query.Trim().ToLowerInvariant() } else { '' }
-
+    $tweaksFilteredEmpty = [bool]$Ui.TweaksFilteredEmpty
     foreach ($coll in @($Ui.AppCheckboxes.Values, $Ui.TweakCheckboxes.Values, $Ui.GameOptCheckboxes.Values)) {
         foreach ($entry in $coll) {
-            if ([string]::IsNullOrEmpty($q) -or $entry.SearchText.Contains($q)) {
-                $entry.Card.Visibility = 'Visible'
-            }
-            else {
-                $entry.Card.Visibility = 'Collapsed'
-            }
+            $entry.Card.Visibility = if ([string]::IsNullOrEmpty($q) -or $entry.SearchText.Contains($q)) { 'Visible' } else { 'Collapsed' }
         }
     }
+
+    $visibleByPage = @{ Apps = 0; Tweaks = 0; Games = 0 }
+    # Sem @(): no PS 5.1, @($hashtable.Lista) com List[object] de hashtables lança "Os tipos de argumento não correspondem".
+    foreach ($group in $Ui.SearchGroups) {
+        $visible = @($group.Entries | Where-Object { $_.Card.Visibility -eq 'Visible' }).Count
+        $groupVisibility = if ([string]::IsNullOrEmpty($q) -or ($visible -gt 0)) { 'Visible' } else { 'Collapsed' }
+        if ($group.Header) { $group.Header.Visibility = $groupVisibility }
+        if ($group.Container) { $group.Container.Visibility = $groupVisibility }
+        $visibleByPage[$group.Page] += $visible
+    }
+
+    $pageOrder = @('Apps', 'Tweaks', 'Games')
+    $pageNames = @{ Apps = 'Instalar apps'; Tweaks = 'Ajustes do Windows'; Games = 'Jogos' }
+    $emptyMap = @{ Apps = 'TxtAppsEmpty'; Tweaks = 'TxtTweaksEmpty'; Games = 'TxtGamesEmpty' }
+    foreach ($page in $pageOrder) {
+        $emptyTb = $Ui[$emptyMap[$page]]
+        if (-not $emptyTb) { continue }
+        if ((-not [string]::IsNullOrEmpty($q)) -and ($visibleByPage[$page] -eq 0)) {
+            $elsewhere = @($pageOrder | Where-Object { ($_ -ne $page) -and ($visibleByPage[$_] -gt 0) } | ForEach-Object { '{0} ({1})' -f $pageNames[$_], $visibleByPage[$_] })
+            $emptyTb.Text = if ($elsewhere.Count -gt 0) {
+                'Nada nesta página para "{0}". Resultados em: {1}.' -f $Query.Trim(), ($elsewhere -join ', ')
+            }
+            else {
+                'Nenhum resultado para "{0}". Tente outro termo ou limpe a busca.' -f $Query.Trim()
+            }
+            $emptyTb.Visibility = 'Visible'
+        }
+        elseif (($page -eq 'Tweaks') -and [string]::IsNullOrEmpty($q) -and $tweaksFilteredEmpty) {
+            $emptyTb.Text = 'Nenhum ajuste com esses filtros. Ajuste a organização ou limpe os filtros.'
+            $emptyTb.Visibility = 'Visible'
+        }
+        else {
+            $emptyTb.Visibility = 'Collapsed'
+        }
+    }
+    return $visibleByPage
 }
 
 function Initialize-OptiKitUi {
@@ -402,12 +1113,22 @@ function Initialize-OptiKitUi {
         CustomGameExePaths    = @{}
         SuppressConfirmDialog = $false
         LastStateReport       = $null
+        SelectionCount        = 0
+        SearchGroups          = (New-Object 'System.Collections.Generic.List[object]')
+        ResponsiveGrids       = @{}
+        TweakDefinitions      = (New-Object 'System.Collections.Generic.List[object]')
+        TweakDefinitionMap    = @{}
+        TweakStatuses         = @{}
+        TweakViewState        = @{ Sort = 'Category'; Impact = 'All'; Risk = 'All'; Status = 'All' }
+        SelectedTweakIds      = (New-Object 'System.Collections.Generic.HashSet[string]')
+        TweaksFilteredEmpty   = $false
     }
 
     $controlNames = @(
         'BadgeDryRun', 'BadgeUpdate', 'TxtUpdateBadge', 'TxtHardwareSummary', 'TxtSearchBox', 'BtnClearSearch',
         'MainTabControl', 'AppsCategoriesHost', 'BtnUncheckAllApps',
         'TweaksCategoriesHost', 'BtnRefreshState', 'BtnUncheckAllTweaks',
+        'CmbTweakSort', 'CmbTweakImpact', 'CmbTweakRisk', 'CmbTweakStatus', 'BtnClearTweakFilters', 'TxtTweakCount',
         'GameProfilesHost',
         'BtnRefreshDiagnostics', 'TxtDiagnosticsSummary', 'DiagnosticsHost',
         'BtnResetNetwork', 'BtnRunSfcDism', 'BtnCancelMaintenance', 'BtnClearTemp', 'BtnOpenBackupsDir',
@@ -416,7 +1137,8 @@ function Initialize-OptiKitUi {
         'GridStartupItems', 'BtnEnableStartup', 'BtnDisableStartup', 'BtnRefreshStartup',
         'CmbPresets', 'BtnClearSelection', 'TxtSelectionCounter',
         'BtnViewApplied', 'BtnUndoSelected', 'BtnUndoAll', 'BtnApplySelected',
-        'MainProgressBar', 'TxtStatusMessage', 'TxtConsoleOutput'
+        'MainProgressBar', 'TxtStatusMessage', 'TxtConsoleOutput',
+        'NavList', 'SelectionBar', 'LogPanel', 'BtnToggleLog', 'TxtAppsEmpty', 'TxtTweaksEmpty', 'TxtGamesEmpty'
     )
     foreach ($name in $controlNames) {
         $ui[$name] = $Window.FindName($name)
@@ -453,10 +1175,14 @@ function Initialize-OptiKitUi {
         $ui.BadgeDryRun.Visibility = 'Visible'
     }
     if ($ui.TxtHardwareSummary -and $Hardware.Summary) {
-        $ui.TxtHardwareSummary.Text = $Hardware.Summary
+        $ui.TxtHardwareSummary.Text = Format-OptiKitHardwareSummary -Summary $Hardware.Summary
     }
 
-    # 1. Construir Aba de Apps (Grade compacta de 4 colunas)
+    foreach ($responsiveHost in @('AppsCategoriesHost', 'TweaksCategoriesHost', 'GameProfilesHost')) {
+        Register-OptiKitResponsiveHost -Ui $ui -Container $responsiveHost
+    }
+
+    # 1. Instalar apps
     $appCategoryOrder = @(
         'Navegadores',
         'Comunicação',
@@ -465,394 +1191,179 @@ function Initialize-OptiKitUi {
         'Desenvolvimento'
     )
     $appProps = @($Configs.Apps.PSObject.Properties)
+    $firstGroup = $true
 
     foreach ($catName in $appCategoryOrder) {
-        $catItems = $appProps | Where-Object { $_.Value.category -eq $catName }
-        if (-not $catItems -or @($catItems).Count -eq 0) { continue }
+        $catItems = @($appProps | Where-Object { $_.Value.category -eq $catName })
+        if ($catItems.Count -eq 0) { continue }
 
-        $catHeader = New-Object System.Windows.Controls.TextBlock
-        $catHeader.Text = $catName
-        $catHeader.FontSize = 13.5
-        $catHeader.FontWeight = 'Bold'
-        $catHeader.Foreground = ConvertFrom-HexBrush '#00E5FF'
-        $catHeader.Margin = New-Object System.Windows.Thickness(2, 6, 0, 4)
-        [void]$ui.AppsCategoriesHost.Children.Add($catHeader)
-
-        $grid = New-Object System.Windows.Controls.Primitives.UniformGrid
-        $grid.Columns = 4
+        $header = New-OptiKitGroupHeader -Ui $ui -Text $catName -Count $catItems.Count -First:$firstGroup
+        $firstGroup = $false
+        $grid = New-OptiKitResponsiveGrid -Ui $ui -Container 'AppsCategoriesHost' -MinColumnWidth 260
+        $entries = New-Object 'System.Collections.Generic.List[object]'
 
         foreach ($ap in $catItems) {
             $appKey = $ap.Name
             $appVal = $ap.Value
+            $tip = New-OptiKitToolTipContent -Ui $ui -Title $appVal.name -Body $appVal.description -Footer ('winget: {0}' -f $appVal.winget)
+            $row = New-OptiKitItemRow -Ui $ui -Title $appVal.name -Description $appVal.description -ToolTipContent $tip -Tag $appKey
+            $row.CheckBox.Add_Checked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
+            $row.CheckBox.Add_Unchecked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
+            [void]$grid.Children.Add($row.CheckBox)
 
-            $card = New-Object System.Windows.Controls.Border
-            $card.Background = ConvertFrom-HexBrush '#1E1E1E'
-            $card.BorderBrush = ConvertFrom-HexBrush '#2D2D32'
-            $card.BorderThickness = New-Object System.Windows.Thickness(1)
-            $card.CornerRadius = New-Object System.Windows.CornerRadius(5)
-            $card.Padding = New-Object System.Windows.Thickness(8, 5, 8, 5)
-            $card.Margin = New-Object System.Windows.Thickness(0, 0, 6, 5)
-            $card.VerticalAlignment = 'Top'
-            $card.ToolTip = ("{0}`r`nWinget ID: {1}`r`n`r`n{2}" -f $appVal.name, $appVal.winget, $appVal.description)
-
-            $sp = New-Object System.Windows.Controls.StackPanel
-            $sp.Orientation = 'Vertical'
-
-            $cbLabel = New-Object System.Windows.Controls.TextBlock
-            $cbLabel.Text = $appVal.name
-            $cbLabel.Foreground = ConvertFrom-HexBrush '#F3F4F6'
-            $cbLabel.FontWeight = 'SemiBold'
-            $cbLabel.FontSize = 12.5
-            $cbLabel.TextTrimming = 'CharacterEllipsis'
-
-            $cb = New-Object System.Windows.Controls.CheckBox
-            $cb.Content = $cbLabel
-            $cb.VerticalContentAlignment = 'Center'
-            $cb.Tag = $appKey
-            $cb.Add_Checked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
-            $cb.Add_Unchecked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
-
-            $descTb = New-Object System.Windows.Controls.TextBlock
-            $descTb.Text = $appVal.description
-            $descTb.Foreground = ConvertFrom-HexBrush '#9CA3AF'
-            $descTb.FontSize = 11
-            $descTb.TextTrimming = 'CharacterEllipsis'
-            $descTb.TextWrapping = 'NoWrap'
-            $descTb.Margin = New-Object System.Windows.Thickness(20, 1, 0, 0)
-
-            [void]$sp.Children.Add($cb)
-            [void]$sp.Children.Add($descTb)
-            $card.Child = $sp
-            [void]$grid.Children.Add($card)
-
-            $ui.AppCheckboxes[$appKey] = @{
-                CheckBox   = $cb
-                Card       = $card
+            $entry = @{
+                CheckBox   = $row.CheckBox
+                Card       = $row.CheckBox
                 Config     = $appVal
                 SearchText = ("{0} {1} {2} {3}" -f $appVal.name, $appVal.winget, $appVal.category, $appVal.description).ToLowerInvariant()
             }
+            $ui.AppCheckboxes[$appKey] = $entry
+            [void]$entries.Add($entry)
         }
 
+        [void]$ui.AppsCategoriesHost.Children.Add($header)
         [void]$ui.AppsCategoriesHost.Children.Add($grid)
+        [void]$ui.SearchGroups.Add(@{ Page = 'Apps'; Header = $header; Container = $grid; Entries = $entries })
     }
 
-    # 2. Construir Aba de Tweaks (Grade compacta de 2 colunas)
-    $tweakCategoryOrder = @(
-        'Desempenho & Energia',
-        'Privacidade & Telemetria',
-        'Windows Update',
-        'Interface & Windows 11',
-        'Remoção de Bloatware (Appx)',
-        'Avançado'
-    )
+    # 2. Ajustes do Windows
     $osTag = if ($Hardware.IsWin11) { 'Win11' } else { 'Win10' }
     $tweakProps = @($Configs.WinTweaks.PSObject.Properties)
 
-    foreach ($catName in $tweakCategoryOrder) {
-        $catItems = $tweakProps | Where-Object {
-            $t = $_.Value
-            ($t.category -eq $catName) -and
-            (@($t.osSupport) -contains $osTag) -and
-            ($null -eq $t.minBuild -or $Hardware.OsBuild -ge [int]$t.minBuild)
-        }
-        if (-not $catItems -or @($catItems).Count -eq 0) { continue }
-
-        $catHeader = New-Object System.Windows.Controls.TextBlock
-        $catHeader.Text = $catName
-        $catHeader.FontSize = 13.5
-        $catHeader.FontWeight = 'Bold'
-        $catHeader.Foreground = if ($catName -eq 'Avançado') { ConvertFrom-HexBrush '#FF4655' } else { ConvertFrom-HexBrush '#00E5FF' }
-        $catHeader.Margin = New-Object System.Windows.Thickness(2, 6, 0, 4)
-        [void]$ui.TweaksCategoriesHost.Children.Add($catHeader)
-
-        $tweakGrid = New-Object System.Windows.Controls.Primitives.UniformGrid
-        $tweakGrid.Columns = 2
-
-        foreach ($tp in $catItems) {
-            $tweakKey = $tp.Name
-            $tweakVal = $tp.Value
-
-            $card = New-Object System.Windows.Controls.Border
-            $card.Background = ConvertFrom-HexBrush '#1E1E1E'
-            $card.BorderBrush = if ($tweakVal.riskLevel -eq 'Advanced') { ConvertFrom-HexBrush '#7F1D1D' } else { ConvertFrom-HexBrush '#2D2D32' }
-            $card.BorderThickness = New-Object System.Windows.Thickness(1)
-            $card.CornerRadius = New-Object System.Windows.CornerRadius(5)
-            $card.Padding = New-Object System.Windows.Thickness(9, 6, 9, 6)
-            $card.Margin = New-Object System.Windows.Thickness(0, 0, 6, 5)
-            $card.VerticalAlignment = 'Top'
-
-            $rebootNote = if ($tweakVal.requiresReboot) { "`r`n⚠️ Requer reinicialização do sistema." } else { '' }
-            $card.ToolTip = ("{0}`r`n`r`n📝 Descrição:`r`n{1}`r`n`r`n🔬 Justificativa Técnica (Anti-Placebo):`r`n{2}`r`n`r`nImpacto: {3} | Nível de Risco: {4}{5}" -f $tweakVal.title, $tweakVal.description, $tweakVal.rationale, $tweakVal.impact, $tweakVal.riskLevel, $rebootNote)
-
-            $sp = New-Object System.Windows.Controls.StackPanel
-            $sp.Orientation = 'Vertical'
-
-            $headerRow = New-Object System.Windows.Controls.Grid
-            $colLeft = New-Object System.Windows.Controls.ColumnDefinition
-            $colLeft.Width = New-Object System.Windows.GridLength(1, [System.Windows.GridUnitType]::Star)
-            $colRight = New-Object System.Windows.Controls.ColumnDefinition
-            $colRight.Width = [System.Windows.GridLength]::Auto
-            [void]$headerRow.ColumnDefinitions.Add($colLeft)
-            [void]$headerRow.ColumnDefinitions.Add($colRight)
-
-            $cbTitle = New-Object System.Windows.Controls.TextBlock
-            $cbTitle.Text = $tweakVal.title
-            $cbTitle.Foreground = ConvertFrom-HexBrush '#F3F4F6'
-            $cbTitle.FontWeight = 'SemiBold'
-            $cbTitle.FontSize = 12.5
-            $cbTitle.TextTrimming = 'CharacterEllipsis'
-
-            $cb = New-Object System.Windows.Controls.CheckBox
-            $cb.Content = $cbTitle
-            $cb.VerticalContentAlignment = 'Center'
-            $cb.Tag = $tweakKey
-
-            $blockReason = Test-OptiKitTweakBlocked -Tweak $tweakVal -Hardware $Hardware
-            if ($blockReason) {
-                $cb.IsEnabled = $false
-                $card.ToolTip += "`r`n`r`n⛔ BLOQUEADO NESTE HARDWARE:`r`n$blockReason"
-            }
-
-            $confirmText = $tweakVal.confirmMessage
-            $cb.Add_Checked({
-                if (-not [string]::IsNullOrWhiteSpace($confirmText) -and (-not $ui.SuppressConfirmDialog)) {
-                    $ans = [System.Windows.MessageBox]::Show($ui.Window, $confirmText, 'Aviso de Segurança / Anti-Cheat (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
-                    if ($ans -ne [System.Windows.MessageBoxResult]::Yes) {
-                        $this.IsChecked = $false
-                        return
-                    }
-                }
-                Update-SelectionCounter -Ui $ui
-            }.GetNewClosure())
-            $cb.Add_Unchecked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
-            [System.Windows.Controls.Grid]::SetColumn($cb, 0)
-            [void]$headerRow.Children.Add($cb)
-
-            $badgesPanel = New-Object System.Windows.Controls.StackPanel
-            $badgesPanel.Orientation = 'Horizontal'
-            $badgesPanel.VerticalAlignment = 'Center'
-            [System.Windows.Controls.Grid]::SetColumn($badgesPanel, 1)
-
-            $badgeApplied = New-OptiKitBadge -Text '● Aplicado' -BgHex '#052E16' -BorderHex '#10B981' -FgHex '#34D399'
-            $badgeApplied.Visibility = 'Collapsed'
-            [void]$badgesPanel.Children.Add($badgeApplied)
-
-            $impColors = Get-ImpactColors -Impact $tweakVal.impact
-            $badgeImpact = New-OptiKitBadge -Text $tweakVal.impact -BgHex $impColors.Bg -BorderHex $impColors.Border -FgHex $impColors.Fg
-            [void]$badgesPanel.Children.Add($badgeImpact)
-
-            if ($tweakVal.riskLevel -ne 'Safe') {
-                $riskColors = Get-RiskColors -Risk $tweakVal.riskLevel
-                $badgeRisk = New-OptiKitBadge -Text $tweakVal.riskLevel -BgHex $riskColors.Bg -BorderHex $riskColors.Border -FgHex $riskColors.Fg
-                [void]$badgesPanel.Children.Add($badgeRisk)
-            }
-
-            if ($blockReason) {
-                [void]$badgesPanel.Children.Add((New-OptiKitBadge -Text 'Bloqueado' -BgHex '#3B1219' -BorderHex '#FF4655' -FgHex '#FF6B78'))
-            }
-
-            [void]$headerRow.Children.Add($badgesPanel)
-
-            $descTb = New-Object System.Windows.Controls.TextBlock
-            $descTb.Text = $tweakVal.description
-            $descTb.Foreground = ConvertFrom-HexBrush '#9CA3AF'
-            $descTb.FontSize = 11
-            $descTb.TextTrimming = 'CharacterEllipsis'
-            $descTb.TextWrapping = 'NoWrap'
-            $descTb.Margin = New-Object System.Windows.Thickness(20, 2, 0, 0)
-
-            [void]$sp.Children.Add($headerRow)
-            [void]$sp.Children.Add($descTb)
-            $card.Child = $sp
-            [void]$tweakGrid.Children.Add($card)
-
-            $ui.TweakCheckboxes[$tweakKey] = @{
-                CheckBox     = $cb
-                Card         = $card
-                BadgeApplied = $badgeApplied
-                Config       = $tweakVal
-                BlockReason  = $blockReason
-                SearchText   = ("{0} {1} {2} {3}" -f $tweakVal.title, $tweakVal.description, $tweakVal.rationale, $tweakVal.category).ToLowerInvariant()
-            }
+    foreach ($tp in $tweakProps) {
+        $t = $tp.Value
+        if ((@($t.osSupport) -notcontains $osTag) -or ($null -ne $t.minBuild -and $Hardware.OsBuild -lt [int]$t.minBuild)) {
+            continue
         }
 
-        [void]$ui.TweaksCategoriesHost.Children.Add($tweakGrid)
+        $definition = @{
+            Key            = [string]$tp.Name
+            Config         = $t
+            Title          = [string]$t.title
+            Description    = [string]$t.description
+            Rationale      = [string]$t.rationale
+            Category       = [string]$t.category
+            Impact         = [string]$t.impact
+            Risk           = [string]$t.riskLevel
+            RequiresReboot = [bool]$t.requiresReboot
+            BlockReason    = (Test-OptiKitTweakBlocked -Tweak $t -Hardware $Hardware)
+            SearchText     = ("{0} {1} {2} {3} {4} {5}" -f $t.title, $t.description, $t.rationale, $t.category, $t.impact, $t.riskLevel).ToLowerInvariant()
+        }
+        [void]$ui.TweakDefinitions.Add($definition)
+        $ui.TweakDefinitionMap[$tp.Name] = $definition
     }
 
-    # 3. Construir Aba de Perfis de Jogos
+    Update-OptiKitTweakPage -Ui $ui
+
+    if ($ui.CmbTweakSort) {
+        Add-OptiKitComboOption -Combo $ui.CmbTweakSort -Text 'Organizar: categoria' -Value 'Category'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakSort -Text 'Organizar: impacto' -Value 'Impact'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakSort -Text 'Organizar: risco' -Value 'Risk'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakSort -Text 'Organizar: reinício' -Value 'Reboot'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakSort -Text 'Organizar: estado' -Value 'Status'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakSort -Text 'Organizar: nome' -Value 'Title'
+
+        Add-OptiKitComboOption -Combo $ui.CmbTweakImpact -Text 'Impacto: todos' -Value 'All'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakImpact -Text 'Impacto: alto' -Value 'Alto'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakImpact -Text 'Impacto: médio' -Value 'Médio'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakImpact -Text 'Impacto: baixo' -Value 'Baixo'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakImpact -Text 'Impacto: situacional' -Value 'Situacional'
+
+        Add-OptiKitComboOption -Combo $ui.CmbTweakRisk -Text 'Risco: todos' -Value 'All'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakRisk -Text 'Risco: seguro' -Value 'Safe'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakRisk -Text 'Risco: moderado' -Value 'Moderate'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakRisk -Text 'Risco: avançado' -Value 'Advanced'
+
+        Add-OptiKitComboOption -Combo $ui.CmbTweakStatus -Text 'Estado: todos' -Value 'All'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakStatus -Text 'Estado: aplicado' -Value 'Applied'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakStatus -Text 'Estado: não aplicado' -Value 'NotApplied'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakStatus -Text 'Estado: parcial' -Value 'Partial'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakStatus -Text 'Estado: desconhecido' -Value 'Unknown'
+
+        $ui.CmbTweakSort.SelectedIndex = 0
+        $ui.CmbTweakImpact.SelectedIndex = 0
+        $ui.CmbTweakRisk.SelectedIndex = 0
+        $ui.CmbTweakStatus.SelectedIndex = 0
+
+        $ui.CmbTweakSort.Add_SelectionChanged({ Set-OptiKitTweakView -Ui $ui }.GetNewClosure())
+        $ui.CmbTweakImpact.Add_SelectionChanged({ Set-OptiKitTweakView -Ui $ui }.GetNewClosure())
+        $ui.CmbTweakRisk.Add_SelectionChanged({ Set-OptiKitTweakView -Ui $ui }.GetNewClosure())
+        $ui.CmbTweakStatus.Add_SelectionChanged({ Set-OptiKitTweakView -Ui $ui }.GetNewClosure())
+
+        if ($ui.BtnClearTweakFilters) {
+            $ui.BtnClearTweakFilters.Add_Click({
+                $ui.CmbTweakSort.SelectedIndex = 0
+                $ui.CmbTweakImpact.SelectedIndex = 0
+                $ui.CmbTweakRisk.SelectedIndex = 0
+                $ui.CmbTweakStatus.SelectedIndex = 0
+                Set-OptiKitTweakView -Ui $ui
+            }.GetNewClosure())
+        }
+    }
+
+    # 3. Jogos
+    $firstSection = $true
     foreach ($gp in $Configs.GameProfiles.PSObject.Properties) {
         $profKey = $gp.Name
         $prof = $gp.Value
 
-        $profBorder = New-Object System.Windows.Controls.Border
-        $profBorder.Background = ConvertFrom-HexBrush '#1E1E1E'
-        $profBorder.BorderBrush = if ($prof.status -eq 'active') { ConvertFrom-HexBrush '#FF4655' } elseif ($prof.status -eq 'global') { ConvertFrom-HexBrush '#00E5FF' } else { ConvertFrom-HexBrush '#2D2D32' }
-        $profBorder.BorderThickness = New-Object System.Windows.Thickness(1)
-        $profBorder.CornerRadius = New-Object System.Windows.CornerRadius(7)
-        $profBorder.Padding = New-Object System.Windows.Thickness(12, 9, 12, 9)
-        $profBorder.Margin = New-Object System.Windows.Thickness(0, 0, 0, 8)
-
-        $profStack = New-Object System.Windows.Controls.StackPanel
-        $profStack.Orientation = 'Vertical'
-
-        $titleDock = New-Object System.Windows.Controls.DockPanel
-        $titleDock.LastChildFill = $false
-        $titleTb = New-Object System.Windows.Controls.TextBlock
-        $titleTb.Text = ("🎮 {0}" -f $prof.gameName)
-        $titleTb.FontSize = 15
-        $titleTb.FontWeight = 'Bold'
-        $titleTb.Foreground = if ($prof.status -eq 'active') { ConvertFrom-HexBrush '#FF4655' } elseif ($prof.status -eq 'global') { ConvertFrom-HexBrush '#00E5FF' } else { ConvertFrom-HexBrush '#9CA3AF' }
-        [System.Windows.Controls.DockPanel]::SetDock($titleTb, 'Left')
-        [void]$titleDock.Children.Add($titleTb)
-
-        $metaPanel = New-Object System.Windows.Controls.StackPanel
-        $metaPanel.Orientation = 'Horizontal'
-        [System.Windows.Controls.DockPanel]::SetDock($metaPanel, 'Right')
-
-        [void]$metaPanel.Children.Add((New-OptiKitBadge -Text $prof.engine -BgHex '#121212' -BorderHex '#3F3F46' -FgHex '#D4D4D8'))
-        [void]$metaPanel.Children.Add((New-OptiKitBadge -Text $prof.antiCheat -BgHex '#121212' -BorderHex '#3F3F46' -FgHex '#00E5FF'))
-
-        if ($prof.status -eq 'comingSoon') {
-            [void]$metaPanel.Children.Add((New-OptiKitBadge -Text 'EM BREVE' -BgHex '#3B2F0B' -BorderHex '#F59E0B' -FgHex '#FBBF24'))
-        }
-        [void]$titleDock.Children.Add($metaPanel)
-        [void]$profStack.Children.Add($titleDock)
-
-        $warnTb = New-Object System.Windows.Controls.TextBlock
-        $warnTb.Text = $prof.warning
-        $warnTb.Foreground = ConvertFrom-HexBrush '#D4D4D8'
-        $warnTb.FontSize = 11.5
-        $warnTb.TextWrapping = 'Wrap'
-        $warnTb.Margin = New-Object System.Windows.Thickness(0, 3, 0, 6)
-        [void]$profStack.Children.Add($warnTb)
-
+        $detectedExe = $null
         if ($prof.status -eq 'active') {
             $detectedExe = Find-GameExecutable -ProfileConfig $prof
             if ($detectedExe) {
                 $ui.CustomGameExePaths[$profKey] = $detectedExe
             }
+        }
 
-            $exeDock = New-Object System.Windows.Controls.DockPanel
-            $exeDock.LastChildFill = $false
-            $exeDock.Margin = New-Object System.Windows.Thickness(0, 0, 0, 6)
+        $section = New-OptiKitGameSection -Ui $ui -GameProfile $prof -ExePath $detectedExe -First:$firstSection
+        $firstSection = $false
 
-            $exeLabel = New-Object System.Windows.Controls.TextBlock
-            $exeLabel.Text = if ($detectedExe) { "Executável detectado: $detectedExe" } else { "Executável não encontrado no caminho padrão (você pode selecioná-lo manualmente)." }
-            $exeLabel.Foreground = if ($detectedExe) { ConvertFrom-HexBrush '#34D399' } else { ConvertFrom-HexBrush '#FBBF24' }
-            $exeLabel.FontSize = 11.5
-            $exeLabel.VerticalAlignment = 'Center'
-            [System.Windows.Controls.DockPanel]::SetDock($exeLabel, 'Left')
-            [void]$exeDock.Children.Add($exeLabel)
-
-            $btnBrowse = New-Object System.Windows.Controls.Button
-            $btnBrowse.Content = 'Selecionar .exe...'
-            $btnBrowse.Style = $Window.FindResource('ActionButtonStyle')
-            $btnBrowse.Padding = New-Object System.Windows.Thickness(10, 3, 10, 3)
-            $btnBrowse.FontSize = 11.5
-            [System.Windows.Controls.DockPanel]::SetDock($btnBrowse, 'Right')
+        if ($section.BrowseButton) {
+            $exeText = $section.ExeText
+            $btnBrowse = $section.BrowseButton
             $btnBrowse.Add_Click({
                 $dlg = New-Object System.Windows.Forms.OpenFileDialog
                 $dlg.Filter = 'Executáveis (*.exe)|*.exe'
                 $dlg.Title = ("Selecionar executável de {0}" -f $prof.gameName)
                 if ($dlg.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
                     $ui.CustomGameExePaths[$profKey] = $dlg.FileName
-                    $exeLabel.Text = ("Executável selecionado: {0}" -f $dlg.FileName)
-                    $exeLabel.Foreground = ConvertFrom-HexBrush '#34D399'
+                    Set-OptiKitGameExeLabel -Ui $ui -Label $exeText -Button $btnBrowse -ExePath $dlg.FileName
                 }
             }.GetNewClosure())
-            [void]$exeDock.Children.Add($btnBrowse)
-            [void]$profStack.Children.Add($exeDock)
         }
 
-        $optGrid = New-Object System.Windows.Controls.Primitives.UniformGrid
-        $optGrid.Columns = 2
-
+        $entries = New-Object 'System.Collections.Generic.List[object]'
         foreach ($opt in @($prof.optimizations)) {
-            $optCard = New-Object System.Windows.Controls.Border
-            $optCard.Background = ConvertFrom-HexBrush '#141417'
-            $optCard.BorderBrush = ConvertFrom-HexBrush '#27272A'
-            $optCard.BorderThickness = New-Object System.Windows.Thickness(1)
-            $optCard.CornerRadius = New-Object System.Windows.CornerRadius(5)
-            $optCard.Padding = New-Object System.Windows.Thickness(9, 6, 9, 6)
-            $optCard.Margin = New-Object System.Windows.Thickness(0, 0, 6, 5)
-            $optCard.VerticalAlignment = 'Top'
-            $optCard.ToolTip = ("{0}`r`n`r`n🔬 Justificativa Técnica:`r`n{1}`r`n`r`nAction: {2} | Impacto: {3}" -f $opt.title, $opt.rationale, $opt.action, $opt.impact)
+            $tip = New-OptiKitToolTipContent -Ui $ui -Title $opt.title -Body $opt.description -DetailLabel 'Justificativa técnica' -Detail $opt.rationale -Footer (Get-OptiKitImpactLabel -Impact $opt.impact)
+            $row = New-OptiKitItemRow -Ui $ui -Title $opt.title -Description $opt.description -Impact $opt.impact -Risk $opt.riskLevel -ToolTipContent $tip -Tag $opt.id
+            $row.CheckBox.Add_Checked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
+            $row.CheckBox.Add_Unchecked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
+            [void]$section.Grid.Children.Add($row.CheckBox)
 
-            $optSp = New-Object System.Windows.Controls.StackPanel
-            $optSp.Orientation = 'Vertical'
-
-            $optTop = New-Object System.Windows.Controls.Grid
-            $c0 = New-Object System.Windows.Controls.ColumnDefinition
-            $c0.Width = New-Object System.Windows.GridLength(1, [System.Windows.GridUnitType]::Star)
-            $c1 = New-Object System.Windows.Controls.ColumnDefinition
-            $c1.Width = [System.Windows.GridLength]::Auto
-            [void]$optTop.ColumnDefinitions.Add($c0)
-            [void]$optTop.ColumnDefinitions.Add($c1)
-
-            $optCbTitle = New-Object System.Windows.Controls.TextBlock
-            $optCbTitle.Text = $opt.title
-            $optCbTitle.Foreground = ConvertFrom-HexBrush '#F3F4F6'
-            $optCbTitle.FontWeight = 'SemiBold'
-            $optCbTitle.FontSize = 12.5
-            $optCbTitle.TextTrimming = 'CharacterEllipsis'
-
-            $optCb = New-Object System.Windows.Controls.CheckBox
-            $optCb.Content = $optCbTitle
-            $optCb.VerticalContentAlignment = 'Center'
-            $optCb.Tag = $opt.id
-            $optCb.Add_Checked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
-            $optCb.Add_Unchecked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
-            [System.Windows.Controls.Grid]::SetColumn($optCb, 0)
-            [void]$optTop.Children.Add($optCb)
-
-            $optBadges = New-Object System.Windows.Controls.StackPanel
-            $optBadges.Orientation = 'Horizontal'
-            $optBadges.VerticalAlignment = 'Center'
-            [System.Windows.Controls.Grid]::SetColumn($optBadges, 1)
-
-            $optBadgeApp = New-OptiKitBadge -Text '● Aplicado' -BgHex '#052E16' -BorderHex '#10B981' -FgHex '#34D399'
-            $optBadgeApp.Visibility = 'Collapsed'
-            [void]$optBadges.Children.Add($optBadgeApp)
-
-            $impCol = Get-ImpactColors -Impact $opt.impact
-            [void]$optBadges.Children.Add((New-OptiKitBadge -Text $opt.impact -BgHex $impCol.Bg -BorderHex $impCol.Border -FgHex $impCol.Fg))
-            [void]$optTop.Children.Add($optBadges)
-
-            $optDesc = New-Object System.Windows.Controls.TextBlock
-            $optDesc.Text = $opt.description
-            $optDesc.Foreground = ConvertFrom-HexBrush '#9CA3AF'
-            $optDesc.FontSize = 11
-            $optDesc.TextTrimming = 'CharacterEllipsis'
-            $optDesc.TextWrapping = 'NoWrap'
-            $optDesc.Margin = New-Object System.Windows.Thickness(20, 2, 0, 0)
-
-            [void]$optSp.Children.Add($optTop)
-            [void]$optSp.Children.Add($optDesc)
-            $optCard.Child = $optSp
-            [void]$optGrid.Children.Add($optCard)
-
-            $ui.GameOptCheckboxes[$opt.id] = @{
-                CheckBox     = $optCb
-                Card         = $optCard
-                BadgeApplied = $optBadgeApp
+            $entry = @{
+                CheckBox     = $row.CheckBox
+                Card         = $row.CheckBox
+                BadgeApplied = $row.BadgeApplied
                 ProfileKey   = $profKey
                 Profile      = $prof
                 Config       = $opt
                 SearchText   = ("{0} {1} {2} {3}" -f $prof.gameName, $opt.title, $opt.description, $opt.rationale).ToLowerInvariant()
             }
+            $ui.GameOptCheckboxes[$opt.id] = $entry
+            [void]$entries.Add($entry)
+        }
+        if ($entries.Count -eq 0) {
+            $section.Grid.Visibility = 'Collapsed'
         }
 
-        if (@($prof.optimizations).Count -gt 0) {
-            [void]$profStack.Children.Add($optGrid)
-        }
-        $profBorder.Child = $profStack
-        [void]$ui.GameProfilesHost.Children.Add($profBorder)
+        [void]$ui.GameProfilesHost.Children.Add($section.Panel)
+        [void]$ui.SearchGroups.Add(@{ Page = 'Games'; Header = $null; Container = $section.Panel; Entries = $entries })
     }
 
     # 4. Popular ComboBox de Presets
     if ($ui.CmbPresets) {
         $placeholderItem = New-Object System.Windows.Controls.ComboBoxItem
-        $placeholderItem.Content = 'Selecione um Preset...'
+        $placeholderItem.Content = 'Escolher preset'
         $placeholderItem.Tag = ''
         [void]$ui.CmbPresets.Items.Add($placeholderItem)
 
@@ -875,12 +1386,24 @@ function Initialize-OptiKitUi {
     # 5. Eventos de Busca e Limpeza
     if ($ui.TxtSearchBox) {
         $ui.TxtSearchBox.Add_TextChanged({
-            Invoke-SearchFilter -Ui $ui -Query $ui.TxtSearchBox.Text
+            $counts = Invoke-SearchFilter -Ui $ui -Query $ui.TxtSearchBox.Text
+            if ((-not [string]::IsNullOrWhiteSpace($ui.TxtSearchBox.Text)) -and ($ui.MainTabControl.SelectedIndex -gt 2)) {
+                $pages = @('Apps', 'Tweaks', 'Games')
+                $target = @(0, 1, 2) | Where-Object { $counts[$pages[$_]] -gt 0 } | Select-Object -First 1
+                if ($null -ne $target) {
+                    $ui.MainTabControl.SelectedIndex = $target
+                }
+            }
         }.GetNewClosure())
     }
     if ($ui.BtnClearSearch) {
         $ui.BtnClearSearch.Add_Click({
             $ui.TxtSearchBox.Text = ''
+        }.GetNewClosure())
+    }
+    if ($ui.BtnToggleLog -and $ui.LogPanel) {
+        $ui.BtnToggleLog.Add_Click({
+            $ui.LogPanel.Visibility = if ($ui.LogPanel.Visibility -eq 'Visible') { 'Collapsed' } else { 'Visible' }
         }.GetNewClosure())
     }
     if ($ui.BtnUncheckAllApps) {
@@ -891,7 +1414,8 @@ function Initialize-OptiKitUi {
     }
     if ($ui.BtnUncheckAllTweaks) {
         $ui.BtnUncheckAllTweaks.Add_Click({
-            foreach ($e in $ui.TweakCheckboxes.Values) { $e.CheckBox.IsChecked = $false }
+            $ui.SelectedTweakIds.Clear()
+            Update-OptiKitTweakPage -Ui $ui
             Update-SelectionCounter -Ui $ui
         }.GetNewClosure())
     }
@@ -901,6 +1425,19 @@ function Initialize-OptiKitUi {
             Select-OptiKitPreset -Ui $ui -PresetKey ''
         }.GetNewClosure())
     }
+
+    $Window.Add_PreviewKeyDown({
+        param($keySender, $keyArgs)
+        if (($keyArgs.Key -eq 'F') -and ([System.Windows.Input.Keyboard]::Modifiers -eq 'Control')) {
+            [void]$ui.TxtSearchBox.Focus()
+            $ui.TxtSearchBox.SelectAll()
+            $keyArgs.Handled = $true
+        }
+        elseif (($keyArgs.Key -eq 'Escape') -and $ui.TxtSearchBox.IsKeyboardFocused -and $ui.TxtSearchBox.Text) {
+            $ui.TxtSearchBox.Text = ''
+            $keyArgs.Handled = $true
+        }
+    }.GetNewClosure())
 
     return $ui
 }
@@ -912,13 +1449,14 @@ function Show-AppliedChangesDialog {
     )
 
     $lines = New-Object 'System.Collections.Generic.List[string]'
-    [void]$lines.Add('=== AJUSTES ATIVOS DETECTADOS NA MÁQUINA ===')
+    [void]$lines.Add('Ajustes ativos nesta máquina:')
 
     $activeCount = 0
-    foreach ($tid in $Ui.TweakCheckboxes.Keys) {
-        $entry = $Ui.TweakCheckboxes[$tid]
-        if ($entry.BadgeApplied.Visibility -eq 'Visible') {
-            [void]$lines.Add(("• [Tweak] {0} ({1})" -f $entry.Config.title, $tid))
+    foreach ($tid in $Ui.TweakStatuses.Keys) {
+        if ($Ui.TweakStatuses[$tid] -ne 'Applied') { continue }
+        $definition = if ($Ui.TweakDefinitionMap) { $Ui.TweakDefinitionMap[$tid] } else { $null }
+        if ($definition) {
+            [void]$lines.Add(("• [Tweak] {0} ({1})" -f $definition.Config.title, $tid))
             $activeCount++
         }
     }
@@ -931,11 +1469,11 @@ function Show-AppliedChangesDialog {
     }
 
     if ($activeCount -eq 0) {
-        [void]$lines.Add('Nenhum tweak do catálogo está marcado como aplicado no momento.')
+        [void]$lines.Add('Nenhum ajuste do catálogo está aplicado no momento.')
     }
 
     [void]$lines.Add('')
-    [void]$lines.Add('=== HISTÓRICO DE CAPTURA PARA REVERSÃO (state.json) ===')
+    [void]$lines.Add('Registrado para reversão (state.json):')
     $stateMap = Read-OptiKitStateFile
     if ($stateMap.Count -eq 0) {
         [void]$lines.Add('Nenhuma captura registrada no state.json.')
@@ -948,5 +1486,5 @@ function Show-AppliedChangesDialog {
     }
 
     $msg = ($lines -join [Environment]::NewLine)
-    [void][System.Windows.MessageBox]::Show($Ui.Window, $msg, 'Alterações Aplicadas no Sistema (OptiKit)', [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
+    [void][System.Windows.MessageBox]::Show($Ui.Window, $msg, 'Alterações aplicadas', [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
 }

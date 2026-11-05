@@ -2585,50 +2585,169 @@ $script:EmbeddedPresetsJson = @'
 $script:EmbeddedThemeXaml = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="OptiKit &#x2014; System &amp; Gaming Optimizer"
+        Title="OptiKit"
         Width="1240" Height="850"
         MinWidth="980" MinHeight="660"
         WindowStartupLocation="CenterScreen"
-        Background="#121212"
-        Foreground="#F3F4F6"
-        FontFamily="Segoe UI">
+        Background="{DynamicResource Brush.Bg.Window}"
+        Foreground="{DynamicResource Brush.Text.Primary}"
+        FontFamily="Segoe UI"
+        FontSize="14"
+        UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Display">
 
     <Window.Resources>
-        <SolidColorBrush x:Key="BgPrimary" Color="#121212" />
-        <SolidColorBrush x:Key="BgCard" Color="#1E1E1E" />
-        <SolidColorBrush x:Key="BgSurface" Color="#18181B" />
-        <SolidColorBrush x:Key="BorderSubtle" Color="#2D2D32" />
-        <SolidColorBrush x:Key="AccentCyan" Color="#00E5FF" />
-        <SolidColorBrush x:Key="AccentRed" Color="#FF4655" />
-        <SolidColorBrush x:Key="TextPrimary" Color="#F3F4F6" />
-        <SolidColorBrush x:Key="TextMuted" Color="#9CA3AF" />
+        <!-- Paleta: neutros frios, um acento e tr&#x00EA;s cores de estado. Nenhum hex fora deste bloco. -->
+        <SolidColorBrush x:Key="Brush.Bg.Window" Color="#111214" />
+        <SolidColorBrush x:Key="Brush.Bg.Rail" Color="#16171A" />
+        <SolidColorBrush x:Key="Brush.Bg.Surface" Color="#1B1D20" />
+        <SolidColorBrush x:Key="Brush.Bg.Hover" Color="#212328" />
+        <SolidColorBrush x:Key="Brush.Bg.Pressed" Color="#282B30" />
+        <SolidColorBrush x:Key="Brush.Border.Subtle" Color="#25272C" />
+        <SolidColorBrush x:Key="Brush.Border.Default" Color="#363940" />
+        <SolidColorBrush x:Key="Brush.Text.Primary" Color="#ECEDEF" />
+        <SolidColorBrush x:Key="Brush.Text.Secondary" Color="#A4A9B0" />
+        <SolidColorBrush x:Key="Brush.Text.Tertiary" Color="#8A8F97" />
+        <SolidColorBrush x:Key="Brush.Text.Disabled" Color="#5C6168" />
+        <SolidColorBrush x:Key="Brush.Accent" Color="#2BC4E0" />
+        <SolidColorBrush x:Key="Brush.Accent.Hover" Color="#55D3EA" />
+        <SolidColorBrush x:Key="Brush.Accent.Pressed" Color="#1FA6C0" />
+        <SolidColorBrush x:Key="Brush.OnAccent" Color="#0B0D10" />
+        <SolidColorBrush x:Key="Brush.Success" Color="#3FB97A" />
+        <SolidColorBrush x:Key="Brush.Warning" Color="#E0A43B" />
+        <SolidColorBrush x:Key="Brush.Danger" Color="#E5534B" />
 
-        <Style x:Key="ActionButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#27272A" />
-            <Setter Property="Foreground" Value="#F3F4F6" />
-            <Setter Property="BorderBrush" Value="#3F3F46" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="12,5" />
-            <Setter Property="FontSize" Value="12.5" />
+        <FontFamily x:Key="Font.Mono">Cascadia Mono, Consolas</FontFamily>
+        <FontFamily x:Key="Font.Icon">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+
+        <!-- Tipografia: 4 tamanhos (12 / 14 / 16 / 20), 2 pesos (Regular / SemiBold). -->
+        <Style x:Key="Text.Title" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="20" />
             <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+        </Style>
+        <Style x:Key="Text.Subtitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+        </Style>
+        <Style x:Key="Text.Body" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+        </Style>
+        <Style x:Key="Text.BodyStrong" TargetType="TextBlock" BasedOn="{StaticResource Text.Body}">
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style x:Key="Text.Caption" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+        </Style>
+        <Style x:Key="Text.Meta" TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Tertiary}" />
+        </Style>
+        <Style x:Key="Text.Icon" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource Font.Icon}" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="Nav.Icon" TargetType="TextBlock" BasedOn="{StaticResource Text.Icon}">
+            <Setter Property="Margin" Value="0,0,12,0" />
+        </Style>
+        <Style x:Key="Section.Header" TargetType="TextBlock" BasedOn="{StaticResource Text.Subtitle}">
+            <Setter Property="Margin" Value="0,24,0,4" />
+        </Style>
+
+        <Style x:Key="Divider" TargetType="Border">
+            <Setter Property="Height" Value="1" />
+            <Setter Property="Background" Value="{StaticResource Brush.Border.Subtle}" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+        </Style>
+        <Style x:Key="Action.Row" TargetType="DockPanel">
+            <Setter Property="LastChildFill" Value="True" />
+            <Setter Property="MinHeight" Value="64" />
+        </Style>
+        <Style x:Key="Action.Text" TargetType="StackPanel">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,10,24,10" />
+        </Style>
+        <Style x:Key="Action.Buttons" TargetType="StackPanel">
+            <Setter Property="Orientation" Value="Horizontal" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="FocusVisual.Accent">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="-2" RadiusX="5" RadiusY="5" Stroke="{StaticResource Brush.Accent}" StrokeThickness="1" SnapsToDevicePixels="True" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Bot&#x00F5;es: Secondary (padr&#x00E3;o), Primary (uma por tela), Subtle (a&#x00E7;&#x00F5;es de baixa &#x00EA;nfase), Danger (destrutiva). -->
+        <Style x:Key="Button.Secondary" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource Brush.Bg.Surface}" />
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.Default}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="MinWidth" Value="72" />
+            <Setter Property="FontSize" Value="14" />
             <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual.Accent}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="btnBorder"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="5"
-                                Padding="{TemplateBinding Padding}">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="btnBorder" Property="BorderBrush" Value="#00E5FF" />
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource Brush.Bg.Hover}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource Brush.Bg.Pressed}" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="btnBorder" Property="Opacity" Value="0.45" />
+                                <Setter Property="Foreground" Value="{StaticResource Brush.Text.Disabled}" />
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource Brush.Border.Subtle}" />
+                                <Setter Property="Cursor" Value="Arrow" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="Button" BasedOn="{StaticResource Button.Secondary}" />
+
+        <Style x:Key="Button.Primary" TargetType="Button" BasedOn="{StaticResource Button.Secondary}">
+            <Setter Property="Background" Value="{StaticResource Brush.Accent}" />
+            <Setter Property="Foreground" Value="{StaticResource Brush.OnAccent}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Brush.Accent}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Padding" Value="16,0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource Brush.Accent.Hover}" />
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource Brush.Accent.Hover}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource Brush.Accent.Pressed}" />
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource Brush.Accent.Pressed}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource Brush.Bg.Pressed}" />
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource Brush.Bg.Pressed}" />
+                                <Setter Property="Foreground" Value="{StaticResource Brush.Text.Disabled}" />
+                                <Setter Property="Cursor" Value="Arrow" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -2636,47 +2755,158 @@ $script:EmbeddedThemeXaml = @'
             </Setter>
         </Style>
 
-        <Style x:Key="PrimaryCyanButtonStyle" TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
-            <Setter Property="Background" Value="#00E5FF" />
-            <Setter Property="Foreground" Value="#090D16" />
-            <Setter Property="BorderBrush" Value="#00E5FF" />
-            <Setter Property="FontWeight" Value="Bold" />
+        <Style x:Key="Button.Subtle" TargetType="Button" BasedOn="{StaticResource Button.Secondary}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="Padding" Value="10,0" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
-        <Style x:Key="DangerRedButtonStyle" TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
-            <Setter Property="Background" Value="#2A1619" />
-            <Setter Property="Foreground" Value="#FF6B78" />
-            <Setter Property="BorderBrush" Value="#FF4655" />
+        <Style x:Key="Button.Danger" TargetType="Button" BasedOn="{StaticResource Button.Secondary}">
+            <Setter Property="Foreground" Value="{StaticResource Brush.Danger}" />
         </Style>
 
-        <Style TargetType="TabItem">
-            <Setter Property="Foreground" Value="#9CA3AF" />
-            <Setter Property="FontSize" Value="13.5" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Padding" Value="14,7" />
-            <Setter Property="Margin" Value="0,0,5,0" />
+        <Style x:Key="Button.Icon" TargetType="Button" BasedOn="{StaticResource Button.Subtle}">
+            <Setter Property="FontFamily" Value="{StaticResource Font.Icon}" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="Width" Value="28" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+
+        <Style x:Key="Button.SearchClear" TargetType="Button" BasedOn="{StaticResource Button.Icon}">
+            <Setter Property="Visibility" Value="Visible" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Text, ElementName=TxtSearchBox}" Value="">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- CheckBox em formato de linha: a linha inteira &#x00E9; clic&#x00E1;vel, com hover e caixa alinhada ao topo. -->
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual.Accent}" />
+            <Setter Property="ToolTipService.ShowDuration" Value="30000" />
+            <Setter Property="ToolTipService.InitialShowDelay" Value="500" />
+            <Setter Property="ToolTipService.ShowOnDisabled" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Border x:Name="Row" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border x:Name="Box" Width="18" Height="18" Margin="0,1,12,0" VerticalAlignment="Top" CornerRadius="3" BorderThickness="1" BorderBrush="{StaticResource Brush.Border.Default}" Background="{StaticResource Brush.Bg.Surface}">
+                                    <Path x:Name="Mark" Data="M 4,9 L 7.5,12.5 L 14,5.5" Stroke="{StaticResource Brush.OnAccent}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Visibility="Collapsed" />
+                                </Border>
+                                <ContentPresenter Grid.Column="1" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" />
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Row" Property="Background" Value="{StaticResource Brush.Bg.Hover}" />
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource Brush.Text.Tertiary}" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Box" Property="Background" Value="{StaticResource Brush.Accent}" />
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource Brush.Accent}" />
+                                <Setter TargetName="Mark" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Row" Property="Opacity" Value="0.6" />
+                                <Setter Property="Cursor" Value="Arrow" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ComboBox escuro (o template padr&#x00E3;o do Aero2 ignora Background e deixava o texto ileg&#x00ED;vel). -->
+        <Style x:Key="ComboBox.Toggle" TargetType="ToggleButton">
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="ClickMode" Value="Press" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border Background="Transparent">
+                            <Path HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,12,0" Data="M 0,0 L 4,4 L 8,0" Stroke="{StaticResource Brush.Text.Secondary}" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="MinWidth" Value="160" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid SnapsToDevicePixels="True">
+                            <Border x:Name="Bd" Background="{StaticResource Brush.Bg.Surface}" BorderBrush="{StaticResource Brush.Border.Default}" BorderThickness="1" CornerRadius="4" />
+                            <ContentPresenter x:Name="ContentSite" IsHitTestVisible="False" Margin="12,0,32,0" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" />
+                            <ToggleButton x:Name="Toggle" Style="{StaticResource ComboBox.Toggle}" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <Popup x:Name="PART_Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="None">
+                                <Border Margin="0,4,0,0" Padding="4" Background="{StaticResource Brush.Bg.Surface}" BorderBrush="{StaticResource Brush.Border.Default}" BorderThickness="1" CornerRadius="6" MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                    <ScrollViewer SnapsToDevicePixels="True">
+                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource Brush.Bg.Hover}" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource Brush.Accent}" />
+                            </Trigger>
+                            <Trigger Property="IsDropDownOpen" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource Brush.Accent}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5" />
+                                <Setter Property="Cursor" Value="Arrow" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="TabItem">
-                        <Border x:Name="tabBorder"
-                                Background="#1A1A1E"
-                                BorderBrush="#2D2D32"
-                                BorderThickness="1,1,1,0"
-                                CornerRadius="6,6,0,0"
-                                Padding="{TemplateBinding Padding}"
-                                Margin="{TemplateBinding Margin}">
-                            <ContentPresenter ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="Bd" Background="Transparent" CornerRadius="4" Padding="10,6" SnapsToDevicePixels="True">
+                            <ContentPresenter />
                         </Border>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="tabBorder" Property="Background" Value="#1E1E1E" />
-                                <Setter TargetName="tabBorder" Property="BorderBrush" Value="#00E5FF" />
-                                <Setter TargetName="tabBorder" Property="BorderThickness" Value="1,2,1,0" />
-                                <Setter Property="Foreground" Value="#00E5FF" />
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource Brush.Bg.Hover}" />
                             </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Foreground" Value="#F3F4F6" />
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource Brush.Bg.Pressed}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -2684,277 +2914,705 @@ $script:EmbeddedThemeXaml = @'
             </Setter>
         </Style>
 
+        <Style x:Key="TextBox.Search" TargetType="TextBox">
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+            <Setter Property="CaretBrush" Value="{StaticResource Brush.Accent}" />
+            <Setter Property="SelectionBrush" Value="{StaticResource Brush.Accent}" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="Bd" Background="{StaticResource Brush.Bg.Surface}" BorderBrush="{StaticResource Brush.Border.Default}" BorderThickness="1" CornerRadius="4" SnapsToDevicePixels="True">
+                            <Grid Margin="10,0,30,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Style="{StaticResource Text.Icon}" FontSize="12" Text="&#xE721;" Foreground="{StaticResource Brush.Text.Tertiary}" Margin="0,0,8,0" />
+                                <TextBlock x:Name="Placeholder" Grid.Column="1" Text="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" Foreground="{StaticResource Brush.Text.Tertiary}" VerticalAlignment="Center" Visibility="Collapsed" IsHitTestVisible="False" />
+                                <ScrollViewer x:Name="PART_ContentHost" Grid.Column="1" VerticalAlignment="Center" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" />
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Text" Value="">
+                                <Setter TargetName="Placeholder" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource Brush.Text.Tertiary}" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource Brush.Accent}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="TextBox.Log" TargetType="TextBox">
+            <Setter Property="Background" Value="{StaticResource Brush.Bg.Window}" />
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="12,8" />
+            <Setter Property="FontFamily" Value="{StaticResource Font.Mono}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+            <Setter Property="SelectionBrush" Value="{StaticResource Brush.Accent}" />
+        </Style>
+
         <Style TargetType="ToolTip">
-            <Setter Property="Background" Value="#18181B" />
-            <Setter Property="Foreground" Value="#F3F4F6" />
-            <Setter Property="BorderBrush" Value="#00E5FF" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="10,8" />
-            <Setter Property="MaxWidth" Value="480" />
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="MaxWidth" Value="440" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToolTip">
+                        <Border Background="{StaticResource Brush.Bg.Surface}" BorderBrush="{StaticResource Brush.Border.Default}" BorderThickness="1" CornerRadius="4" Padding="12,10">
+                            <ContentPresenter>
+                                <ContentPresenter.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextWrapping" Value="Wrap" />
+                                    </Style>
+                                </ContentPresenter.Resources>
+                            </ContentPresenter>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Barra de rolagem fina (a padr&#x00E3;o &#x00E9; clara e grossa no tema escuro). -->
+        <Style x:Key="ScrollBar.Thumb" TargetType="Thumb">
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Border x:Name="T" Background="{StaticResource Brush.Border.Default}" CornerRadius="3" />
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="T" Property="Background" Value="{StaticResource Brush.Text.Tertiary}" />
+                            </Trigger>
+                            <Trigger Property="IsDragging" Value="True">
+                                <Setter TargetName="T" Property="Background" Value="{StaticResource Brush.Text.Secondary}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ScrollBar.Page" TargetType="RepeatButton">
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RepeatButton">
+                        <Border Background="Transparent" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="ScrollBar">
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+            <Setter Property="Background" Value="Transparent" />
+            <Style.Triggers>
+                <Trigger Property="Orientation" Value="Vertical">
+                    <Setter Property="Width" Value="10" />
+                    <Setter Property="MinWidth" Value="10" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ScrollBar">
+                                <Grid Background="Transparent">
+                                    <Track x:Name="PART_Track" IsDirectionReversed="True">
+                                        <Track.DecreaseRepeatButton>
+                                            <RepeatButton Style="{StaticResource ScrollBar.Page}" Command="ScrollBar.PageUpCommand" />
+                                        </Track.DecreaseRepeatButton>
+                                        <Track.Thumb>
+                                            <Thumb Style="{StaticResource ScrollBar.Thumb}" Margin="2" />
+                                        </Track.Thumb>
+                                        <Track.IncreaseRepeatButton>
+                                            <RepeatButton Style="{StaticResource ScrollBar.Page}" Command="ScrollBar.PageDownCommand" />
+                                        </Track.IncreaseRepeatButton>
+                                    </Track>
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+                <Trigger Property="Orientation" Value="Horizontal">
+                    <Setter Property="Height" Value="10" />
+                    <Setter Property="MinHeight" Value="10" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ScrollBar">
+                                <Grid Background="Transparent">
+                                    <Track x:Name="PART_Track" IsDirectionReversed="False">
+                                        <Track.DecreaseRepeatButton>
+                                            <RepeatButton Style="{StaticResource ScrollBar.Page}" Command="ScrollBar.PageLeftCommand" />
+                                        </Track.DecreaseRepeatButton>
+                                        <Track.Thumb>
+                                            <Thumb Style="{StaticResource ScrollBar.Thumb}" Margin="2" />
+                                        </Track.Thumb>
+                                        <Track.IncreaseRepeatButton>
+                                            <RepeatButton Style="{StaticResource ScrollBar.Page}" Command="ScrollBar.PageRightCommand" />
+                                        </Track.IncreaseRepeatButton>
+                                    </Track>
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="Progress.Thin" TargetType="ProgressBar">
+            <Setter Property="Height" Value="2" />
+            <Setter Property="Foreground" Value="{StaticResource Brush.Accent}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ProgressBar">
+                        <Grid>
+                            <Border x:Name="PART_Track" Background="{TemplateBinding Background}" />
+                            <Border x:Name="PART_Indicator" Background="{TemplateBinding Foreground}" HorizontalAlignment="Left" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Navega&#x00E7;&#x00E3;o lateral: ListBox ligado ao SelectedIndex do TabControl (o TabControl s&#x00F3; troca o conte&#x00FA;do). -->
+        <Style x:Key="Nav.Item" TargetType="ListBoxItem">
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Margin" Value="0,0,0,2" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual.Accent}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Bd" Background="Transparent" CornerRadius="4" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                            <Grid>
+                                <Border x:Name="Pill" Width="3" Height="16" CornerRadius="1.5" Background="{StaticResource Brush.Accent}" HorizontalAlignment="Left" Margin="-12,0,0,0" Visibility="Collapsed" />
+                                <ContentPresenter VerticalAlignment="Center" />
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource Brush.Bg.Hover}" />
+                                <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource Brush.Bg.Pressed}" />
+                                <Setter TargetName="Pill" Property="Visibility" Value="Visible" />
+                                <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="Nav.List" TargetType="ListBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="ItemContainerStyle" Value="{StaticResource Nav.Item}" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBox">
+                        <ItemsPresenter />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Obrigat&#x00F3;rio: o conte&#x00FA;do de cada aba herda Foreground do TabItem (preto no Aero2), n&#x00E3;o da Window. -->
+        <Style TargetType="TabItem">
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+        </Style>
+        <Style x:Key="Tab.ContentOnly" TargetType="TabControl">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabControl">
+                        <Grid>
+                            <TabPanel IsItemsHost="True" Visibility="Collapsed" />
+                            <ContentPresenter ContentSource="SelectedContent" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- A barra de sele&#x00E7;&#x00E3;o s&#x00F3; existe nas p&#x00E1;ginas de lista (0 = Apps, 1 = Ajustes, 2 = Jogos). -->
+        <Style x:Key="SelectionBar.Visibility" TargetType="DockPanel">
+            <Setter Property="Visibility" Value="Visible" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="3">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="4">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="5">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Tabela de inicializa&#x00E7;&#x00E3;o. -->
+        <Style x:Key="DataGrid.Clean" TargetType="DataGrid">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="RowBackground" Value="Transparent" />
+            <Setter Property="AlternatingRowBackground" Value="Transparent" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource Brush.Border.Subtle}" />
+            <Setter Property="HeadersVisibility" Value="Column" />
+            <Setter Property="RowHeight" Value="36" />
+            <Setter Property="CanUserResizeRows" Value="False" />
+            <Setter Property="SelectionMode" Value="Single" />
+            <Setter Property="SelectionUnit" Value="FullRow" />
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridColumnHeader">
+                        <Border Background="Transparent" BorderBrush="{StaticResource Brush.Border.Default}" BorderThickness="0,0,0,1" Padding="12,8">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="DataGridRow">
+            <Setter Property="Background" Value="Transparent" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource Brush.Bg.Hover}" />
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{StaticResource Brush.Bg.Pressed}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="DataGridCell">
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border Background="Transparent" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="Cell.Text" TargetType="TextBlock">
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="Cell.Status" TargetType="TextBlock" BasedOn="{StaticResource Cell.Text}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Enabled}" Value="False">
+                    <Setter Property="Foreground" Value="{StaticResource Brush.Text.Tertiary}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="Cell.Meta" TargetType="TextBlock" BasedOn="{StaticResource Cell.Text}">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+        </Style>
+        <Style x:Key="Cell.Command" TargetType="TextBlock" BasedOn="{StaticResource Cell.Meta}">
+            <Setter Property="FontFamily" Value="{StaticResource Font.Mono}" />
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Tertiary}" />
+            <Setter Property="ToolTip" Value="{Binding Command}" />
         </Style>
     </Window.Resources>
 
-    <Grid Margin="10,8,10,10">
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="232" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-        <!-- Cabe&#x00E7;alho Superior Compacto -->
-        <Border Grid.Row="0" Background="#1E1E1E" BorderBrush="#2D2D32" BorderThickness="1" CornerRadius="7" Padding="12,8" Margin="0,0,0,8">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Grid.Column="0" Orientation="Vertical">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="OptiKit" FontSize="19" FontWeight="Bold" Foreground="#00E5FF" Margin="0,0,8,0" />
-                        <TextBlock Text="System &amp; Gaming Optimizer" FontSize="13.5" FontWeight="SemiBold" Foreground="#E4E4E7" VerticalAlignment="Bottom" Margin="0,0,10,1" />
-                        <Border Name="BadgeDryRun" Background="#3B2F0B" BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="4" Padding="7,1" Visibility="Collapsed" VerticalAlignment="Center">
-                            <TextBlock Text="MODO DRY-RUN (SIMULA&#x00C7;&#x00C3;O)" FontSize="10.5" FontWeight="Bold" Foreground="#FBBF24" />
-                        </Border>
-                        <Border Name="BadgeUpdate" Background="#052E16" BorderBrush="#10B981" BorderThickness="1" CornerRadius="4" Padding="7,1" Visibility="Collapsed" VerticalAlignment="Center" Margin="6,0,0,0" Cursor="Hand" ToolTip="Nova vers&#x00E3;o dispon&#x00ED;vel. Clique para abrir a p&#x00E1;gina de releases.">
-                            <TextBlock Name="TxtUpdateBadge" Text="Nova vers&#x00E3;o dispon&#x00ED;vel" FontSize="10.5" FontWeight="Bold" Foreground="#34D399" />
-                        </Border>
-                    </StackPanel>
-                    <TextBlock Name="TxtHardwareSummary" Text="Detectando configura&#x00E7;&#x00E3;o de hardware..." FontSize="11.5" Foreground="#9CA3AF" Margin="0,2,0,0" />
-                </StackPanel>
-
-                <!-- Barra de Busca R&#x00E1;pida -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Background="#121212" BorderBrush="#3F3F46" BorderThickness="1" CornerRadius="5" Padding="8,3" Width="260">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="&#x1F50D;" Foreground="#9CA3AF" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12" />
-                            <TextBox Name="TxtSearchBox" Grid.Column="1" Background="Transparent" Foreground="#F3F4F6" CaretBrush="#00E5FF" BorderThickness="0" FontSize="12.5" VerticalAlignment="Center" ToolTip="Filtrar aplicativos, tweaks ou otimiza&#x00E7;&#x00F5;es por nome ou descri&#x00E7;&#x00E3;o" />
-                        </Grid>
+        <!-- Navega&#x00E7;&#x00E3;o lateral: identidade, busca, se&#x00E7;&#x00F5;es e resumo de hardware. -->
+        <Border Grid.Row="0" Grid.Column="0" Background="{StaticResource Brush.Bg.Rail}" BorderBrush="{StaticResource Brush.Border.Subtle}" BorderThickness="0,0,1,0">
+            <DockPanel Margin="12,20,12,16">
+                <StackPanel DockPanel.Dock="Top" Margin="8,0,8,20">
+                    <TextBlock Text="OptiKit" Style="{StaticResource Text.Title}" />
+                    <Border x:Name="BadgeDryRun" Visibility="Collapsed" HorizontalAlignment="Left" Margin="0,8,0,0" Padding="8,2" CornerRadius="4" BorderThickness="1" BorderBrush="{StaticResource Brush.Warning}">
+                        <TextBlock Text="Modo simula&#x00E7;&#x00E3;o" Style="{StaticResource Text.Caption}" Foreground="{StaticResource Brush.Warning}" />
                     </Border>
-                    <Button Name="BtnClearSearch" Content="Limpar" Style="{StaticResource ActionButtonStyle}" Margin="6,0,0,0" Padding="9,4" />
+                    <Border x:Name="BadgeUpdate" Visibility="Collapsed" HorizontalAlignment="Left" Margin="0,8,0,0" Background="Transparent" Cursor="Hand" ToolTip="Abrir a p&#x00E1;gina de releases do OptiKit">
+                        <TextBlock x:Name="TxtUpdateBadge" Text="Nova vers&#x00E3;o dispon&#x00ED;vel" Style="{StaticResource Text.Caption}" Foreground="{StaticResource Brush.Accent}" TextDecorations="Underline" />
+                    </Border>
                 </StackPanel>
-            </Grid>
+
+                <Grid DockPanel.Dock="Top" Margin="0,0,0,16">
+                    <TextBox x:Name="TxtSearchBox" Style="{StaticResource TextBox.Search}" Tag="Buscar apps e ajustes" AutomationProperties.Name="Buscar apps e ajustes" ToolTip="Filtra aplicativos, ajustes e otimiza&#x00E7;&#x00F5;es de jogos" />
+                    <Button x:Name="BtnClearSearch" Style="{StaticResource Button.SearchClear}" Content="&#xE711;" HorizontalAlignment="Right" Margin="0,0,2,0" ToolTip="Limpar busca" AutomationProperties.Name="Limpar busca" />
+                </Grid>
+
+                <TextBlock x:Name="TxtHardwareSummary" DockPanel.Dock="Bottom" Style="{StaticResource Text.Meta}" TextWrapping="Wrap" Margin="8,16,8,0" Text="Detectando hardware..." />
+
+                <ListBox x:Name="NavList" Style="{StaticResource Nav.List}" SelectedIndex="{Binding SelectedIndex, ElementName=MainTabControl, Mode=TwoWay}">
+                    <ListBoxItem AutomationProperties.Name="Instalar apps">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE71D;" />
+                            <TextBlock Text="Instalar apps" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="Ajustes do Windows">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE713;" />
+                            <TextBlock Text="Ajustes do Windows" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="Jogos">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE7FC;" />
+                            <TextBlock Text="Jogos" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="Diagn&#x00F3;stico">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE9D9;" />
+                            <TextBlock Text="Diagn&#x00F3;stico" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="Inicializa&#x00E7;&#x00E3;o">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE7E8;" />
+                            <TextBlock Text="Inicializa&#x00E7;&#x00E3;o" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="Manuten&#x00E7;&#x00E3;o">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE90F;" />
+                            <TextBlock Text="Manuten&#x00E7;&#x00E3;o" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </DockPanel>
         </Border>
 
-        <!-- &#x00C1;rea Central em Abas (Maximizada) -->
-        <TabControl Name="MainTabControl" Grid.Row="1" Background="#18181B" BorderBrush="#2D2D32" BorderThickness="1" Padding="8,6,8,6">
-            <!-- Aba 1: Instalar Apps -->
-            <TabItem Header="&#x1F4E6; Instalar Apps">
-                <Grid>
+        <TabControl x:Name="MainTabControl" Grid.Row="0" Grid.Column="1" Style="{StaticResource Tab.ContentOnly}">
+            <!-- 0. Instalar apps -->
+            <TabItem Header="Instalar apps">
+                <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <Border Grid.Row="0" Background="#1E1E1E" BorderBrush="#2D2D32" BorderThickness="1" CornerRadius="5" Padding="10,5" Margin="0,0,0,6">
-                        <DockPanel LastChildFill="False">
-                            <TextBlock DockPanel.Dock="Left" Text="Selecione os pacotes para instala&#x00E7;&#x00E3;o silenciosa via Winget (passe o mouse no item para ver detalhes e ID)." Foreground="#D4D4D8" VerticalAlignment="Center" FontSize="12" />
-                            <Button Name="BtnUncheckAllApps" DockPanel.Dock="Right" Content="Desmarcar Apps" Style="{StaticResource ActionButtonStyle}" Padding="8,3" FontSize="11.5" />
-                        </DockPanel>
-                    </Border>
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel Name="AppsCategoriesHost" Orientation="Vertical" Margin="0,0,4,0" />
-                    </ScrollViewer>
-                </Grid>
-            </TabItem>
-
-            <!-- Aba 2: Otimiza&#x00E7;&#x00F5;es & Debloat -->
-            <TabItem Header="&#x26A1; Otimiza&#x00E7;&#x00F5;es &amp; Debloat">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Border Grid.Row="0" Background="#1E1E1E" BorderBrush="#2D2D32" BorderThickness="1" CornerRadius="5" Padding="10,5" Margin="0,0,0,6">
-                        <DockPanel LastChildFill="False">
-                            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="Anti-Placebo: passe o mouse sobre qualquer item para ler a justificativa t&#x00E9;cnica e fonte." Foreground="#D4D4D8" FontSize="12" VerticalAlignment="Center" Margin="0,0,12,0" />
-                                <TextBlock Text="&#x25CF; Aplicado na m&#x00E1;quina" Foreground="#10B981" FontSize="11.5" FontWeight="SemiBold" VerticalAlignment="Center" />
-                            </StackPanel>
-                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                                <Button Name="BtnRefreshState" Content="Atualizar Estado" Style="{StaticResource ActionButtonStyle}" Padding="8,3" FontSize="11.5" Margin="0,0,6,0" />
-                                <Button Name="BtnUncheckAllTweaks" Content="Desmarcar Tweaks" Style="{StaticResource ActionButtonStyle}" Padding="8,3" FontSize="11.5" />
-                            </StackPanel>
-                        </DockPanel>
-                    </Border>
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel Name="TweaksCategoriesHost" Orientation="Vertical" Margin="0,0,4,0" />
-                    </ScrollViewer>
-                </Grid>
-            </TabItem>
-
-            <!-- Aba 3: Perfis de Jogos -->
-            <TabItem Header="&#x1F3AE; Perfis de Jogos (Game Optimizer)">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel Name="GameProfilesHost" Orientation="Vertical" Margin="0,0,4,0" />
-                </ScrollViewer>
-            </TabItem>
-
-            <!-- Aba 4: Diagn&#x00F3;stico de Hardware -->
-            <TabItem Header="&#x1F50D; Diagn&#x00F3;stico">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Border Grid.Row="0" Background="#1E1E1E" BorderBrush="#2D2D32" BorderThickness="1" CornerRadius="5" Padding="10,5" Margin="0,0,0,6">
-                        <DockPanel LastChildFill="False">
-                            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="Somente leitura: nenhuma altera&#x00E7;&#x00E3;o &#x00E9; feita no sistema." Foreground="#D4D4D8" FontSize="12" VerticalAlignment="Center" Margin="0,0,12,0" />
-                                <TextBlock Name="TxtDiagnosticsSummary" Text="Aguardando verifica&#x00E7;&#x00E3;o..." Foreground="#00E5FF" FontSize="11.5" FontWeight="SemiBold" VerticalAlignment="Center" />
-                            </StackPanel>
-                            <Button Name="BtnRefreshDiagnostics" DockPanel.Dock="Right" Content="Recarregar Diagn&#x00F3;stico" Style="{StaticResource ActionButtonStyle}" Padding="8,3" FontSize="11.5" />
-                        </DockPanel>
-                    </Border>
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel Name="DiagnosticsHost" Orientation="Vertical" Margin="0,0,4,0" />
-                    </ScrollViewer>
-                </Grid>
-            </TabItem>
-
-            <!-- Aba 5: Manuten&#x00E7;&#x00E3;o & Reparo -->
-            <TabItem Header="&#x1F6E0;&#xFE0F; Manuten&#x00E7;&#x00E3;o &amp; Reparo">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <!-- A&#x00E7;&#x00F5;es R&#x00E1;pidas de Manuten&#x00E7;&#x00E3;o -->
-                    <Border Grid.Row="0" Background="#1E1E1E" BorderBrush="#2D2D32" BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,0,0,8">
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="Ferramentas de Diagn&#x00F3;stico, Limpeza e Reparo do Sistema" FontSize="14" FontWeight="Bold" Foreground="#00E5FF" Margin="0,0,0,8" />
-                            <WrapPanel Orientation="Horizontal">
-                                <Button Name="BtnResetNetwork" Content="&#x1F310; Reset de Rede e DNS (Winsock / TCP-IP)" Style="{StaticResource ActionButtonStyle}" Margin="0,0,8,6" />
-                                <Button Name="BtnRunSfcDism" Content="&#x1FA7A; Executar SFC /scannow + DISM /RestoreHealth" Style="{StaticResource ActionButtonStyle}" Margin="0,0,8,6" />
-                                <Button Name="BtnCancelMaintenance" Content="&#x23F9; Cancelar SFC/DISM" Style="{StaticResource DangerRedButtonStyle}" Margin="0,0,8,6" IsEnabled="False" />
-                                <Button Name="BtnClearTemp" Content="&#x1F9F9; Limpar Arquivos Tempor&#x00E1;rios (%TEMP%)" Style="{StaticResource ActionButtonStyle}" Margin="0,0,8,6" />
-                                <Button Name="BtnOpenBackupsDir" Content="&#x1F4C2; Abrir Pasta de Backups e Logs" Style="{StaticResource ActionButtonStyle}" Margin="0,0,8,6" />
-                                <Button Name="BtnExportProfile" Content="&#x1F4BE; Exportar Perfil de Sele&#x00E7;&#x00E3;o" Style="{StaticResource ActionButtonStyle}" Margin="0,0,8,6" />
-                                <Button Name="BtnImportProfile" Content="&#x1F4E5; Importar Perfil" Style="{StaticResource ActionButtonStyle}" Margin="0,0,8,6" />
-                                <Button Name="BtnExportReport" Content="&#x1F4C4; Exportar Relat&#x00F3;rio HTML" Style="{StaticResource ActionButtonStyle}" Margin="0,0,0,6" />
-                            </WrapPanel>
-
-                            <TextBlock Text="Rede, Atualiza&#x00E7;&#x00F5;es e Limpeza Avan&#x00E7;ada" FontSize="13" FontWeight="SemiBold" Foreground="#F3F4F6" Margin="0,8,0,6" />
-                            <WrapPanel Orientation="Horizontal">
-                                <TextBlock Text="DNS over HTTPS (Windows 11):" Foreground="#9CA3AF" FontSize="11.5" VerticalAlignment="Center" Margin="0,0,6,6" />
-                                <ComboBox Name="CmbDohProvider" Width="250" Height="26" Background="#121212" Foreground="#F3F4F6" BorderBrush="#2D2D32" Margin="0,0,8,6" />
-                                <Button Name="BtnApplyDoh" Content="&#x1F510; Aplicar DoH" Style="{StaticResource ActionButtonStyle}" Margin="0,0,8,6" />
-                                <Button Name="BtnUndoDoh" Content="&#x21A9; Reverter DoH" Style="{StaticResource DangerRedButtonStyle}" Margin="0,0,8,6" />
-                                <Button Name="BtnWingetUpgrade" Content="&#x2B06; Atualizar Apps (Winget)" Style="{StaticResource ActionButtonStyle}" Margin="0,0,8,6" />
-                                <Button Name="BtnAdvancedCleanup" Content="&#x1F9E8; Limpeza Avan&#x00E7;ada" Style="{StaticResource DangerRedButtonStyle}" Margin="0,0,0,6" />
-                            </WrapPanel>
+                    <DockPanel Grid.Row="0" Margin="0,0,32,16">
+                        <Button x:Name="BtnUncheckAllApps" DockPanel.Dock="Right" Style="{StaticResource Button.Subtle}" Content="Desmarcar apps" VerticalAlignment="Bottom" />
+                        <StackPanel>
+                            <TextBlock Text="Instalar apps" Style="{StaticResource Text.Title}" />
+                            <TextBlock Text="Instala&#x00E7;&#x00E3;o silenciosa via winget. Passe o mouse em um app para ver o ID do pacote." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
                         </StackPanel>
-                    </Border>
+                    </DockPanel>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="0,0,24,32">
+                            <TextBlock x:Name="TxtAppsEmpty" Visibility="Collapsed" Style="{StaticResource Text.Caption}" Margin="0,8,0,0" />
+                            <StackPanel x:Name="AppsCategoriesHost" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
 
-                    <!-- Gerenciador de Inicializa&#x00E7;&#x00E3;o -->
-                    <Border Grid.Row="1" Background="#1E1E1E" BorderBrush="#2D2D32" BorderThickness="1" CornerRadius="6" Padding="12,10">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
+            <!-- 1. Ajustes do Windows -->
+            <TabItem Header="Ajustes do Windows">
+                <Grid Margin="32,24,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <DockPanel Grid.Row="0" Margin="0,0,32,12">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Bottom">
+                            <Button x:Name="BtnRefreshState" Style="{StaticResource Button.Subtle}" Content="Atualizar estado" />
+                            <Button x:Name="BtnUncheckAllTweaks" Style="{StaticResource Button.Subtle}" Content="Desmarcar ajustes" Margin="4,0,0,0" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Ajustes do Windows" Style="{StaticResource Text.Title}" />
+                            <TextBlock Text="Tudo &#x00E9; salvo antes de aplicar e pode ser revertido. Passe o mouse em um ajuste para ver a justificativa t&#x00E9;cnica." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </DockPanel>
+                    <DockPanel Grid.Row="1" Margin="0,0,32,12" LastChildFill="True">
+                        <TextBlock x:Name="TxtTweakCount" DockPanel.Dock="Right" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="12,0,0,0" />
+                        <WrapPanel Orientation="Horizontal">
+                            <ComboBox x:Name="CmbTweakSort" Width="200" Margin="0,0,8,6" ToolTip="Organiza os ajustes por categoria, impacto, risco, rein&#x00ED;cio ou estado" AutomationProperties.Name="Organizar ajustes" />
+                            <ComboBox x:Name="CmbTweakImpact" Width="160" Margin="0,0,8,6" ToolTip="Mostra apenas ajustes com o impacto selecionado" AutomationProperties.Name="Filtrar por impacto" />
+                            <ComboBox x:Name="CmbTweakRisk" Width="160" Margin="0,0,8,6" ToolTip="Mostra apenas ajustes com o risco selecionado" AutomationProperties.Name="Filtrar por risco" />
+                            <ComboBox x:Name="CmbTweakStatus" Width="170" Margin="0,0,8,6" ToolTip="Mostra apenas ajustes aplicados, n&#x00E3;o aplicados ou desconhecidos" AutomationProperties.Name="Filtrar por estado" />
+                            <Button x:Name="BtnClearTweakFilters" Style="{StaticResource Button.Subtle}" Content="Limpar filtros" Visibility="Collapsed" Margin="0,0,0,6" ToolTip="Volta a mostrar todos os ajustes" AutomationProperties.Name="Limpar filtros de ajustes" />
+                        </WrapPanel>
+                    </DockPanel>
+                    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="0,0,24,32">
+                            <TextBlock x:Name="TxtTweaksEmpty" Visibility="Collapsed" Style="{StaticResource Text.Caption}" Margin="0,8,0,0" />
+                            <StackPanel x:Name="TweaksCategoriesHost" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
 
-                            <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,8">
-                                <StackPanel DockPanel.Dock="Left" Orientation="Vertical">
-                                    <TextBlock Text="Gerenciador de Inicializa&#x00E7;&#x00E3;o do Windows (StartupApproved)" FontSize="14" FontWeight="Bold" Foreground="#F3F4F6" />
-                                    <TextBlock Text="Controla programas que iniciam com o Windows usando o mesmo registro revers&#x00ED;vel do Gerenciador de Tarefas." FontSize="11.5" Foreground="#9CA3AF" />
+            <!-- 2. Jogos -->
+            <TabItem Header="Jogos">
+                <Grid Margin="32,24,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Margin="0,0,32,16">
+                        <TextBlock Text="Jogos" Style="{StaticResource Text.Title}" />
+                        <TextBlock Text="Otimiza&#x00E7;&#x00F5;es por jogo, compat&#x00ED;veis com o anti-cheat de cada t&#x00ED;tulo. Selecione o execut&#x00E1;vel quando ele n&#x00E3;o for detectado." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                    </StackPanel>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="0,0,24,32">
+                            <TextBlock x:Name="TxtGamesEmpty" Visibility="Collapsed" Style="{StaticResource Text.Caption}" Margin="0,8,0,0" />
+                            <StackPanel x:Name="GameProfilesHost" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+
+            <!-- 3. Diagn&#x00F3;stico -->
+            <TabItem Header="Diagn&#x00F3;stico">
+                <Grid Margin="32,24,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <DockPanel Grid.Row="0" Margin="0,0,32,16">
+                        <Button x:Name="BtnRefreshDiagnostics" DockPanel.Dock="Right" Content="Executar novamente" VerticalAlignment="Bottom" />
+                        <StackPanel>
+                            <TextBlock Text="Diagn&#x00F3;stico" Style="{StaticResource Text.Title}" />
+                            <TextBlock x:Name="TxtDiagnosticsSummary" Text="Somente leitura. Aguardando a verifica&#x00E7;&#x00E3;o." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </DockPanel>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel x:Name="DiagnosticsHost" Margin="0,0,24,32" />
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+
+            <!-- 4. Inicializa&#x00E7;&#x00E3;o -->
+            <TabItem Header="Inicializa&#x00E7;&#x00E3;o">
+                <Grid Margin="32,24,32,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <DockPanel Grid.Row="0" Margin="0,0,0,16">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Bottom">
+                            <Button x:Name="BtnRefreshStartup" Style="{StaticResource Button.Subtle}" Content="Recarregar" />
+                            <Button x:Name="BtnDisableStartup" Content="Desativar" Margin="8,0,0,0" />
+                            <Button x:Name="BtnEnableStartup" Content="Ativar" Margin="8,0,0,0" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Inicializa&#x00E7;&#x00E3;o" Style="{StaticResource Text.Title}" />
+                            <TextBlock Text="Programas que iniciam com o Windows. Usa o mesmo registro do Gerenciador de Tarefas." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </DockPanel>
+                    <DataGrid x:Name="GridStartupItems" Grid.Row="1" Style="{StaticResource DataGrid.Clean}" Margin="0,0,0,24">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Estado" Binding="{Binding StatusText}" Width="110" ElementStyle="{StaticResource Cell.Status}" />
+                            <DataGridTextColumn Header="Programa" Binding="{Binding Name}" Width="200" ElementStyle="{StaticResource Cell.Text}" />
+                            <DataGridTextColumn Header="Escopo" Binding="{Binding Scope}" Width="180" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Comando" Binding="{Binding Command}" Width="*" ElementStyle="{StaticResource Cell.Command}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <!-- 5. Manuten&#x00E7;&#x00E3;o -->
+            <TabItem Header="Manuten&#x00E7;&#x00E3;o">
+                <Grid Margin="32,24,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Margin="0,0,32,0">
+                        <TextBlock Text="Manuten&#x00E7;&#x00E3;o" Style="{StaticResource Text.Title}" />
+                        <TextBlock Text="Reparo, limpeza, rede e revers&#x00E3;o. Opera&#x00E7;&#x00F5;es longas rodam em segundo plano e aparecem no log." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                    </StackPanel>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="0,0,24,32">
+                            <TextBlock Text="Reparo do sistema" Style="{StaticResource Section.Header}" />
+                            <DockPanel Style="{StaticResource Action.Row}">
+                                <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
+                                    <Button x:Name="BtnCancelMaintenance" Style="{StaticResource Button.Subtle}" Content="Cancelar" IsEnabled="False" Margin="0,0,8,0" />
+                                    <Button x:Name="BtnRunSfcDism" Content="Executar" />
                                 </StackPanel>
-                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Name="BtnEnableStartup" Content="Ativar Selecionado" Style="{StaticResource ActionButtonStyle}" Padding="9,4" Margin="0,0,6,0" />
-                                    <Button Name="BtnDisableStartup" Content="Desativar Selecionado" Style="{StaticResource DangerRedButtonStyle}" Padding="9,4" Margin="0,0,6,0" />
-                                    <Button Name="BtnRefreshStartup" Content="Recarregar" Style="{StaticResource ActionButtonStyle}" Padding="9,4" />
+                                <StackPanel Style="{StaticResource Action.Text}">
+                                    <TextBlock Text="Reparar arquivos do sistema" />
+                                    <TextBlock Text="DISM /RestoreHealth seguido de SFC /scannow. Pode levar v&#x00E1;rios minutos." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+                            <Border Style="{StaticResource Divider}" />
+                            <DockPanel Style="{StaticResource Action.Row}">
+                                <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
+                                    <Button x:Name="BtnResetNetwork" Content="Redefinir" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Action.Text}">
+                                    <TextBlock Text="Redefinir rede" />
+                                    <TextBlock Text="Winsock, pilha TCP/IP e cache DNS. Requer reinicializa&#x00E7;&#x00E3;o." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
                                 </StackPanel>
                             </DockPanel>
 
-                            <DataGrid Name="GridStartupItems"
-                                      Grid.Row="1"
-                                      AutoGenerateColumns="False"
-                                      IsReadOnly="True"
-                                      SelectionMode="Single"
-                                      Background="#121212"
-                                      Foreground="#F3F4F6"
-                                      RowBackground="#18181B"
-                                      AlternatingRowBackground="#1E1E24"
-                                      BorderBrush="#2D2D32"
-                                      GridLinesVisibility="Horizontal"
-                                      HorizontalGridLinesBrush="#27272A"
-                                      HeadersVisibility="Column">
-                                <DataGrid.Resources>
-                                    <Style TargetType="DataGridColumnHeader">
-                                        <Setter Property="Background" Value="#27272A" />
-                                        <Setter Property="Foreground" Value="#00E5FF" />
-                                        <Setter Property="FontWeight" Value="SemiBold" />
-                                        <Setter Property="Padding" Value="10,5" />
-                                        <Setter Property="BorderBrush" Value="#3F3F46" />
-                                        <Setter Property="BorderThickness" Value="0,0,1,1" />
-                                    </Style>
-                                </DataGrid.Resources>
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Estado" Binding="{Binding StatusText}" Width="100" />
-                                    <DataGridTextColumn Header="Programa" Binding="{Binding Name}" Width="220" />
-                                    <DataGridTextColumn Header="Escopo" Binding="{Binding Scope}" Width="190" />
-                                    <DataGridTextColumn Header="Comando / Caminho" Binding="{Binding Command}" Width="*" />
-                                </DataGrid.Columns>
-                            </DataGrid>
-                        </Grid>
-                    </Border>
+                            <TextBlock Text="Limpeza" Style="{StaticResource Section.Header}" />
+                            <DockPanel Style="{StaticResource Action.Row}">
+                                <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
+                                    <Button x:Name="BtnClearTemp" Content="Limpar" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Action.Text}">
+                                    <TextBlock Text="Arquivos tempor&#x00E1;rios" />
+                                    <TextBlock Text="Pastas %TEMP% do usu&#x00E1;rio e Windows\Temp. Arquivos em uso s&#x00E3;o ignorados." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+                            <Border Style="{StaticResource Divider}" />
+                            <DockPanel Style="{StaticResource Action.Row}">
+                                <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
+                                    <Button x:Name="BtnAdvancedCleanup" Content="Limpar" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Action.Text}">
+                                    <TextBlock Text="Limpeza avan&#x00E7;ada" />
+                                    <TextBlock Text="Cache do Windows Update e do Delivery Optimization, Lixeira, Prefetch e Component Store. Pode levar v&#x00E1;rios minutos." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+
+                            <TextBlock Text="Rede e atualiza&#x00E7;&#x00F5;es" Style="{StaticResource Section.Header}" />
+                            <DockPanel Style="{StaticResource Action.Row}">
+                                <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
+                                    <ComboBox x:Name="CmbDohProvider" Width="220" Margin="0,0,8,0" />
+                                    <Button x:Name="BtnUndoDoh" Style="{StaticResource Button.Subtle}" Content="Reverter" Margin="0,0,8,0" />
+                                    <Button x:Name="BtnApplyDoh" Content="Aplicar" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Action.Text}">
+                                    <TextBlock Text="DNS over HTTPS" />
+                                    <TextBlock Text="Criptografa as consultas DNS dos adaptadores ativos. Requer Windows 11." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+                            <Border Style="{StaticResource Divider}" />
+                            <DockPanel Style="{StaticResource Action.Row}">
+                                <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
+                                    <Button x:Name="BtnWingetUpgrade" Content="Atualizar" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Action.Text}">
+                                    <TextBlock Text="Atualizar aplicativos" />
+                                    <TextBlock Text="Atualiza todos os apps gerenciados pelo winget. Alguns podem pedir reinicializa&#x00E7;&#x00E3;o." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+
+                            <TextBlock Text="Hist&#x00F3;rico e revers&#x00E3;o" Style="{StaticResource Section.Header}" />
+                            <DockPanel Style="{StaticResource Action.Row}">
+                                <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
+                                    <Button x:Name="BtnViewApplied" Content="Ver altera&#x00E7;&#x00F5;es" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Action.Text}">
+                                    <TextBlock Text="Altera&#x00E7;&#x00F5;es aplicadas" />
+                                    <TextBlock Text="Ajustes ativos nesta m&#x00E1;quina e o que est&#x00E1; registrado para revers&#x00E3;o." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+                            <Border Style="{StaticResource Divider}" />
+                            <DockPanel Style="{StaticResource Action.Row}">
+                                <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
+                                    <Button x:Name="BtnUndoAll" Style="{StaticResource Button.Danger}" Content="Reverter tudo" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Action.Text}">
+                                    <TextBlock Text="Reverter tudo" />
+                                    <TextBlock Text="Desfaz todas as altera&#x00E7;&#x00F5;es registradas pelo OptiKit: ajustes, jogos, energia, USB, DNS e Windows Update." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+
+                            <TextBlock Text="Perfis e relat&#x00F3;rios" Style="{StaticResource Section.Header}" />
+                            <DockPanel Style="{StaticResource Action.Row}">
+                                <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
+                                    <Button x:Name="BtnImportProfile" Content="Importar" Margin="0,0,8,0" />
+                                    <Button x:Name="BtnExportProfile" Content="Exportar" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Action.Text}">
+                                    <TextBlock Text="Perfil de sele&#x00E7;&#x00E3;o" />
+                                    <TextBlock Text="Salva ou carrega os itens marcados em um arquivo JSON." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+                            <Border Style="{StaticResource Divider}" />
+                            <DockPanel Style="{StaticResource Action.Row}">
+                                <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
+                                    <Button x:Name="BtnExportReport" Content="Exportar" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Action.Text}">
+                                    <TextBlock Text="Relat&#x00F3;rio da sess&#x00E3;o" />
+                                    <TextBlock Text="HTML com hardware, diagn&#x00F3;stico, estados capturados e log." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+                            <Border Style="{StaticResource Divider}" />
+                            <DockPanel Style="{StaticResource Action.Row}">
+                                <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
+                                    <Button x:Name="BtnOpenBackupsDir" Content="Abrir pasta" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Action.Text}">
+                                    <TextBlock Text="Pasta de dados" />
+                                    <TextBlock Text="Logs, backups .reg e state.json do OptiKit." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+                        </StackPanel>
+                    </ScrollViewer>
                 </Grid>
             </TabItem>
         </TabControl>
 
-        <!-- Barra Inferior Fixa Compacta -->
-        <Border Grid.Row="2" Background="#1E1E1E" BorderBrush="#2D2D32" BorderThickness="1" CornerRadius="7" Padding="12,8" Margin="0,8,0,0">
+        <!-- Rodap&#x00E9;: progresso, log recolh&#x00ED;vel, status e a&#x00E7;&#x00F5;es de sele&#x00E7;&#x00E3;o. -->
+        <Border Grid.Row="1" Grid.ColumnSpan="2" Background="{StaticResource Brush.Bg.Rail}" BorderBrush="{StaticResource Brush.Border.Subtle}" BorderThickness="0,1,0,0">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-
-                <!-- Controles de Preset e A&#x00E7;&#x00E3;o -->
-                <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,6">
-                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Preset:" FontWeight="SemiBold" Foreground="#D4D4D8" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12.5" />
-                        <ComboBox Name="CmbPresets" Width="200" Height="28" VerticalContentAlignment="Center" Background="#121212" Foreground="#121212" FontSize="12.5" Margin="0,0,8,0" />
-                        <Button Name="BtnClearSelection" Content="Limpar Sele&#x00E7;&#x00E3;o" Style="{StaticResource ActionButtonStyle}" Padding="9,4" Margin="0,0,8,0" />
-                        <TextBlock Name="TxtSelectionCounter" Text="0 itens selecionados" Foreground="#00E5FF" FontWeight="SemiBold" VerticalAlignment="Center" Margin="4,0,0,0" FontSize="12.5" />
-                    </StackPanel>
-
-                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button Name="BtnViewApplied" Content="Ver Altera&#x00E7;&#x00F5;es Aplicadas" Style="{StaticResource ActionButtonStyle}" Margin="0,0,6,0" />
-                        <Button Name="BtnUndoSelected" Content="Reverter Selecionados (Undo)" Style="{StaticResource DangerRedButtonStyle}" Margin="0,0,6,0" />
-                        <Button Name="BtnUndoAll" Content="Reverter Tudo" Style="{StaticResource DangerRedButtonStyle}" Margin="0,0,6,0" />
-                        <Button Name="BtnApplySelected" Content="Aplicar Selecionados" Style="{StaticResource PrimaryCyanButtonStyle}" />
-                    </StackPanel>
-                </DockPanel>
-
-                <!-- Barra de Progresso + Status -->
-                <Grid Grid.Row="1" Margin="0,0,0,6">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="240" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <ProgressBar Name="MainProgressBar" Grid.Column="0" Height="10" Minimum="0" Maximum="100" Value="0" Background="#121212" Foreground="#00E5FF" BorderBrush="#2D2D32" Margin="0,0,10,0" />
-                    <TextBlock Name="TxtStatusMessage" Grid.Column="1" Text="Pronto. Selecione um preset ou marque os itens desejados." Foreground="#9CA3AF" FontSize="11.5" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                </Grid>
-
-                <!-- Console em Tempo Real -->
-                <Border Grid.Row="2" Background="#0D0D10" BorderBrush="#27272A" BorderThickness="1" CornerRadius="4" Padding="5">
-                    <TextBox Name="TxtConsoleOutput"
-                             Height="60"
-                             IsReadOnly="True"
-                             TextWrapping="Wrap"
-                             VerticalScrollBarVisibility="Auto"
-                             Background="Transparent"
-                             Foreground="#A1A1AA"
-                             BorderThickness="0"
-                             FontFamily="Consolas"
-                             FontSize="11" />
+                <ProgressBar x:Name="MainProgressBar" Grid.Row="0" Style="{StaticResource Progress.Thin}" Minimum="0" Maximum="100" Value="0" Visibility="Hidden" />
+                <Border x:Name="LogPanel" Grid.Row="1" Height="168" Visibility="Collapsed" BorderBrush="{StaticResource Brush.Border.Subtle}" BorderThickness="0,0,0,1">
+                    <TextBox x:Name="TxtConsoleOutput" Style="{StaticResource TextBox.Log}" />
                 </Border>
+                <DockPanel Grid.Row="2" Margin="12,10,16,10" LastChildFill="True">
+                    <!-- Ordem de dock importa: o que vem primeiro recebe espa&#x00E7;o primeiro. Aplicar nunca pode ser cortado. -->
+                    <DockPanel x:Name="SelectionBar" DockPanel.Dock="Right" LastChildFill="False" Style="{StaticResource SelectionBar.Visibility}">
+                        <Button x:Name="BtnApplySelected" DockPanel.Dock="Right" Style="{StaticResource Button.Primary}" Content="Aplicar selecionados" Margin="8,0,0,0" />
+                        <Button x:Name="BtnUndoSelected" DockPanel.Dock="Right" Content="Reverter selecionados" Margin="8,0,0,0" />
+                        <Button x:Name="BtnClearSelection" DockPanel.Dock="Right" Style="{StaticResource Button.Subtle}" Content="Limpar" Margin="4,0,0,0" />
+                        <TextBlock x:Name="TxtSelectionCounter" DockPanel.Dock="Right" Text="Nenhum item selecionado" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="12,0,0,0" />
+                        <ComboBox x:Name="CmbPresets" DockPanel.Dock="Right" Width="200" ToolTip="Presets marcam um conjunto recomendado de itens" />
+                    </DockPanel>
+                    <Button x:Name="BtnToggleLog" DockPanel.Dock="Left" Style="{StaticResource Button.Subtle}" Content="Log" ToolTip="Mostrar ou ocultar o log da sess&#x00E3;o" Margin="0,0,8,0" />
+                    <TextBlock x:Name="TxtStatusMessage" Text="Pronto." Style="{StaticResource Text.Caption}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,16,0" />
+                </DockPanel>
             </Grid>
         </Border>
     </Grid>
@@ -7105,89 +7763,829 @@ function Get-OptiKitHardwareDiagnostics {
 
 Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase, System.Windows.Forms
 
-function ConvertFrom-HexBrush {
-    param([Parameter(Mandatory = $true)][string]$Hex)
-    $conv = New-Object System.Windows.Media.BrushConverter
-    return [System.Windows.Media.Brush]$conv.ConvertFromString($Hex)
+function Get-OptiKitUiResource {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][string]$Key
+    )
+    return $Ui.Window.FindResource($Key)
 }
 
-function New-OptiKitBadge {
+function Format-OptiKitCount {
     param(
-        [Parameter(Mandatory = $true)][string]$Text,
-        [string]$BgHex = '#27272A',
-        [string]$BorderHex = '#3F3F46',
-        [string]$FgHex = '#E4E4E7'
+        [Parameter(Mandatory = $true)][int]$Count,
+        [Parameter(Mandatory = $true)][string]$Singular,
+        [Parameter(Mandatory = $true)][string]$Plural
     )
+    if ($Count -eq 1) { return ('1 {0}' -f $Singular) }
+    return ('{0} {1}' -f $Count, $Plural)
+}
 
-    $border = New-Object System.Windows.Controls.Border
-    $border.Background = ConvertFrom-HexBrush $BgHex
-    $border.BorderBrush = ConvertFrom-HexBrush $BorderHex
-    $border.BorderThickness = New-Object System.Windows.Thickness(1)
-    $border.CornerRadius = New-Object System.Windows.CornerRadius(4)
-    $border.Padding = New-Object System.Windows.Thickness(5, 1, 5, 1)
-    $border.Margin = New-Object System.Windows.Thickness(4, 0, 0, 0)
-    $border.VerticalAlignment = 'Center'
-    $border.HorizontalAlignment = 'Right'
+function Format-OptiKitSelectionCount {
+    param([int]$Count)
+    if ($Count -le 0) { return 'Nenhum item selecionado' }
+    return (Format-OptiKitCount -Count $Count -Singular 'item selecionado' -Plural 'itens selecionados')
+}
+
+function Format-OptiKitHardwareSummary {
+    param([AllowEmptyString()][string]$Summary)
+    return ((@($Summary -split '\s*\|\s*') | Where-Object { $_ }) -join [Environment]::NewLine)
+}
+
+function New-OptiKitText {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [AllowEmptyString()][string]$Text = '',
+        [string]$Style = 'Text.Body',
+        [ValidateSet('None', 'Wrap', 'Trim')][string]$Overflow = 'None',
+        [string]$Brush
+    )
 
     $tb = New-Object System.Windows.Controls.TextBlock
     $tb.Text = $Text
-    $tb.Foreground = ConvertFrom-HexBrush $FgHex
-    $tb.FontSize = 10.5
-    $tb.FontWeight = 'SemiBold'
-    $border.Child = $tb
-
-    return $border
+    $tb.Style = Get-OptiKitUiResource -Ui $Ui -Key $Style
+    switch ($Overflow) {
+        'Wrap' { $tb.TextWrapping = 'Wrap' }
+        'Trim' {
+            $tb.TextWrapping = 'NoWrap'
+            $tb.TextTrimming = 'CharacterEllipsis'
+        }
+    }
+    if ($Brush) {
+        $tb.Foreground = Get-OptiKitUiResource -Ui $Ui -Key $Brush
+    }
+    return $tb
 }
 
-function Get-ImpactColors {
+function New-OptiKitRun {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][string]$Text,
+        [string]$Brush
+    )
+
+    $run = New-Object System.Windows.Documents.Run($Text)
+    if ($Brush) {
+        $run.Foreground = Get-OptiKitUiResource -Ui $Ui -Key $Brush
+    }
+    return $run
+}
+
+function Get-OptiKitImpactLabel {
     param([string]$Impact)
     switch ($Impact) {
-        'Alto'        { return @{ Bg = '#082F38'; Border = '#00E5FF'; Fg = '#00E5FF' } }
-        "M$([char]0x00E9)dio"       { return @{ Bg = '#172554'; Border = '#3B82F6'; Fg = '#60A5FA' } }
-        'Baixo'       { return @{ Bg = '#27272A'; Border = '#52525B'; Fg = '#A1A1AA' } }
-        'Situacional' { return @{ Bg = '#3B2F0B'; Border = '#F59E0B'; Fg = '#FBBF24' } }
-        default       { return @{ Bg = '#27272A'; Border = '#52525B'; Fg = '#D4D4D8' } }
+        'Alto' { return 'Impacto alto' }
+        "M$([char]0x00E9)dio" { return "Impacto m$([char]0x00E9)dio" }
+        'Baixo' { return 'Impacto baixo' }
+        'Situacional' { return 'Situacional' }
+        default { return [string]$Impact }
     }
 }
 
-function Get-RiskColors {
+function Get-OptiKitRiskLabel {
     param([string]$Risk)
     switch ($Risk) {
-        'Safe'     { return @{ Bg = '#052E16'; Border = '#10B981'; Fg = '#34D399' } }
-        'Moderate' { return @{ Bg = '#3B2F0B'; Border = '#F59E0B'; Fg = '#FBBF24' } }
-        'Advanced' { return @{ Bg = '#3B1219'; Border = '#FF4655'; Fg = '#FF6B78' } }
-        default    { return @{ Bg = '#27272A'; Border = '#52525B'; Fg = '#D4D4D8' } }
+        'Moderate' { return @{ Text = 'Risco moderado'; Brush = 'Brush.Warning' } }
+        'Advanced' { return @{ Text = "Risco avan$([char]0x00E7)ado"; Brush = 'Brush.Danger' } }
+        default { return $null }
     }
 }
 
-function Get-DiagnosticColors {
-    param([string]$Status)
+function New-OptiKitToolTipContent {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][string]$Title,
+        [string]$Body,
+        [string]$DetailLabel,
+        [string]$Detail,
+        [string]$Footer,
+        [string]$Alert
+    )
 
-    switch ($Status) {
-        'OK'    { return @{ Bg = '#052E16'; Border = '#10B981'; Fg = '#34D399' } }
-        'Warn'  { return @{ Bg = '#3B2F0B'; Border = '#F59E0B'; Fg = '#FBBF24' } }
-        'Error' { return @{ Bg = '#3B1219'; Border = '#FF4655'; Fg = '#FF6B78' } }
-        'Info'  { return @{ Bg = '#082F38'; Border = '#00E5FF'; Fg = '#00E5FF' } }
-        default { return @{ Bg = '#27272A'; Border = '#52525B'; Fg = '#A1A1AA' } }
+    $sp = New-Object System.Windows.Controls.StackPanel
+    $sp.MaxWidth = 416
+    [void]$sp.Children.Add((New-OptiKitText -Ui $Ui -Text $Title -Style 'Text.BodyStrong' -Overflow Wrap))
+
+    if (-not [string]::IsNullOrWhiteSpace($Body)) {
+        $bodyTb = New-OptiKitText -Ui $Ui -Text $Body -Style 'Text.Caption' -Overflow Wrap
+        $bodyTb.Margin = New-Object System.Windows.Thickness(0, 4, 0, 0)
+        [void]$sp.Children.Add($bodyTb)
     }
+    if (-not [string]::IsNullOrWhiteSpace($Detail)) {
+        if (-not [string]::IsNullOrWhiteSpace($DetailLabel)) {
+            $labelTb = New-OptiKitText -Ui $Ui -Text $DetailLabel -Style 'Text.Caption' -Brush 'Brush.Text.Primary'
+            $labelTb.FontWeight = 'SemiBold'
+            $labelTb.Margin = New-Object System.Windows.Thickness(0, 10, 0, 2)
+            [void]$sp.Children.Add($labelTb)
+        }
+        [void]$sp.Children.Add((New-OptiKitText -Ui $Ui -Text $Detail -Style 'Text.Caption' -Overflow Wrap))
+    }
+    if (-not [string]::IsNullOrWhiteSpace($Footer)) {
+        $footerTb = New-OptiKitText -Ui $Ui -Text $Footer -Style 'Text.Meta' -Overflow Wrap
+        $footerTb.Margin = New-Object System.Windows.Thickness(0, 10, 0, 0)
+        [void]$sp.Children.Add($footerTb)
+    }
+    if (-not [string]::IsNullOrWhiteSpace($Alert)) {
+        $alertTb = New-OptiKitText -Ui $Ui -Text $Alert -Style 'Text.Caption' -Overflow Wrap -Brush 'Brush.Danger'
+        $alertTb.Margin = New-Object System.Windows.Thickness(0, 8, 0, 0)
+        [void]$sp.Children.Add($alertTb)
+    }
+    return $sp
+}
+
+function New-OptiKitItemRow {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][string]$Title,
+        [AllowEmptyString()][string]$Description = '',
+        [string]$Impact,
+        [string]$Risk = 'Safe',
+        [switch]$RequiresReboot,
+        [string]$BlockReason,
+        $ToolTipContent,
+        [string]$Tag
+    )
+
+    $stack = New-Object System.Windows.Controls.StackPanel
+
+    $line1 = New-Object System.Windows.Controls.DockPanel
+    $line1.LastChildFill = $true
+    $statusPanel = New-Object System.Windows.Controls.StackPanel
+    $statusPanel.Orientation = 'Horizontal'
+    $statusPanel.VerticalAlignment = 'Center'
+    $statusPanel.Margin = New-Object System.Windows.Thickness(12, 0, 0, 0)
+    [System.Windows.Controls.DockPanel]::SetDock($statusPanel, 'Right')
+
+    $isBlocked = -not [string]::IsNullOrWhiteSpace($BlockReason)
+    if ($isBlocked) {
+        [void]$statusPanel.Children.Add((New-OptiKitText -Ui $Ui -Text 'Bloqueado' -Style 'Text.Caption' -Brush 'Brush.Danger'))
+    }
+    $applied = New-OptiKitText -Ui $Ui -Text 'Aplicado' -Style 'Text.Caption' -Brush 'Brush.Success'
+    $applied.Visibility = 'Collapsed'
+    if ($isBlocked) {
+        $applied.Margin = New-Object System.Windows.Thickness(8, 0, 0, 0)
+    }
+    [void]$statusPanel.Children.Add($applied)
+    [void]$line1.Children.Add($statusPanel)
+    $titleTb = New-OptiKitText -Ui $Ui -Text $Title -Style 'Text.Body' -Overflow Trim
+    [void]$line1.Children.Add($titleTb)
+    [void]$stack.Children.Add($line1)
+
+    $meta = New-Object System.Windows.Controls.TextBlock
+    $meta.Style = Get-OptiKitUiResource -Ui $Ui -Key 'Text.Meta'
+    $meta.Margin = New-Object System.Windows.Thickness(12, 0, 0, 0)
+    [System.Windows.Controls.DockPanel]::SetDock($meta, 'Right')
+    $riskInfo = Get-OptiKitRiskLabel -Risk $Risk
+    if ($riskInfo) {
+        [void]$meta.Inlines.Add((New-OptiKitRun -Ui $Ui -Text $riskInfo.Text -Brush $riskInfo.Brush))
+    }
+    $tail = New-Object 'System.Collections.Generic.List[string]'
+    if (-not [string]::IsNullOrWhiteSpace($Impact)) { [void]$tail.Add((Get-OptiKitImpactLabel -Impact $Impact)) }
+    if ($RequiresReboot) { [void]$tail.Add("Requer rein$([char]0x00ED)cio") }
+    foreach ($part in $tail) {
+        if ($meta.Inlines.Count -gt 0) { [void]$meta.Inlines.Add((New-OptiKitRun -Ui $Ui -Text " $([char]0x00B7) ")) }
+        [void]$meta.Inlines.Add((New-OptiKitRun -Ui $Ui -Text $part))
+    }
+    $hasDescription = -not [string]::IsNullOrWhiteSpace($Description)
+    if ($hasDescription -or ($meta.Inlines.Count -gt 0)) {
+        $line2 = New-Object System.Windows.Controls.DockPanel
+        $line2.LastChildFill = $true
+        $line2.Margin = New-Object System.Windows.Thickness(0, 2, 0, 0)
+        if ($meta.Inlines.Count -gt 0) { [void]$line2.Children.Add($meta) }
+        if ($hasDescription) {
+            [void]$line2.Children.Add((New-OptiKitText -Ui $Ui -Text $Description -Style 'Text.Caption' -Overflow Trim))
+        }
+        [void]$stack.Children.Add($line2)
+    }
+
+    $cb = New-Object System.Windows.Controls.CheckBox
+    $cb.Content = $stack
+    $cb.Margin = New-Object System.Windows.Thickness(0, 0, 8, 2)
+    if ($Tag) { $cb.Tag = $Tag }
+    if ($null -ne $ToolTipContent) { $cb.ToolTip = $ToolTipContent }
+    if ($isBlocked) { $cb.IsEnabled = $false }
+
+    return @{
+        CheckBox     = $cb
+        BadgeApplied = $applied
+        TitleText    = $titleTb
+    }
+}
+
+function New-OptiKitGroupHeader {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][string]$Text,
+        [int]$Count = 0,
+        [switch]$First
+    )
+
+    $sp = New-Object System.Windows.Controls.StackPanel
+    $sp.Orientation = 'Horizontal'
+    $top = if ($First) { 0 } else { 28 }
+    $sp.Margin = New-Object System.Windows.Thickness(0, $top, 0, 8)
+    [void]$sp.Children.Add((New-OptiKitText -Ui $Ui -Text $Text -Style 'Text.Subtitle'))
+    if ($Count -gt 0) {
+        $countTb = New-OptiKitText -Ui $Ui -Text ([string]$Count) -Style 'Text.Meta'
+        $countTb.Margin = New-Object System.Windows.Thickness(8, 0, 0, 0)
+        $countTb.VerticalAlignment = 'Center'
+        [void]$sp.Children.Add($countTb)
+    }
+    return $sp
+}
+
+function New-OptiKitResponsiveGrid {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][string]$Container,
+        [Parameter(Mandatory = $true)][double]$MinColumnWidth
+    )
+
+    $grid = New-Object System.Windows.Controls.Primitives.UniformGrid
+    $grid.Columns = 1
+    $grid.Tag = $MinColumnWidth
+    if (-not $Ui.ResponsiveGrids) { $Ui.ResponsiveGrids = @{} }
+    if (-not $Ui.ResponsiveGrids.ContainsKey($Container)) {
+        $Ui.ResponsiveGrids[$Container] = New-Object 'System.Collections.Generic.List[object]'
+    }
+    [void]$Ui.ResponsiveGrids[$Container].Add($grid)
+    return $grid
+}
+
+function Update-OptiKitResponsiveGrids {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][string]$Container,
+        [Parameter(Mandatory = $true)][double]$Width
+    )
+
+    if (-not $Ui.ResponsiveGrids -or -not $Ui.ResponsiveGrids.ContainsKey($Container)) { return }
+    foreach ($grid in $Ui.ResponsiveGrids[$Container]) {
+        $cols = [int][Math]::Max(1, [Math]::Floor($Width / [double]$grid.Tag))
+        if ($grid.Columns -ne $cols) { $grid.Columns = $cols }
+    }
+}
+
+function Register-OptiKitResponsiveHost {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][string]$Container
+    )
+
+    $element = $Ui[$Container]
+    if (-not $element) { return }
+    $name = $Container
+    $element.Add_SizeChanged({
+        param($sizeSender, $sizeArgs)
+        Update-OptiKitResponsiveGrids -Ui $Ui -Container $name -Width $sizeArgs.NewSize.Width
+    }.GetNewClosure())
+}
+
+function Add-OptiKitComboOption {
+    param(
+        [Parameter(Mandatory = $true)]$Combo,
+        [Parameter(Mandatory = $true)][string]$Text,
+        [Parameter(Mandatory = $true)][string]$Value
+    )
+
+    $item = New-Object System.Windows.Controls.ComboBoxItem
+    $item.Content = $Text
+    $item.Tag = $Value
+    [void]$Combo.Items.Add($item)
+}
+
+function Get-OptiKitTweakCategoryOrder {
+    return @(
+        'Desempenho & Energia',
+        'Privacidade & Telemetria',
+        'Windows Update',
+        'Interface & Windows 11',
+        "Remo$([char]0x00E7)$([char]0x00E3)o de Bloatware (Appx)",
+        "Avan$([char]0x00E7)ado"
+    )
+}
+
+function Get-OptiKitTweakImpactOrder {
+    param([string]$Impact)
+    switch ($Impact) {
+        'Alto' { return 0 }
+        "M$([char]0x00E9)dio" { return 1 }
+        'Baixo' { return 2 }
+        'Situacional' { return 3 }
+        default { return 4 }
+    }
+}
+
+function Get-OptiKitTweakRiskOrder {
+    param([string]$Risk)
+    switch ($Risk) {
+        'Advanced' { return 0 }
+        'Moderate' { return 1 }
+        'Safe' { return 2 }
+        default { return 3 }
+    }
+}
+
+function Get-OptiKitTweakStatusOrder {
+    param([string]$Status)
+    switch ($Status) {
+        'Applied' { return 0 }
+        'Partial' { return 1 }
+        'NotApplied' { return 2 }
+        default { return 3 }
+    }
+}
+
+function Get-OptiKitTweakStatusLabel {
+    param([string]$Status)
+    switch ($Status) {
+        'Applied' { return 'Aplicado' }
+        'Partial' { return 'Parcial' }
+        'NotApplied' { return "N$([char]0x00E3)o aplicado" }
+        default { return 'Desconhecido' }
+    }
+}
+
+function Get-OptiKitTweakGroupInfo {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Definition,
+        [Parameter(Mandatory = $true)][string]$Sort,
+        [string]$Status = 'Unknown'
+    )
+
+    $categoryOrder = Get-OptiKitTweakCategoryOrder
+    $categoryIndex = [array]::IndexOf($categoryOrder, [string]$Definition.Category)
+    if ($categoryIndex -lt 0) { $categoryIndex = 99 }
+
+    switch ($Sort) {
+        'Impact' {
+            return @{
+                Key   = ('Impact:{0}' -f $Definition.Impact)
+                Label = (Get-OptiKitImpactLabel -Impact $Definition.Impact)
+                Order = (Get-OptiKitTweakImpactOrder -Impact $Definition.Impact)
+            }
+        }
+        'Risk' {
+            $risk = Get-OptiKitRiskLabel -Risk $Definition.Risk
+            $label = if ($risk) { [string]$risk.Text } else { 'Seguro' }
+            return @{
+                Key   = ('Risk:{0}' -f $Definition.Risk)
+                Label = $label
+                Order = (Get-OptiKitTweakRiskOrder -Risk $Definition.Risk)
+            }
+        }
+        'Status' {
+            return @{
+                Key   = ('Status:{0}' -f $Status)
+                Label = (Get-OptiKitTweakStatusLabel -Status $Status)
+                Order = (Get-OptiKitTweakStatusOrder -Status $Status)
+            }
+        }
+        'Reboot' {
+            $reboot = [bool]$Definition.RequiresReboot
+            return @{
+                Key   = ('Reboot:{0}' -f $reboot)
+                Label = if ($reboot) { "Requer rein$([char]0x00ED)cio" } else { "N$([char]0x00E3)o requer rein$([char]0x00ED)cio" }
+                Order = if ($reboot) { 0 } else { 1 }
+            }
+        }
+        'Title' {
+            return @{ Key = 'All'; Label = 'Todos os ajustes'; Order = 0 }
+        }
+        default {
+            return @{
+                Key   = ('Category:{0}' -f $Definition.Category)
+                Label = [string]$Definition.Category
+                Order = $categoryIndex
+            }
+        }
+    }
+}
+
+function Update-OptiKitTweakFilterButton {
+    param([Parameter(Mandatory = $true)][hashtable]$Ui)
+
+    if (-not $Ui.BtnClearTweakFilters -or -not $Ui.TweakViewState) { return }
+    $view = $Ui.TweakViewState
+    $active = ($view.Impact -ne 'All') -or ($view.Risk -ne 'All') -or ($view.Status -ne 'All')
+    $Ui.BtnClearTweakFilters.Visibility = if ($active) { 'Visible' } else { 'Collapsed' }
+}
+
+function Update-OptiKitTweakPage {
+    param([Parameter(Mandatory = $true)][hashtable]$Ui)
+
+    if (-not $Ui.TweaksCategoriesHost) { return }
+    if (-not $Ui.TweakViewState) {
+        $Ui.TweakViewState = @{ Sort = 'Category'; Impact = 'All'; Risk = 'All'; Status = 'All' }
+    }
+    if (-not $Ui.TweakStatuses) { $Ui.TweakStatuses = @{} }
+
+    $view = $Ui.TweakViewState
+    $categoryOrder = Get-OptiKitTweakCategoryOrder
+    $filtered = New-Object 'System.Collections.Generic.List[object]'
+
+    foreach ($def in $Ui.TweakDefinitions) {
+        if ($view.Impact -ne 'All' -and $def.Impact -ne $view.Impact) { continue }
+        if ($view.Risk -ne 'All' -and $def.Risk -ne $view.Risk) { continue }
+
+        $status = if ($Ui.TweakStatuses.ContainsKey($def.Key)) { [string]$Ui.TweakStatuses[$def.Key] } else { 'Unknown' }
+        if ($view.Status -ne 'All' -and $status -ne $view.Status) { continue }
+        [void]$filtered.Add($def)
+    }
+
+    $prepared = New-Object 'System.Collections.Generic.List[object]'
+    foreach ($def in $filtered) {
+        $status = if ($Ui.TweakStatuses.ContainsKey($def.Key)) { [string]$Ui.TweakStatuses[$def.Key] } else { 'Unknown' }
+        $group = Get-OptiKitTweakGroupInfo -Definition $def -Sort $view.Sort -Status $status
+        $categoryIndex = [array]::IndexOf($categoryOrder, [string]$def.Category)
+        if ($categoryIndex -lt 0) { $categoryIndex = 99 }
+        $impactOrder = Get-OptiKitTweakImpactOrder -Impact $def.Impact
+        $riskOrder = Get-OptiKitTweakRiskOrder -Risk $def.Risk
+
+        $secondary = switch ($view.Sort) {
+            'Impact' { ($categoryIndex * 100) + ($riskOrder * 10) }
+            'Risk' { ($impactOrder * 100) + ($categoryIndex * 10) }
+            'Status' { ($impactOrder * 100) + ($categoryIndex * 10) }
+            'Reboot' { ($impactOrder * 100) + ($categoryIndex * 10) }
+            'Title' { 0 }
+            default { ($impactOrder * 100) + ($riskOrder * 10) }
+        }
+
+        [void]$prepared.Add([pscustomobject]@{
+            Definition = $def
+            Status     = $status
+            GroupKey   = $group.Key
+            GroupLabel = $group.Label
+            GroupOrder = [int]$group.Order
+            Secondary  = [int]$secondary
+        })
+    }
+
+    $sorted = @($prepared | Sort-Object @{ Expression = { $_.GroupOrder } }, @{ Expression = { $_.Secondary } }, @{ Expression = { $_.Definition.Title } })
+
+    $groupCounts = @{}
+    foreach ($item in $sorted) {
+        if ($groupCounts.ContainsKey($item.GroupKey)) {
+            $groupCounts[$item.GroupKey]++
+        }
+        else {
+            $groupCounts[$item.GroupKey] = 1
+        }
+    }
+
+    $Ui.TweaksCategoriesHost.Children.Clear()
+    if ($Ui.ResponsiveGrids -and $Ui.ResponsiveGrids.ContainsKey('TweaksCategoriesHost')) {
+        $Ui.ResponsiveGrids['TweaksCategoriesHost'].Clear()
+    }
+    for ($i = $Ui.SearchGroups.Count - 1; $i -ge 0; $i--) {
+        if ($Ui.SearchGroups[$i].Page -eq 'Tweaks') {
+            $Ui.SearchGroups.RemoveAt($i)
+        }
+    }
+
+    $newEntries = @{}
+    $firstGroup = $true
+    $currentGroupKey = $null
+    $grid = $null
+    $entries = $null
+
+    foreach ($item in $sorted) {
+        $def = $item.Definition
+        if ($item.GroupKey -ne $currentGroupKey) {
+            $header = New-OptiKitGroupHeader -Ui $Ui -Text $item.GroupLabel -Count $groupCounts[$item.GroupKey] -First:$firstGroup
+            $firstGroup = $false
+            $grid = New-OptiKitResponsiveGrid -Ui $Ui -Container 'TweaksCategoriesHost' -MinColumnWidth 560
+            $entries = New-Object 'System.Collections.Generic.List[object]'
+            [void]$Ui.TweaksCategoriesHost.Children.Add($header)
+            [void]$Ui.TweaksCategoriesHost.Children.Add($grid)
+            [void]$Ui.SearchGroups.Add(@{ Page = 'Tweaks'; Header = $header; Container = $grid; Entries = $entries })
+            $currentGroupKey = $item.GroupKey
+        }
+
+        $tweakVal = $def.Config
+        $blockReason = $def.BlockReason
+        $footerParts = New-Object 'System.Collections.Generic.List[string]'
+        [void]$footerParts.Add((Get-OptiKitImpactLabel -Impact $tweakVal.impact))
+        $riskInfo = Get-OptiKitRiskLabel -Risk $tweakVal.riskLevel
+        if ($riskInfo) { [void]$footerParts.Add($riskInfo.Text) }
+        if ($tweakVal.requiresReboot) { [void]$footerParts.Add("Requer rein$([char]0x00ED)cio") }
+        $alert = if ($blockReason) { 'Bloqueado neste hardware: {0}' -f $blockReason } else { $null }
+        $tip = New-OptiKitToolTipContent -Ui $Ui -Title $tweakVal.title -Body $tweakVal.description -DetailLabel "Justificativa t$([char]0x00E9)cnica" -Detail $tweakVal.rationale -Footer ($footerParts -join " $([char]0x00B7) ") -Alert $alert
+
+        $row = New-OptiKitItemRow -Ui $Ui -Title $tweakVal.title -Description $tweakVal.description -Impact $tweakVal.impact -Risk $tweakVal.riskLevel -RequiresReboot:([bool]$tweakVal.requiresReboot) -BlockReason $blockReason -ToolTipContent $tip -Tag $def.Key
+        $cb = $row.CheckBox
+        $cb.IsChecked = $Ui.SelectedTweakIds.Contains($def.Key)
+
+        $key = [string]$def.Key
+        $confirmText = $tweakVal.confirmMessage
+        $cb.Add_Checked({
+            if (-not [string]::IsNullOrWhiteSpace($confirmText) -and (-not $Ui.SuppressConfirmDialog)) {
+                $ans = [System.Windows.MessageBox]::Show($Ui.Window, $confirmText, 'Confirmar ajuste', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+                if ($ans -ne [System.Windows.MessageBoxResult]::Yes) {
+                    $this.IsChecked = $false
+                    return
+                }
+            }
+            [void]$Ui.SelectedTweakIds.Add($key)
+            Update-SelectionCounter -Ui $Ui
+        }.GetNewClosure())
+        $cb.Add_Unchecked({
+            [void]$Ui.SelectedTweakIds.Remove($key)
+            Update-SelectionCounter -Ui $Ui
+        }.GetNewClosure())
+
+        if ($item.Status -eq 'Applied') {
+            $row.BadgeApplied.Visibility = 'Visible'
+        }
+        else {
+            $row.BadgeApplied.Visibility = 'Collapsed'
+        }
+
+        [void]$grid.Children.Add($cb)
+        $entry = @{
+            CheckBox     = $cb
+            Card         = $cb
+            BadgeApplied = $row.BadgeApplied
+            Config       = $tweakVal
+            BlockReason  = $blockReason
+            SearchText   = $def.SearchText
+            Category     = $def.Category
+            Impact       = $def.Impact
+            Risk         = $def.Risk
+            RequiresReboot = $def.RequiresReboot
+        }
+        $newEntries[$key] = $entry
+        [void]$entries.Add($entry)
+    }
+
+    $Ui.TweakCheckboxes = $newEntries
+    $Ui.TweaksFilteredEmpty = ($sorted.Count -eq 0)
+
+    if ($Ui.TxtTweakCount) {
+        $total = $Ui.TweakDefinitions.Count
+        $shown = $sorted.Count
+        $Ui.TxtTweakCount.Text = if ($shown -eq $total) {
+            Format-OptiKitCount -Count $total -Singular 'ajuste' -Plural 'ajustes'
+        }
+        else {
+            ('{0} de {1} ajustes' -f $shown, $total)
+        }
+    }
+
+    if ($Ui.TxtTweaksEmpty) {
+        if ($Ui.TweaksFilteredEmpty) {
+            $Ui.TxtTweaksEmpty.Text = "Nenhum ajuste com esses filtros. Ajuste a organiza$([char]0x00E7)$([char]0x00E3)o ou limpe os filtros."
+            $Ui.TxtTweaksEmpty.Visibility = 'Visible'
+        }
+        else {
+            $Ui.TxtTweaksEmpty.Visibility = 'Collapsed'
+        }
+    }
+
+    if ($Ui.TweaksCategoriesHost.ActualWidth -gt 0) {
+        Update-OptiKitResponsiveGrids -Ui $Ui -Container 'TweaksCategoriesHost' -Width $Ui.TweaksCategoriesHost.ActualWidth
+    }
+
+    Update-OptiKitTweakFilterButton -Ui $Ui
+    Update-SelectionCounter -Ui $Ui
+}
+
+function Set-OptiKitTweakView {
+    param([Parameter(Mandatory = $true)][hashtable]$Ui)
+
+    if (-not $Ui.TweakViewState) {
+        $Ui.TweakViewState = @{ Sort = 'Category'; Impact = 'All'; Risk = 'All'; Status = 'All' }
+    }
+    if ($Ui.CmbTweakSort -and $Ui.CmbTweakSort.SelectedItem) {
+        $Ui.TweakViewState.Sort = [string]$Ui.CmbTweakSort.SelectedItem.Tag
+    }
+    if ($Ui.CmbTweakImpact -and $Ui.CmbTweakImpact.SelectedItem) {
+        $Ui.TweakViewState.Impact = [string]$Ui.CmbTweakImpact.SelectedItem.Tag
+    }
+    if ($Ui.CmbTweakRisk -and $Ui.CmbTweakRisk.SelectedItem) {
+        $Ui.TweakViewState.Risk = [string]$Ui.CmbTweakRisk.SelectedItem.Tag
+    }
+    if ($Ui.CmbTweakStatus -and $Ui.CmbTweakStatus.SelectedItem) {
+        $Ui.TweakViewState.Status = [string]$Ui.CmbTweakStatus.SelectedItem.Tag
+    }
+
+    Update-OptiKitTweakPage -Ui $Ui
+    if ($Ui.TxtSearchBox) {
+        Invoke-SearchFilter -Ui $Ui -Query $Ui.TxtSearchBox.Text
+    }
+    Update-OptiKitTweakFilterButton -Ui $Ui
+}
+
+function Get-OptiKitDiagnosticVisual {
+    param([string]$Status)
+    switch ($Status) {
+        'Error' { return @{ Glyph = [char]0xEA39; Brush = 'Brush.Danger'; Label = 'Problema'; Order = 0 } }
+        'Warn' { return @{ Glyph = [char]0xE7BA; Brush = 'Brush.Warning'; Label = 'Aviso'; Order = 1 } }
+        'Info' { return @{ Glyph = [char]0xE946; Brush = 'Brush.Text.Tertiary'; Label = 'Informativo'; Order = 3 } }
+        'OK' { return @{ Glyph = [char]0xE930; Brush = 'Brush.Success'; Label = 'OK'; Order = 4 } }
+        default { return @{ Glyph = [char]0xE9CE; Brush = 'Brush.Text.Tertiary'; Label = "N$([char]0x00E3)o verificado"; Order = 2 } }
+    }
+}
+
+function Format-OptiKitDiagnosticsSummary {
+    param([array]$Items)
+
+    $all = @($Items)
+    if ($all.Count -eq 0) { return "Somente leitura. Nenhuma verifica$([char]0x00E7)$([char]0x00E3)o dispon$([char]0x00ED)vel." }
+    $parts = New-Object 'System.Collections.Generic.List[string]'
+    $err = @($all | Where-Object { $_.Status -eq 'Error' }).Count
+    $warn = @($all | Where-Object { $_.Status -eq 'Warn' }).Count
+    $ok = @($all | Where-Object { $_.Status -eq 'OK' }).Count
+    $other = $all.Count - $err - $warn - $ok
+    if ($err -gt 0) { [void]$parts.Add((Format-OptiKitCount -Count $err -Singular 'problema' -Plural 'problemas')) }
+    if ($warn -gt 0) { [void]$parts.Add((Format-OptiKitCount -Count $warn -Singular 'aviso' -Plural 'avisos')) }
+    if ($ok -gt 0) { [void]$parts.Add(('{0} OK' -f $ok)) }
+    if ($other -gt 0) { [void]$parts.Add((Format-OptiKitCount -Count $other -Singular 'informativo' -Plural 'informativos')) }
+    $joined = if ($parts.Count -gt 1) { (($parts[0..($parts.Count - 2)]) -join ', ') + ' e ' + $parts[$parts.Count - 1] } else { $parts[0] }
+    return ('Somente leitura. {0}.' -f $joined)
+}
+
+function New-OptiKitDiagnosticRow {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][pscustomobject]$Item
+    )
+
+    $visual = Get-OptiKitDiagnosticVisual -Status $Item.Status
+    $grid = New-Object System.Windows.Controls.Grid
+    $grid.Margin = New-Object System.Windows.Thickness(0, 14, 0, 14)
+    $colIcon = New-Object System.Windows.Controls.ColumnDefinition
+    $colIcon.Width = [System.Windows.GridLength]::Auto
+    $colBody = New-Object System.Windows.Controls.ColumnDefinition
+    $colBody.Width = New-Object System.Windows.GridLength(1, [System.Windows.GridUnitType]::Star)
+    [void]$grid.ColumnDefinitions.Add($colIcon)
+    [void]$grid.ColumnDefinitions.Add($colBody)
+
+    $icon = New-OptiKitText -Ui $Ui -Text ([string]$visual.Glyph) -Style 'Text.Icon' -Brush $visual.Brush
+    $icon.VerticalAlignment = 'Top'
+    $icon.Margin = New-Object System.Windows.Thickness(0, 2, 12, 0)
+    [void]$grid.Children.Add($icon)
+
+    $body = New-Object System.Windows.Controls.StackPanel
+    [System.Windows.Controls.Grid]::SetColumn($body, 1)
+
+    $head = New-Object System.Windows.Controls.DockPanel
+    $head.LastChildFill = $true
+    $label = New-OptiKitText -Ui $Ui -Text $visual.Label -Style 'Text.Caption' -Brush $visual.Brush
+    $label.Margin = New-Object System.Windows.Thickness(12, 0, 0, 0)
+    $label.VerticalAlignment = 'Center'
+    [System.Windows.Controls.DockPanel]::SetDock($label, 'Right')
+    [void]$head.Children.Add($label)
+    [void]$head.Children.Add((New-OptiKitText -Ui $Ui -Text ([string]$Item.Title) -Style 'Text.BodyStrong' -Overflow Trim))
+    [void]$body.Children.Add($head)
+
+    $summary = New-OptiKitText -Ui $Ui -Text ([string]$Item.Summary) -Style 'Text.Caption' -Overflow Wrap -Brush 'Brush.Text.Primary'
+    $summary.Margin = New-Object System.Windows.Thickness(0, 4, 0, 0)
+    [void]$body.Children.Add($summary)
+
+    if (-not [string]::IsNullOrWhiteSpace([string]$Item.Detail)) {
+        $detail = New-OptiKitText -Ui $Ui -Text ([string]$Item.Detail) -Style 'Text.Meta' -Overflow Wrap
+        $detail.Margin = New-Object System.Windows.Thickness(0, 2, 0, 0)
+        [void]$body.Children.Add($detail)
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace([string]$Item.ActionText)) {
+        $action = New-OptiKitText -Ui $Ui -Style 'Text.Caption' -Overflow Wrap
+        $action.Margin = New-Object System.Windows.Thickness(0, 6, 0, 0)
+        if (-not [string]::IsNullOrWhiteSpace([string]$Item.ActionUrl)) {
+            $link = New-Object System.Windows.Documents.Hyperlink
+            [void]$link.Inlines.Add((New-Object System.Windows.Documents.Run([string]$Item.ActionText)))
+            $link.Foreground = Get-OptiKitUiResource -Ui $Ui -Key 'Brush.Accent'
+            $link.NavigateUri = [Uri]$Item.ActionUrl
+            $link.Add_RequestNavigate({
+                param($linkSender, $navigateArgs)
+                try {
+                    Start-Process -FilePath $navigateArgs.Uri.AbsoluteUri
+                }
+                catch {
+                    Write-Verbose $_.Exception.Message
+                }
+                $navigateArgs.Handled = $true
+            }.GetNewClosure())
+            [void]$action.Inlines.Add($link)
+        }
+        else {
+            $action.Text = ("Recomenda$([char]0x00E7)$([char]0x00E3)o: {0}" -f $Item.ActionText)
+        }
+        [void]$body.Children.Add($action)
+    }
+
+    [void]$grid.Children.Add($body)
+    return $grid
+}
+
+function New-OptiKitGameSection {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][pscustomobject]$GameProfile,
+        [string]$ExePath,
+        [switch]$First
+    )
+
+    $panel = New-Object System.Windows.Controls.StackPanel
+    $top = if ($First) { 0 } else { 32 }
+    $panel.Margin = New-Object System.Windows.Thickness(0, $top, 0, 0)
+
+    $head = New-Object System.Windows.Controls.DockPanel
+    $head.LastChildFill = $true
+    $metaText = (@($GameProfile.engine, $GameProfile.antiCheat) | Where-Object { $_ }) -join " $([char]0x00B7) "
+    $meta = New-OptiKitText -Ui $Ui -Text $metaText -Style 'Text.Meta'
+    $meta.Margin = New-Object System.Windows.Thickness(16, 0, 0, 0)
+    $meta.VerticalAlignment = 'Center'
+    [System.Windows.Controls.DockPanel]::SetDock($meta, 'Right')
+    [void]$head.Children.Add($meta)
+
+    $titleRow = New-Object System.Windows.Controls.StackPanel
+    $titleRow.Orientation = 'Horizontal'
+    [void]$titleRow.Children.Add((New-OptiKitText -Ui $Ui -Text ([string]$GameProfile.gameName) -Style 'Text.Subtitle' -Overflow Trim))
+    if ($GameProfile.status -eq 'comingSoon') {
+        $soon = New-OptiKitText -Ui $Ui -Text 'Em breve' -Style 'Text.Meta'
+        $soon.Margin = New-Object System.Windows.Thickness(8, 0, 0, 0)
+        $soon.VerticalAlignment = 'Center'
+        [void]$titleRow.Children.Add($soon)
+    }
+    [void]$head.Children.Add($titleRow)
+    [void]$panel.Children.Add($head)
+
+    if (-not [string]::IsNullOrWhiteSpace([string]$GameProfile.warning)) {
+        $warning = New-OptiKitText -Ui $Ui -Text ([string]$GameProfile.warning) -Style 'Text.Caption' -Overflow Wrap
+        $warning.Margin = New-Object System.Windows.Thickness(0, 4, 0, 12)
+        $warning.MaxWidth = 760
+        $warning.HorizontalAlignment = 'Left'
+        [void]$panel.Children.Add($warning)
+    }
+
+    $exeText = $null
+    $browse = $null
+    if ($GameProfile.status -eq 'active') {
+        $exeRow = New-Object System.Windows.Controls.DockPanel
+        $exeRow.LastChildFill = $true
+        $exeRow.Margin = New-Object System.Windows.Thickness(0, 0, 8, 8)
+
+        $browse = New-Object System.Windows.Controls.Button
+        $browse.Style = Get-OptiKitUiResource -Ui $Ui -Key 'Button.Subtle'
+        [System.Windows.Controls.DockPanel]::SetDock($browse, 'Right')
+        [void]$exeRow.Children.Add($browse)
+
+        $exeText = New-OptiKitText -Ui $Ui -Style 'Text.Caption' -Overflow Trim
+        $exeText.VerticalAlignment = 'Center'
+        [void]$exeRow.Children.Add($exeText)
+        Set-OptiKitGameExeLabel -Ui $Ui -Label $exeText -Button $browse -ExePath $ExePath
+        [void]$panel.Children.Add($exeRow)
+    }
+
+    $grid = New-OptiKitResponsiveGrid -Ui $Ui -Container 'GameProfilesHost' -MinColumnWidth 560
+    [void]$panel.Children.Add($grid)
+
+    return @{
+        Panel        = $panel
+        Grid         = $grid
+        ExeText      = $exeText
+        BrowseButton = $browse
+    }
+}
+
+function Set-OptiKitGameExeLabel {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Ui,
+        [Parameter(Mandatory = $true)][System.Windows.Controls.TextBlock]$Label,
+        [System.Windows.Controls.Button]$Button,
+        [string]$ExePath
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ExePath)) {
+        $Label.Text = "Execut$([char]0x00E1)vel n$([char]0x00E3)o encontrado no caminho padr$([char]0x00E3)o."
+        $Label.Foreground = Get-OptiKitUiResource -Ui $Ui -Key 'Brush.Warning'
+        $Label.ToolTip = $null
+        if ($Button) { $Button.Content = "Selecionar execut$([char]0x00E1)vel" }
+        return
+    }
+    $Label.Text = ("Execut$([char]0x00E1)vel: {0}" -f (Split-Path -Path $ExePath -Leaf))
+    $Label.Foreground = Get-OptiKitUiResource -Ui $Ui -Key 'Brush.Text.Secondary'
+    $Label.ToolTip = $ExePath
+    if ($Button) { $Button.Content = 'Alterar' }
 }
 
 function Update-SelectionCounter {
     param([Parameter(Mandatory = $true)][hashtable]$Ui)
 
     $count = 0
+    if ($Ui.SelectedTweakIds) { $count += $Ui.SelectedTweakIds.Count }
     foreach ($entry in $Ui.AppCheckboxes.Values) {
-        if ($entry.CheckBox.IsChecked -eq $true) { $count++ }
-    }
-    foreach ($entry in $Ui.TweakCheckboxes.Values) {
         if ($entry.CheckBox.IsChecked -eq $true) { $count++ }
     }
     foreach ($entry in $Ui.GameOptCheckboxes.Values) {
         if ($entry.CheckBox.IsChecked -eq $true) { $count++ }
     }
 
+    $Ui.SelectionCount = $count
     if ($Ui.TxtSelectionCounter) {
-        $Ui.TxtSelectionCounter.Text = ("{0} itens selecionados" -f $count)
+        $Ui.TxtSelectionCounter.Text = Format-OptiKitSelectionCount -Count $count
     }
 }
 
@@ -7201,10 +8599,11 @@ function Select-OptiKitPreset {
     $Ui.SuppressConfirmDialog = $true
     try {
         foreach ($entry in $Ui.AppCheckboxes.Values) { $entry.CheckBox.IsChecked = $false }
-        foreach ($entry in $Ui.TweakCheckboxes.Values) { $entry.CheckBox.IsChecked = $false }
         foreach ($entry in $Ui.GameOptCheckboxes.Values) { $entry.CheckBox.IsChecked = $false }
+        if ($Ui.SelectedTweakIds) { $Ui.SelectedTweakIds.Clear() }
 
         if ([string]::IsNullOrWhiteSpace($PresetKey)) {
+            Update-OptiKitTweakPage -Ui $Ui
             Update-SelectionCounter -Ui $Ui
             return
         }
@@ -7212,20 +8611,23 @@ function Select-OptiKitPreset {
         $presetProp = $Ui.Configs.Presets.PSObject.Properties[$PresetKey]
         if (-not $presetProp) {
             Write-OptimizerLog -Level WARN -Message ("Preset '{0}' n$([char]0x00E3)o encontrado em presets.json." -f $PresetKey)
+            Update-OptiKitTweakPage -Ui $Ui
+            Update-SelectionCounter -Ui $Ui
             return
         }
 
         $preset = $presetProp.Value
         foreach ($tid in @($preset.tweaks)) {
-            if ($Ui.TweakCheckboxes.ContainsKey($tid)) {
-                $entry = $Ui.TweakCheckboxes[$tid]
-                if ($entry.CheckBox.IsEnabled) {
-                    $entry.CheckBox.IsChecked = $true
-                }
-                else {
-                    Write-OptimizerLog -Level WARN -Message ("Tweak '{0}' ignorado no preset '{1}': {2}" -f $tid, $PresetKey, $entry.BlockReason)
-                }
+            $definition = if ($Ui.TweakDefinitionMap) { $Ui.TweakDefinitionMap[$tid] } else { $null }
+            if (-not $definition) {
+                Write-OptimizerLog -Level WARN -Message ("Tweak '{0}' do preset '{1}' n$([char]0x00E3)o est$([char]0x00E1) dispon$([char]0x00ED)vel neste Windows." -f $tid, $PresetKey)
+                continue
             }
+            if ($definition.BlockReason) {
+                Write-OptimizerLog -Level WARN -Message ("Tweak '{0}' ignorado no preset '{1}': {2}" -f $tid, $PresetKey, $definition.BlockReason)
+                continue
+            }
+            [void]$Ui.SelectedTweakIds.Add($tid)
         }
         foreach ($gid in @($preset.gameOptimizations)) {
             if ($Ui.GameOptCheckboxes.ContainsKey($gid)) {
@@ -7238,6 +8640,7 @@ function Select-OptiKitPreset {
             }
         }
 
+        Update-OptiKitTweakPage -Ui $Ui
         Update-SelectionCounter -Ui $Ui
         Write-OptimizerLog -Level INFO -Message ("Preset '{0}' selecionado: {1}" -f $preset.name, $preset.description)
     }
@@ -7260,21 +8663,20 @@ function Set-OptiKitSelectionFromProfile {
             $Ui.SuppressConfirmDialog = $true
         }
         foreach ($entry in $Ui.AppCheckboxes.Values) { $entry.CheckBox.IsChecked = $false }
-        foreach ($entry in $Ui.TweakCheckboxes.Values) { $entry.CheckBox.IsChecked = $false }
         foreach ($entry in $Ui.GameOptCheckboxes.Values) { $entry.CheckBox.IsChecked = $false }
+        if ($Ui.SelectedTweakIds) { $Ui.SelectedTweakIds.Clear() }
 
         foreach ($tweakId in @($Selection.Tweaks)) {
-            if (-not $Ui.TweakCheckboxes.ContainsKey($tweakId)) {
+            $definition = if ($Ui.TweakDefinitionMap) { $Ui.TweakDefinitionMap[$tweakId] } else { $null }
+            if (-not $definition) {
                 Write-OptimizerLog -Level WARN -Message ("Tweak '{0}' do perfil n$([char]0x00E3)o est$([char]0x00E1) dispon$([char]0x00ED)vel neste Windows." -f $tweakId)
                 continue
             }
-            $entry = $Ui.TweakCheckboxes[$tweakId]
-            if ($entry.CheckBox.IsEnabled) {
-                $entry.CheckBox.IsChecked = $true
+            if ($definition.BlockReason) {
+                Write-OptimizerLog -Level WARN -Message ("Tweak '{0}' ignorado ao importar perfil: {1}" -f $tweakId, $definition.BlockReason)
+                continue
             }
-            else {
-                Write-OptimizerLog -Level WARN -Message ("Tweak '{0}' ignorado ao importar perfil: {1}" -f $tweakId, $entry.BlockReason)
-            }
+            [void]$Ui.SelectedTweakIds.Add($tweakId)
         }
 
         foreach ($gameOptId in @($Selection.GameOptimizations)) {
@@ -7295,6 +8697,7 @@ function Set-OptiKitSelectionFromProfile {
             }
         }
 
+        Update-OptiKitTweakPage -Ui $Ui
         Update-SelectionCounter -Ui $Ui
         Write-OptimizerLog -Level OK -Message ("Perfil importado: {0} tweak(s), {1} otimiza$([char]0x00E7)$([char]0x00E3)o($([char]0x00F5)es), {2} app(s)." -f @($Selection.Tweaks).Count, @($Selection.GameOptimizations).Count, @($Selection.Apps).Count)
     }
@@ -7311,8 +8714,22 @@ function Update-OptiKitStateBadges {
     )
 
     $Ui.LastStateReport = $StateReport
+    $Ui.TweakStatuses = @{}
 
     if ($StateReport.Tweaks) {
+        foreach ($tid in $StateReport.Tweaks.Keys) {
+            $Ui.TweakStatuses[$tid] = [string]$StateReport.Tweaks[$tid]
+        }
+    }
+
+    $needsTweakRebuild = ($Ui.TweakViewState -and (($Ui.TweakViewState.Sort -eq 'Status') -or ($Ui.TweakViewState.Status -ne 'All')))
+    if ($needsTweakRebuild) {
+        Update-OptiKitTweakPage -Ui $Ui
+        if ($Ui.TxtSearchBox) {
+            Invoke-SearchFilter -Ui $Ui -Query $Ui.TxtSearchBox.Text
+        }
+    }
+    elseif ($StateReport.Tweaks) {
         foreach ($tid in $StateReport.Tweaks.Keys) {
             if ($Ui.TweakCheckboxes.ContainsKey($tid)) {
                 $st = $StateReport.Tweaks[$tid]
@@ -7350,105 +8767,26 @@ function Update-OptiKitDiagnosticsUi {
     }
     $Ui.DiagnosticsHost.Children.Clear()
 
-    $ok = @($Items | Where-Object { $_.Status -eq 'OK' }).Count
-    $warn = @($Items | Where-Object { $_.Status -eq 'Warn' }).Count
-    $err = @($Items | Where-Object { $_.Status -eq 'Error' }).Count
-    $info = @($Items | Where-Object { $_.Status -in @('Info', 'Unknown') }).Count
-
     if ($Ui.TxtDiagnosticsSummary) {
-        $Ui.TxtDiagnosticsSummary.Text = ("{0} ok | {1} avisos | {2} erros | {3} info/desconhecido" -f $ok, $warn, $err, $info)
+        $Ui.TxtDiagnosticsSummary.Text = Format-OptiKitDiagnosticsSummary -Items $Items
     }
 
-    foreach ($item in $Items) {
-        $colors = Get-DiagnosticColors -Status $item.Status
-        $statusLabel = switch ($item.Status) {
-            'OK'    { 'OK' }
-            'Warn'  { 'Aviso' }
-            'Error' { 'Erro' }
-            'Info'  { 'Info' }
-            default { 'Desconhecido' }
+    $ordered = for ($i = 0; $i -lt $Items.Count; $i++) {
+        [pscustomobject]@{
+            Item  = $Items[$i]
+            Order = (Get-OptiKitDiagnosticVisual -Status $Items[$i].Status).Order
+            Index = $i
         }
+    }
+    $sorted = @($ordered | Sort-Object Order, Index)
 
-        $card = New-Object System.Windows.Controls.Border
-        $card.Background = ConvertFrom-HexBrush '#1E1E1E'
-        $card.BorderBrush = ConvertFrom-HexBrush $colors.Border
-        $card.BorderThickness = New-Object System.Windows.Thickness(1)
-        $card.CornerRadius = New-Object System.Windows.CornerRadius(5)
-        $card.Padding = New-Object System.Windows.Thickness(10, 7, 10, 7)
-        $card.Margin = New-Object System.Windows.Thickness(0, 0, 0, 6)
-
-        $stack = New-Object System.Windows.Controls.StackPanel
-        $stack.Orientation = 'Vertical'
-
-        $header = New-Object System.Windows.Controls.DockPanel
-        $header.LastChildFill = $false
-
-        $title = New-Object System.Windows.Controls.TextBlock
-        $title.Text = $item.Title
-        $title.FontSize = 13
-        $title.FontWeight = 'SemiBold'
-        $title.Foreground = ConvertFrom-HexBrush '#F3F4F6'
-        $title.VerticalAlignment = 'Center'
-        [System.Windows.Controls.DockPanel]::SetDock($title, 'Left')
-        [void]$header.Children.Add($title)
-        [void]$header.Children.Add((New-OptiKitBadge -Text $statusLabel -BgHex $colors.Bg -BorderHex $colors.Border -FgHex $colors.Fg))
-        [void]$stack.Children.Add($header)
-
-        $summary = New-Object System.Windows.Controls.TextBlock
-        $summary.Text = [string]$item.Summary
-        $summary.Foreground = ConvertFrom-HexBrush '#D4D4D8'
-        $summary.FontSize = 12
-        $summary.TextWrapping = 'Wrap'
-        $summary.Margin = New-Object System.Windows.Thickness(0, 2, 0, 0)
-        [void]$stack.Children.Add($summary)
-
-        if (-not [string]::IsNullOrWhiteSpace([string]$item.Detail)) {
-            $detail = New-Object System.Windows.Controls.TextBlock
-            $detail.Text = [string]$item.Detail
-            $detail.Foreground = ConvertFrom-HexBrush '#9CA3AF'
-            $detail.FontSize = 11
-            $detail.TextWrapping = 'Wrap'
-            $detail.Margin = New-Object System.Windows.Thickness(0, 2, 0, 0)
-            [void]$stack.Children.Add($detail)
+    for ($i = 0; $i -lt $sorted.Count; $i++) {
+        if ($i -gt 0) {
+            $divider = New-Object System.Windows.Controls.Border
+            $divider.Style = Get-OptiKitUiResource -Ui $Ui -Key 'Divider'
+            [void]$Ui.DiagnosticsHost.Children.Add($divider)
         }
-
-        if (-not [string]::IsNullOrWhiteSpace([string]$item.ActionText)) {
-            if (-not [string]::IsNullOrWhiteSpace([string]$item.ActionUrl)) {
-                $link = New-Object System.Windows.Documents.Hyperlink
-                $run = New-Object System.Windows.Documents.Run
-                $run.Text = ("$([char]0x2192) {0}" -f $item.ActionText)
-                $link.Inlines.Add($run)
-                $link.Foreground = ConvertFrom-HexBrush $colors.Fg
-                $link.NavigateUri = [Uri]$item.ActionUrl
-                $link.Add_RequestNavigate({
-                    param($linkSender, $navigateArgs)
-                    try {
-                        Start-Process -FilePath $navigateArgs.Uri.AbsoluteUri
-                    }
-                    catch {
-                        Write-Verbose $_.Exception.Message
-                    }
-                    $navigateArgs.Handled = $true
-                }.GetNewClosure())
-
-                $actionBlock = New-Object System.Windows.Controls.TextBlock
-                $actionBlock.Margin = New-Object System.Windows.Thickness(0, 4, 0, 0)
-                $actionBlock.Inlines.Add($link)
-                [void]$stack.Children.Add($actionBlock)
-            }
-            else {
-                $action = New-Object System.Windows.Controls.TextBlock
-                $action.Text = ("$([char]0x2192) {0}" -f $item.ActionText)
-                $action.Foreground = ConvertFrom-HexBrush $colors.Fg
-                $action.FontSize = 11.5
-                $action.TextWrapping = 'Wrap'
-                $action.Margin = New-Object System.Windows.Thickness(0, 4, 0, 0)
-                [void]$stack.Children.Add($action)
-            }
-        }
-
-        $card.Child = $stack
-        [void]$Ui.DiagnosticsHost.Children.Add($card)
+        [void]$Ui.DiagnosticsHost.Children.Add((New-OptiKitDiagnosticRow -Ui $Ui -Item $sorted[$i].Item))
     }
 }
 
@@ -7459,17 +8797,48 @@ function Invoke-SearchFilter {
     )
 
     $q = if ($Query) { $Query.Trim().ToLowerInvariant() } else { '' }
-
+    $tweaksFilteredEmpty = [bool]$Ui.TweaksFilteredEmpty
     foreach ($coll in @($Ui.AppCheckboxes.Values, $Ui.TweakCheckboxes.Values, $Ui.GameOptCheckboxes.Values)) {
         foreach ($entry in $coll) {
-            if ([string]::IsNullOrEmpty($q) -or $entry.SearchText.Contains($q)) {
-                $entry.Card.Visibility = 'Visible'
-            }
-            else {
-                $entry.Card.Visibility = 'Collapsed'
-            }
+            $entry.Card.Visibility = if ([string]::IsNullOrEmpty($q) -or $entry.SearchText.Contains($q)) { 'Visible' } else { 'Collapsed' }
         }
     }
+
+    $visibleByPage = @{ Apps = 0; Tweaks = 0; Games = 0 }
+    # Sem @(): no PS 5.1, @($hashtable.Lista) com List[object] de hashtables lan-a "Os tipos de argumento n-o correspondem".
+    foreach ($group in $Ui.SearchGroups) {
+        $visible = @($group.Entries | Where-Object { $_.Card.Visibility -eq 'Visible' }).Count
+        $groupVisibility = if ([string]::IsNullOrEmpty($q) -or ($visible -gt 0)) { 'Visible' } else { 'Collapsed' }
+        if ($group.Header) { $group.Header.Visibility = $groupVisibility }
+        if ($group.Container) { $group.Container.Visibility = $groupVisibility }
+        $visibleByPage[$group.Page] += $visible
+    }
+
+    $pageOrder = @('Apps', 'Tweaks', 'Games')
+    $pageNames = @{ Apps = 'Instalar apps'; Tweaks = 'Ajustes do Windows'; Games = 'Jogos' }
+    $emptyMap = @{ Apps = 'TxtAppsEmpty'; Tweaks = 'TxtTweaksEmpty'; Games = 'TxtGamesEmpty' }
+    foreach ($page in $pageOrder) {
+        $emptyTb = $Ui[$emptyMap[$page]]
+        if (-not $emptyTb) { continue }
+        if ((-not [string]::IsNullOrEmpty($q)) -and ($visibleByPage[$page] -eq 0)) {
+            $elsewhere = @($pageOrder | Where-Object { ($_ -ne $page) -and ($visibleByPage[$_] -gt 0) } | ForEach-Object { '{0} ({1})' -f $pageNames[$_], $visibleByPage[$_] })
+            $emptyTb.Text = if ($elsewhere.Count -gt 0) {
+                "Nada nesta p$([char]0x00E1)gina para `"{0}`". Resultados em: {1}." -f $Query.Trim(), ($elsewhere -join ', ')
+            }
+            else {
+                'Nenhum resultado para "{0}". Tente outro termo ou limpe a busca.' -f $Query.Trim()
+            }
+            $emptyTb.Visibility = 'Visible'
+        }
+        elseif (($page -eq 'Tweaks') -and [string]::IsNullOrEmpty($q) -and $tweaksFilteredEmpty) {
+            $emptyTb.Text = "Nenhum ajuste com esses filtros. Ajuste a organiza$([char]0x00E7)$([char]0x00E3)o ou limpe os filtros."
+            $emptyTb.Visibility = 'Visible'
+        }
+        else {
+            $emptyTb.Visibility = 'Collapsed'
+        }
+    }
+    return $visibleByPage
 }
 
 function Initialize-OptiKitUi {
@@ -7490,12 +8859,22 @@ function Initialize-OptiKitUi {
         CustomGameExePaths    = @{}
         SuppressConfirmDialog = $false
         LastStateReport       = $null
+        SelectionCount        = 0
+        SearchGroups          = (New-Object 'System.Collections.Generic.List[object]')
+        ResponsiveGrids       = @{}
+        TweakDefinitions      = (New-Object 'System.Collections.Generic.List[object]')
+        TweakDefinitionMap    = @{}
+        TweakStatuses         = @{}
+        TweakViewState        = @{ Sort = 'Category'; Impact = 'All'; Risk = 'All'; Status = 'All' }
+        SelectedTweakIds      = (New-Object 'System.Collections.Generic.HashSet[string]')
+        TweaksFilteredEmpty   = $false
     }
 
     $controlNames = @(
         'BadgeDryRun', 'BadgeUpdate', 'TxtUpdateBadge', 'TxtHardwareSummary', 'TxtSearchBox', 'BtnClearSearch',
         'MainTabControl', 'AppsCategoriesHost', 'BtnUncheckAllApps',
         'TweaksCategoriesHost', 'BtnRefreshState', 'BtnUncheckAllTweaks',
+        'CmbTweakSort', 'CmbTweakImpact', 'CmbTweakRisk', 'CmbTweakStatus', 'BtnClearTweakFilters', 'TxtTweakCount',
         'GameProfilesHost',
         'BtnRefreshDiagnostics', 'TxtDiagnosticsSummary', 'DiagnosticsHost',
         'BtnResetNetwork', 'BtnRunSfcDism', 'BtnCancelMaintenance', 'BtnClearTemp', 'BtnOpenBackupsDir',
@@ -7504,7 +8883,8 @@ function Initialize-OptiKitUi {
         'GridStartupItems', 'BtnEnableStartup', 'BtnDisableStartup', 'BtnRefreshStartup',
         'CmbPresets', 'BtnClearSelection', 'TxtSelectionCounter',
         'BtnViewApplied', 'BtnUndoSelected', 'BtnUndoAll', 'BtnApplySelected',
-        'MainProgressBar', 'TxtStatusMessage', 'TxtConsoleOutput'
+        'MainProgressBar', 'TxtStatusMessage', 'TxtConsoleOutput',
+        'NavList', 'SelectionBar', 'LogPanel', 'BtnToggleLog', 'TxtAppsEmpty', 'TxtTweaksEmpty', 'TxtGamesEmpty'
     )
     foreach ($name in $controlNames) {
         $ui[$name] = $Window.FindName($name)
@@ -7541,10 +8921,14 @@ function Initialize-OptiKitUi {
         $ui.BadgeDryRun.Visibility = 'Visible'
     }
     if ($ui.TxtHardwareSummary -and $Hardware.Summary) {
-        $ui.TxtHardwareSummary.Text = $Hardware.Summary
+        $ui.TxtHardwareSummary.Text = Format-OptiKitHardwareSummary -Summary $Hardware.Summary
     }
 
-    # 1. Construir Aba de Apps (Grade compacta de 4 colunas)
+    foreach ($responsiveHost in @('AppsCategoriesHost', 'TweaksCategoriesHost', 'GameProfilesHost')) {
+        Register-OptiKitResponsiveHost -Ui $ui -Container $responsiveHost
+    }
+
+    # 1. Instalar apps
     $appCategoryOrder = @(
         'Navegadores',
         "Comunica$([char]0x00E7)$([char]0x00E3)o",
@@ -7553,394 +8937,179 @@ function Initialize-OptiKitUi {
         'Desenvolvimento'
     )
     $appProps = @($Configs.Apps.PSObject.Properties)
+    $firstGroup = $true
 
     foreach ($catName in $appCategoryOrder) {
-        $catItems = $appProps | Where-Object { $_.Value.category -eq $catName }
-        if (-not $catItems -or @($catItems).Count -eq 0) { continue }
+        $catItems = @($appProps | Where-Object { $_.Value.category -eq $catName })
+        if ($catItems.Count -eq 0) { continue }
 
-        $catHeader = New-Object System.Windows.Controls.TextBlock
-        $catHeader.Text = $catName
-        $catHeader.FontSize = 13.5
-        $catHeader.FontWeight = 'Bold'
-        $catHeader.Foreground = ConvertFrom-HexBrush '#00E5FF'
-        $catHeader.Margin = New-Object System.Windows.Thickness(2, 6, 0, 4)
-        [void]$ui.AppsCategoriesHost.Children.Add($catHeader)
-
-        $grid = New-Object System.Windows.Controls.Primitives.UniformGrid
-        $grid.Columns = 4
+        $header = New-OptiKitGroupHeader -Ui $ui -Text $catName -Count $catItems.Count -First:$firstGroup
+        $firstGroup = $false
+        $grid = New-OptiKitResponsiveGrid -Ui $ui -Container 'AppsCategoriesHost' -MinColumnWidth 260
+        $entries = New-Object 'System.Collections.Generic.List[object]'
 
         foreach ($ap in $catItems) {
             $appKey = $ap.Name
             $appVal = $ap.Value
+            $tip = New-OptiKitToolTipContent -Ui $ui -Title $appVal.name -Body $appVal.description -Footer ('winget: {0}' -f $appVal.winget)
+            $row = New-OptiKitItemRow -Ui $ui -Title $appVal.name -Description $appVal.description -ToolTipContent $tip -Tag $appKey
+            $row.CheckBox.Add_Checked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
+            $row.CheckBox.Add_Unchecked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
+            [void]$grid.Children.Add($row.CheckBox)
 
-            $card = New-Object System.Windows.Controls.Border
-            $card.Background = ConvertFrom-HexBrush '#1E1E1E'
-            $card.BorderBrush = ConvertFrom-HexBrush '#2D2D32'
-            $card.BorderThickness = New-Object System.Windows.Thickness(1)
-            $card.CornerRadius = New-Object System.Windows.CornerRadius(5)
-            $card.Padding = New-Object System.Windows.Thickness(8, 5, 8, 5)
-            $card.Margin = New-Object System.Windows.Thickness(0, 0, 6, 5)
-            $card.VerticalAlignment = 'Top'
-            $card.ToolTip = ("{0}`r`nWinget ID: {1}`r`n`r`n{2}" -f $appVal.name, $appVal.winget, $appVal.description)
-
-            $sp = New-Object System.Windows.Controls.StackPanel
-            $sp.Orientation = 'Vertical'
-
-            $cbLabel = New-Object System.Windows.Controls.TextBlock
-            $cbLabel.Text = $appVal.name
-            $cbLabel.Foreground = ConvertFrom-HexBrush '#F3F4F6'
-            $cbLabel.FontWeight = 'SemiBold'
-            $cbLabel.FontSize = 12.5
-            $cbLabel.TextTrimming = 'CharacterEllipsis'
-
-            $cb = New-Object System.Windows.Controls.CheckBox
-            $cb.Content = $cbLabel
-            $cb.VerticalContentAlignment = 'Center'
-            $cb.Tag = $appKey
-            $cb.Add_Checked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
-            $cb.Add_Unchecked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
-
-            $descTb = New-Object System.Windows.Controls.TextBlock
-            $descTb.Text = $appVal.description
-            $descTb.Foreground = ConvertFrom-HexBrush '#9CA3AF'
-            $descTb.FontSize = 11
-            $descTb.TextTrimming = 'CharacterEllipsis'
-            $descTb.TextWrapping = 'NoWrap'
-            $descTb.Margin = New-Object System.Windows.Thickness(20, 1, 0, 0)
-
-            [void]$sp.Children.Add($cb)
-            [void]$sp.Children.Add($descTb)
-            $card.Child = $sp
-            [void]$grid.Children.Add($card)
-
-            $ui.AppCheckboxes[$appKey] = @{
-                CheckBox   = $cb
-                Card       = $card
+            $entry = @{
+                CheckBox   = $row.CheckBox
+                Card       = $row.CheckBox
                 Config     = $appVal
                 SearchText = ("{0} {1} {2} {3}" -f $appVal.name, $appVal.winget, $appVal.category, $appVal.description).ToLowerInvariant()
             }
+            $ui.AppCheckboxes[$appKey] = $entry
+            [void]$entries.Add($entry)
         }
 
+        [void]$ui.AppsCategoriesHost.Children.Add($header)
         [void]$ui.AppsCategoriesHost.Children.Add($grid)
+        [void]$ui.SearchGroups.Add(@{ Page = 'Apps'; Header = $header; Container = $grid; Entries = $entries })
     }
 
-    # 2. Construir Aba de Tweaks (Grade compacta de 2 colunas)
-    $tweakCategoryOrder = @(
-        'Desempenho & Energia',
-        'Privacidade & Telemetria',
-        'Windows Update',
-        'Interface & Windows 11',
-        "Remo$([char]0x00E7)$([char]0x00E3)o de Bloatware (Appx)",
-        "Avan$([char]0x00E7)ado"
-    )
+    # 2. Ajustes do Windows
     $osTag = if ($Hardware.IsWin11) { 'Win11' } else { 'Win10' }
     $tweakProps = @($Configs.WinTweaks.PSObject.Properties)
 
-    foreach ($catName in $tweakCategoryOrder) {
-        $catItems = $tweakProps | Where-Object {
-            $t = $_.Value
-            ($t.category -eq $catName) -and
-            (@($t.osSupport) -contains $osTag) -and
-            ($null -eq $t.minBuild -or $Hardware.OsBuild -ge [int]$t.minBuild)
-        }
-        if (-not $catItems -or @($catItems).Count -eq 0) { continue }
-
-        $catHeader = New-Object System.Windows.Controls.TextBlock
-        $catHeader.Text = $catName
-        $catHeader.FontSize = 13.5
-        $catHeader.FontWeight = 'Bold'
-        $catHeader.Foreground = if ($catName -eq "Avan$([char]0x00E7)ado") { ConvertFrom-HexBrush '#FF4655' } else { ConvertFrom-HexBrush '#00E5FF' }
-        $catHeader.Margin = New-Object System.Windows.Thickness(2, 6, 0, 4)
-        [void]$ui.TweaksCategoriesHost.Children.Add($catHeader)
-
-        $tweakGrid = New-Object System.Windows.Controls.Primitives.UniformGrid
-        $tweakGrid.Columns = 2
-
-        foreach ($tp in $catItems) {
-            $tweakKey = $tp.Name
-            $tweakVal = $tp.Value
-
-            $card = New-Object System.Windows.Controls.Border
-            $card.Background = ConvertFrom-HexBrush '#1E1E1E'
-            $card.BorderBrush = if ($tweakVal.riskLevel -eq 'Advanced') { ConvertFrom-HexBrush '#7F1D1D' } else { ConvertFrom-HexBrush '#2D2D32' }
-            $card.BorderThickness = New-Object System.Windows.Thickness(1)
-            $card.CornerRadius = New-Object System.Windows.CornerRadius(5)
-            $card.Padding = New-Object System.Windows.Thickness(9, 6, 9, 6)
-            $card.Margin = New-Object System.Windows.Thickness(0, 0, 6, 5)
-            $card.VerticalAlignment = 'Top'
-
-            $rebootNote = if ($tweakVal.requiresReboot) { "`r`n$([char]0x26A0)$([char]0xFE0F) Requer reinicializa$([char]0x00E7)$([char]0x00E3)o do sistema." } else { '' }
-            $card.ToolTip = ("{0}`r`n`r`n$([char]0xD83D)$([char]0xDCDD) Descri$([char]0x00E7)$([char]0x00E3)o:`r`n{1}`r`n`r`n$([char]0xD83D)$([char]0xDD2C) Justificativa T$([char]0x00E9)cnica (Anti-Placebo):`r`n{2}`r`n`r`nImpacto: {3} | N$([char]0x00ED)vel de Risco: {4}{5}" -f $tweakVal.title, $tweakVal.description, $tweakVal.rationale, $tweakVal.impact, $tweakVal.riskLevel, $rebootNote)
-
-            $sp = New-Object System.Windows.Controls.StackPanel
-            $sp.Orientation = 'Vertical'
-
-            $headerRow = New-Object System.Windows.Controls.Grid
-            $colLeft = New-Object System.Windows.Controls.ColumnDefinition
-            $colLeft.Width = New-Object System.Windows.GridLength(1, [System.Windows.GridUnitType]::Star)
-            $colRight = New-Object System.Windows.Controls.ColumnDefinition
-            $colRight.Width = [System.Windows.GridLength]::Auto
-            [void]$headerRow.ColumnDefinitions.Add($colLeft)
-            [void]$headerRow.ColumnDefinitions.Add($colRight)
-
-            $cbTitle = New-Object System.Windows.Controls.TextBlock
-            $cbTitle.Text = $tweakVal.title
-            $cbTitle.Foreground = ConvertFrom-HexBrush '#F3F4F6'
-            $cbTitle.FontWeight = 'SemiBold'
-            $cbTitle.FontSize = 12.5
-            $cbTitle.TextTrimming = 'CharacterEllipsis'
-
-            $cb = New-Object System.Windows.Controls.CheckBox
-            $cb.Content = $cbTitle
-            $cb.VerticalContentAlignment = 'Center'
-            $cb.Tag = $tweakKey
-
-            $blockReason = Test-OptiKitTweakBlocked -Tweak $tweakVal -Hardware $Hardware
-            if ($blockReason) {
-                $cb.IsEnabled = $false
-                $card.ToolTip += "`r`n`r`n$([char]0x26D4) BLOQUEADO NESTE HARDWARE:`r`n$blockReason"
-            }
-
-            $confirmText = $tweakVal.confirmMessage
-            $cb.Add_Checked({
-                if (-not [string]::IsNullOrWhiteSpace($confirmText) -and (-not $ui.SuppressConfirmDialog)) {
-                    $ans = [System.Windows.MessageBox]::Show($ui.Window, $confirmText, "Aviso de Seguran$([char]0x00E7)a / Anti-Cheat (OptiKit)", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
-                    if ($ans -ne [System.Windows.MessageBoxResult]::Yes) {
-                        $this.IsChecked = $false
-                        return
-                    }
-                }
-                Update-SelectionCounter -Ui $ui
-            }.GetNewClosure())
-            $cb.Add_Unchecked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
-            [System.Windows.Controls.Grid]::SetColumn($cb, 0)
-            [void]$headerRow.Children.Add($cb)
-
-            $badgesPanel = New-Object System.Windows.Controls.StackPanel
-            $badgesPanel.Orientation = 'Horizontal'
-            $badgesPanel.VerticalAlignment = 'Center'
-            [System.Windows.Controls.Grid]::SetColumn($badgesPanel, 1)
-
-            $badgeApplied = New-OptiKitBadge -Text "$([char]0x25CF) Aplicado" -BgHex '#052E16' -BorderHex '#10B981' -FgHex '#34D399'
-            $badgeApplied.Visibility = 'Collapsed'
-            [void]$badgesPanel.Children.Add($badgeApplied)
-
-            $impColors = Get-ImpactColors -Impact $tweakVal.impact
-            $badgeImpact = New-OptiKitBadge -Text $tweakVal.impact -BgHex $impColors.Bg -BorderHex $impColors.Border -FgHex $impColors.Fg
-            [void]$badgesPanel.Children.Add($badgeImpact)
-
-            if ($tweakVal.riskLevel -ne 'Safe') {
-                $riskColors = Get-RiskColors -Risk $tweakVal.riskLevel
-                $badgeRisk = New-OptiKitBadge -Text $tweakVal.riskLevel -BgHex $riskColors.Bg -BorderHex $riskColors.Border -FgHex $riskColors.Fg
-                [void]$badgesPanel.Children.Add($badgeRisk)
-            }
-
-            if ($blockReason) {
-                [void]$badgesPanel.Children.Add((New-OptiKitBadge -Text 'Bloqueado' -BgHex '#3B1219' -BorderHex '#FF4655' -FgHex '#FF6B78'))
-            }
-
-            [void]$headerRow.Children.Add($badgesPanel)
-
-            $descTb = New-Object System.Windows.Controls.TextBlock
-            $descTb.Text = $tweakVal.description
-            $descTb.Foreground = ConvertFrom-HexBrush '#9CA3AF'
-            $descTb.FontSize = 11
-            $descTb.TextTrimming = 'CharacterEllipsis'
-            $descTb.TextWrapping = 'NoWrap'
-            $descTb.Margin = New-Object System.Windows.Thickness(20, 2, 0, 0)
-
-            [void]$sp.Children.Add($headerRow)
-            [void]$sp.Children.Add($descTb)
-            $card.Child = $sp
-            [void]$tweakGrid.Children.Add($card)
-
-            $ui.TweakCheckboxes[$tweakKey] = @{
-                CheckBox     = $cb
-                Card         = $card
-                BadgeApplied = $badgeApplied
-                Config       = $tweakVal
-                BlockReason  = $blockReason
-                SearchText   = ("{0} {1} {2} {3}" -f $tweakVal.title, $tweakVal.description, $tweakVal.rationale, $tweakVal.category).ToLowerInvariant()
-            }
+    foreach ($tp in $tweakProps) {
+        $t = $tp.Value
+        if ((@($t.osSupport) -notcontains $osTag) -or ($null -ne $t.minBuild -and $Hardware.OsBuild -lt [int]$t.minBuild)) {
+            continue
         }
 
-        [void]$ui.TweaksCategoriesHost.Children.Add($tweakGrid)
+        $definition = @{
+            Key            = [string]$tp.Name
+            Config         = $t
+            Title          = [string]$t.title
+            Description    = [string]$t.description
+            Rationale      = [string]$t.rationale
+            Category       = [string]$t.category
+            Impact         = [string]$t.impact
+            Risk           = [string]$t.riskLevel
+            RequiresReboot = [bool]$t.requiresReboot
+            BlockReason    = (Test-OptiKitTweakBlocked -Tweak $t -Hardware $Hardware)
+            SearchText     = ("{0} {1} {2} {3} {4} {5}" -f $t.title, $t.description, $t.rationale, $t.category, $t.impact, $t.riskLevel).ToLowerInvariant()
+        }
+        [void]$ui.TweakDefinitions.Add($definition)
+        $ui.TweakDefinitionMap[$tp.Name] = $definition
     }
 
-    # 3. Construir Aba de Perfis de Jogos
+    Update-OptiKitTweakPage -Ui $ui
+
+    if ($ui.CmbTweakSort) {
+        Add-OptiKitComboOption -Combo $ui.CmbTweakSort -Text 'Organizar: categoria' -Value 'Category'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakSort -Text 'Organizar: impacto' -Value 'Impact'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakSort -Text 'Organizar: risco' -Value 'Risk'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakSort -Text "Organizar: rein$([char]0x00ED)cio" -Value 'Reboot'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakSort -Text 'Organizar: estado' -Value 'Status'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakSort -Text 'Organizar: nome' -Value 'Title'
+
+        Add-OptiKitComboOption -Combo $ui.CmbTweakImpact -Text 'Impacto: todos' -Value 'All'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakImpact -Text 'Impacto: alto' -Value 'Alto'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakImpact -Text "Impacto: m$([char]0x00E9)dio" -Value "M$([char]0x00E9)dio"
+        Add-OptiKitComboOption -Combo $ui.CmbTweakImpact -Text 'Impacto: baixo' -Value 'Baixo'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakImpact -Text 'Impacto: situacional' -Value 'Situacional'
+
+        Add-OptiKitComboOption -Combo $ui.CmbTweakRisk -Text 'Risco: todos' -Value 'All'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakRisk -Text 'Risco: seguro' -Value 'Safe'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakRisk -Text 'Risco: moderado' -Value 'Moderate'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakRisk -Text "Risco: avan$([char]0x00E7)ado" -Value 'Advanced'
+
+        Add-OptiKitComboOption -Combo $ui.CmbTweakStatus -Text 'Estado: todos' -Value 'All'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakStatus -Text 'Estado: aplicado' -Value 'Applied'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakStatus -Text "Estado: n$([char]0x00E3)o aplicado" -Value 'NotApplied'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakStatus -Text 'Estado: parcial' -Value 'Partial'
+        Add-OptiKitComboOption -Combo $ui.CmbTweakStatus -Text 'Estado: desconhecido' -Value 'Unknown'
+
+        $ui.CmbTweakSort.SelectedIndex = 0
+        $ui.CmbTweakImpact.SelectedIndex = 0
+        $ui.CmbTweakRisk.SelectedIndex = 0
+        $ui.CmbTweakStatus.SelectedIndex = 0
+
+        $ui.CmbTweakSort.Add_SelectionChanged({ Set-OptiKitTweakView -Ui $ui }.GetNewClosure())
+        $ui.CmbTweakImpact.Add_SelectionChanged({ Set-OptiKitTweakView -Ui $ui }.GetNewClosure())
+        $ui.CmbTweakRisk.Add_SelectionChanged({ Set-OptiKitTweakView -Ui $ui }.GetNewClosure())
+        $ui.CmbTweakStatus.Add_SelectionChanged({ Set-OptiKitTweakView -Ui $ui }.GetNewClosure())
+
+        if ($ui.BtnClearTweakFilters) {
+            $ui.BtnClearTweakFilters.Add_Click({
+                $ui.CmbTweakSort.SelectedIndex = 0
+                $ui.CmbTweakImpact.SelectedIndex = 0
+                $ui.CmbTweakRisk.SelectedIndex = 0
+                $ui.CmbTweakStatus.SelectedIndex = 0
+                Set-OptiKitTweakView -Ui $ui
+            }.GetNewClosure())
+        }
+    }
+
+    # 3. Jogos
+    $firstSection = $true
     foreach ($gp in $Configs.GameProfiles.PSObject.Properties) {
         $profKey = $gp.Name
         $prof = $gp.Value
 
-        $profBorder = New-Object System.Windows.Controls.Border
-        $profBorder.Background = ConvertFrom-HexBrush '#1E1E1E'
-        $profBorder.BorderBrush = if ($prof.status -eq 'active') { ConvertFrom-HexBrush '#FF4655' } elseif ($prof.status -eq 'global') { ConvertFrom-HexBrush '#00E5FF' } else { ConvertFrom-HexBrush '#2D2D32' }
-        $profBorder.BorderThickness = New-Object System.Windows.Thickness(1)
-        $profBorder.CornerRadius = New-Object System.Windows.CornerRadius(7)
-        $profBorder.Padding = New-Object System.Windows.Thickness(12, 9, 12, 9)
-        $profBorder.Margin = New-Object System.Windows.Thickness(0, 0, 0, 8)
-
-        $profStack = New-Object System.Windows.Controls.StackPanel
-        $profStack.Orientation = 'Vertical'
-
-        $titleDock = New-Object System.Windows.Controls.DockPanel
-        $titleDock.LastChildFill = $false
-        $titleTb = New-Object System.Windows.Controls.TextBlock
-        $titleTb.Text = ("$([char]0xD83C)$([char]0xDFAE) {0}" -f $prof.gameName)
-        $titleTb.FontSize = 15
-        $titleTb.FontWeight = 'Bold'
-        $titleTb.Foreground = if ($prof.status -eq 'active') { ConvertFrom-HexBrush '#FF4655' } elseif ($prof.status -eq 'global') { ConvertFrom-HexBrush '#00E5FF' } else { ConvertFrom-HexBrush '#9CA3AF' }
-        [System.Windows.Controls.DockPanel]::SetDock($titleTb, 'Left')
-        [void]$titleDock.Children.Add($titleTb)
-
-        $metaPanel = New-Object System.Windows.Controls.StackPanel
-        $metaPanel.Orientation = 'Horizontal'
-        [System.Windows.Controls.DockPanel]::SetDock($metaPanel, 'Right')
-
-        [void]$metaPanel.Children.Add((New-OptiKitBadge -Text $prof.engine -BgHex '#121212' -BorderHex '#3F3F46' -FgHex '#D4D4D8'))
-        [void]$metaPanel.Children.Add((New-OptiKitBadge -Text $prof.antiCheat -BgHex '#121212' -BorderHex '#3F3F46' -FgHex '#00E5FF'))
-
-        if ($prof.status -eq 'comingSoon') {
-            [void]$metaPanel.Children.Add((New-OptiKitBadge -Text 'EM BREVE' -BgHex '#3B2F0B' -BorderHex '#F59E0B' -FgHex '#FBBF24'))
-        }
-        [void]$titleDock.Children.Add($metaPanel)
-        [void]$profStack.Children.Add($titleDock)
-
-        $warnTb = New-Object System.Windows.Controls.TextBlock
-        $warnTb.Text = $prof.warning
-        $warnTb.Foreground = ConvertFrom-HexBrush '#D4D4D8'
-        $warnTb.FontSize = 11.5
-        $warnTb.TextWrapping = 'Wrap'
-        $warnTb.Margin = New-Object System.Windows.Thickness(0, 3, 0, 6)
-        [void]$profStack.Children.Add($warnTb)
-
+        $detectedExe = $null
         if ($prof.status -eq 'active') {
             $detectedExe = Find-GameExecutable -ProfileConfig $prof
             if ($detectedExe) {
                 $ui.CustomGameExePaths[$profKey] = $detectedExe
             }
+        }
 
-            $exeDock = New-Object System.Windows.Controls.DockPanel
-            $exeDock.LastChildFill = $false
-            $exeDock.Margin = New-Object System.Windows.Thickness(0, 0, 0, 6)
+        $section = New-OptiKitGameSection -Ui $ui -GameProfile $prof -ExePath $detectedExe -First:$firstSection
+        $firstSection = $false
 
-            $exeLabel = New-Object System.Windows.Controls.TextBlock
-            $exeLabel.Text = if ($detectedExe) { "Execut$([char]0x00E1)vel detectado: $detectedExe" } else { "Execut$([char]0x00E1)vel n$([char]0x00E3)o encontrado no caminho padr$([char]0x00E3)o (voc$([char]0x00EA) pode selecion$([char]0x00E1)-lo manualmente)." }
-            $exeLabel.Foreground = if ($detectedExe) { ConvertFrom-HexBrush '#34D399' } else { ConvertFrom-HexBrush '#FBBF24' }
-            $exeLabel.FontSize = 11.5
-            $exeLabel.VerticalAlignment = 'Center'
-            [System.Windows.Controls.DockPanel]::SetDock($exeLabel, 'Left')
-            [void]$exeDock.Children.Add($exeLabel)
-
-            $btnBrowse = New-Object System.Windows.Controls.Button
-            $btnBrowse.Content = 'Selecionar .exe...'
-            $btnBrowse.Style = $Window.FindResource('ActionButtonStyle')
-            $btnBrowse.Padding = New-Object System.Windows.Thickness(10, 3, 10, 3)
-            $btnBrowse.FontSize = 11.5
-            [System.Windows.Controls.DockPanel]::SetDock($btnBrowse, 'Right')
+        if ($section.BrowseButton) {
+            $exeText = $section.ExeText
+            $btnBrowse = $section.BrowseButton
             $btnBrowse.Add_Click({
                 $dlg = New-Object System.Windows.Forms.OpenFileDialog
                 $dlg.Filter = "Execut$([char]0x00E1)veis (*.exe)|*.exe"
                 $dlg.Title = ("Selecionar execut$([char]0x00E1)vel de {0}" -f $prof.gameName)
                 if ($dlg.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
                     $ui.CustomGameExePaths[$profKey] = $dlg.FileName
-                    $exeLabel.Text = ("Execut$([char]0x00E1)vel selecionado: {0}" -f $dlg.FileName)
-                    $exeLabel.Foreground = ConvertFrom-HexBrush '#34D399'
+                    Set-OptiKitGameExeLabel -Ui $ui -Label $exeText -Button $btnBrowse -ExePath $dlg.FileName
                 }
             }.GetNewClosure())
-            [void]$exeDock.Children.Add($btnBrowse)
-            [void]$profStack.Children.Add($exeDock)
         }
 
-        $optGrid = New-Object System.Windows.Controls.Primitives.UniformGrid
-        $optGrid.Columns = 2
-
+        $entries = New-Object 'System.Collections.Generic.List[object]'
         foreach ($opt in @($prof.optimizations)) {
-            $optCard = New-Object System.Windows.Controls.Border
-            $optCard.Background = ConvertFrom-HexBrush '#141417'
-            $optCard.BorderBrush = ConvertFrom-HexBrush '#27272A'
-            $optCard.BorderThickness = New-Object System.Windows.Thickness(1)
-            $optCard.CornerRadius = New-Object System.Windows.CornerRadius(5)
-            $optCard.Padding = New-Object System.Windows.Thickness(9, 6, 9, 6)
-            $optCard.Margin = New-Object System.Windows.Thickness(0, 0, 6, 5)
-            $optCard.VerticalAlignment = 'Top'
-            $optCard.ToolTip = ("{0}`r`n`r`n$([char]0xD83D)$([char]0xDD2C) Justificativa T$([char]0x00E9)cnica:`r`n{1}`r`n`r`nAction: {2} | Impacto: {3}" -f $opt.title, $opt.rationale, $opt.action, $opt.impact)
+            $tip = New-OptiKitToolTipContent -Ui $ui -Title $opt.title -Body $opt.description -DetailLabel "Justificativa t$([char]0x00E9)cnica" -Detail $opt.rationale -Footer (Get-OptiKitImpactLabel -Impact $opt.impact)
+            $row = New-OptiKitItemRow -Ui $ui -Title $opt.title -Description $opt.description -Impact $opt.impact -Risk $opt.riskLevel -ToolTipContent $tip -Tag $opt.id
+            $row.CheckBox.Add_Checked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
+            $row.CheckBox.Add_Unchecked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
+            [void]$section.Grid.Children.Add($row.CheckBox)
 
-            $optSp = New-Object System.Windows.Controls.StackPanel
-            $optSp.Orientation = 'Vertical'
-
-            $optTop = New-Object System.Windows.Controls.Grid
-            $c0 = New-Object System.Windows.Controls.ColumnDefinition
-            $c0.Width = New-Object System.Windows.GridLength(1, [System.Windows.GridUnitType]::Star)
-            $c1 = New-Object System.Windows.Controls.ColumnDefinition
-            $c1.Width = [System.Windows.GridLength]::Auto
-            [void]$optTop.ColumnDefinitions.Add($c0)
-            [void]$optTop.ColumnDefinitions.Add($c1)
-
-            $optCbTitle = New-Object System.Windows.Controls.TextBlock
-            $optCbTitle.Text = $opt.title
-            $optCbTitle.Foreground = ConvertFrom-HexBrush '#F3F4F6'
-            $optCbTitle.FontWeight = 'SemiBold'
-            $optCbTitle.FontSize = 12.5
-            $optCbTitle.TextTrimming = 'CharacterEllipsis'
-
-            $optCb = New-Object System.Windows.Controls.CheckBox
-            $optCb.Content = $optCbTitle
-            $optCb.VerticalContentAlignment = 'Center'
-            $optCb.Tag = $opt.id
-            $optCb.Add_Checked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
-            $optCb.Add_Unchecked({ Update-SelectionCounter -Ui $ui }.GetNewClosure())
-            [System.Windows.Controls.Grid]::SetColumn($optCb, 0)
-            [void]$optTop.Children.Add($optCb)
-
-            $optBadges = New-Object System.Windows.Controls.StackPanel
-            $optBadges.Orientation = 'Horizontal'
-            $optBadges.VerticalAlignment = 'Center'
-            [System.Windows.Controls.Grid]::SetColumn($optBadges, 1)
-
-            $optBadgeApp = New-OptiKitBadge -Text "$([char]0x25CF) Aplicado" -BgHex '#052E16' -BorderHex '#10B981' -FgHex '#34D399'
-            $optBadgeApp.Visibility = 'Collapsed'
-            [void]$optBadges.Children.Add($optBadgeApp)
-
-            $impCol = Get-ImpactColors -Impact $opt.impact
-            [void]$optBadges.Children.Add((New-OptiKitBadge -Text $opt.impact -BgHex $impCol.Bg -BorderHex $impCol.Border -FgHex $impCol.Fg))
-            [void]$optTop.Children.Add($optBadges)
-
-            $optDesc = New-Object System.Windows.Controls.TextBlock
-            $optDesc.Text = $opt.description
-            $optDesc.Foreground = ConvertFrom-HexBrush '#9CA3AF'
-            $optDesc.FontSize = 11
-            $optDesc.TextTrimming = 'CharacterEllipsis'
-            $optDesc.TextWrapping = 'NoWrap'
-            $optDesc.Margin = New-Object System.Windows.Thickness(20, 2, 0, 0)
-
-            [void]$optSp.Children.Add($optTop)
-            [void]$optSp.Children.Add($optDesc)
-            $optCard.Child = $optSp
-            [void]$optGrid.Children.Add($optCard)
-
-            $ui.GameOptCheckboxes[$opt.id] = @{
-                CheckBox     = $optCb
-                Card         = $optCard
-                BadgeApplied = $optBadgeApp
+            $entry = @{
+                CheckBox     = $row.CheckBox
+                Card         = $row.CheckBox
+                BadgeApplied = $row.BadgeApplied
                 ProfileKey   = $profKey
                 Profile      = $prof
                 Config       = $opt
                 SearchText   = ("{0} {1} {2} {3}" -f $prof.gameName, $opt.title, $opt.description, $opt.rationale).ToLowerInvariant()
             }
+            $ui.GameOptCheckboxes[$opt.id] = $entry
+            [void]$entries.Add($entry)
+        }
+        if ($entries.Count -eq 0) {
+            $section.Grid.Visibility = 'Collapsed'
         }
 
-        if (@($prof.optimizations).Count -gt 0) {
-            [void]$profStack.Children.Add($optGrid)
-        }
-        $profBorder.Child = $profStack
-        [void]$ui.GameProfilesHost.Children.Add($profBorder)
+        [void]$ui.GameProfilesHost.Children.Add($section.Panel)
+        [void]$ui.SearchGroups.Add(@{ Page = 'Games'; Header = $null; Container = $section.Panel; Entries = $entries })
     }
 
     # 4. Popular ComboBox de Presets
     if ($ui.CmbPresets) {
         $placeholderItem = New-Object System.Windows.Controls.ComboBoxItem
-        $placeholderItem.Content = 'Selecione um Preset...'
+        $placeholderItem.Content = 'Escolher preset'
         $placeholderItem.Tag = ''
         [void]$ui.CmbPresets.Items.Add($placeholderItem)
 
@@ -7963,12 +9132,24 @@ function Initialize-OptiKitUi {
     # 5. Eventos de Busca e Limpeza
     if ($ui.TxtSearchBox) {
         $ui.TxtSearchBox.Add_TextChanged({
-            Invoke-SearchFilter -Ui $ui -Query $ui.TxtSearchBox.Text
+            $counts = Invoke-SearchFilter -Ui $ui -Query $ui.TxtSearchBox.Text
+            if ((-not [string]::IsNullOrWhiteSpace($ui.TxtSearchBox.Text)) -and ($ui.MainTabControl.SelectedIndex -gt 2)) {
+                $pages = @('Apps', 'Tweaks', 'Games')
+                $target = @(0, 1, 2) | Where-Object { $counts[$pages[$_]] -gt 0 } | Select-Object -First 1
+                if ($null -ne $target) {
+                    $ui.MainTabControl.SelectedIndex = $target
+                }
+            }
         }.GetNewClosure())
     }
     if ($ui.BtnClearSearch) {
         $ui.BtnClearSearch.Add_Click({
             $ui.TxtSearchBox.Text = ''
+        }.GetNewClosure())
+    }
+    if ($ui.BtnToggleLog -and $ui.LogPanel) {
+        $ui.BtnToggleLog.Add_Click({
+            $ui.LogPanel.Visibility = if ($ui.LogPanel.Visibility -eq 'Visible') { 'Collapsed' } else { 'Visible' }
         }.GetNewClosure())
     }
     if ($ui.BtnUncheckAllApps) {
@@ -7979,7 +9160,8 @@ function Initialize-OptiKitUi {
     }
     if ($ui.BtnUncheckAllTweaks) {
         $ui.BtnUncheckAllTweaks.Add_Click({
-            foreach ($e in $ui.TweakCheckboxes.Values) { $e.CheckBox.IsChecked = $false }
+            $ui.SelectedTweakIds.Clear()
+            Update-OptiKitTweakPage -Ui $ui
             Update-SelectionCounter -Ui $ui
         }.GetNewClosure())
     }
@@ -7989,6 +9171,19 @@ function Initialize-OptiKitUi {
             Select-OptiKitPreset -Ui $ui -PresetKey ''
         }.GetNewClosure())
     }
+
+    $Window.Add_PreviewKeyDown({
+        param($keySender, $keyArgs)
+        if (($keyArgs.Key -eq 'F') -and ([System.Windows.Input.Keyboard]::Modifiers -eq 'Control')) {
+            [void]$ui.TxtSearchBox.Focus()
+            $ui.TxtSearchBox.SelectAll()
+            $keyArgs.Handled = $true
+        }
+        elseif (($keyArgs.Key -eq 'Escape') -and $ui.TxtSearchBox.IsKeyboardFocused -and $ui.TxtSearchBox.Text) {
+            $ui.TxtSearchBox.Text = ''
+            $keyArgs.Handled = $true
+        }
+    }.GetNewClosure())
 
     return $ui
 }
@@ -8000,13 +9195,14 @@ function Show-AppliedChangesDialog {
     )
 
     $lines = New-Object 'System.Collections.Generic.List[string]'
-    [void]$lines.Add("=== AJUSTES ATIVOS DETECTADOS NA M$([char]0x00C1)QUINA ===")
+    [void]$lines.Add("Ajustes ativos nesta m$([char]0x00E1)quina:")
 
     $activeCount = 0
-    foreach ($tid in $Ui.TweakCheckboxes.Keys) {
-        $entry = $Ui.TweakCheckboxes[$tid]
-        if ($entry.BadgeApplied.Visibility -eq 'Visible') {
-            [void]$lines.Add(("$([char]0x2022) [Tweak] {0} ({1})" -f $entry.Config.title, $tid))
+    foreach ($tid in $Ui.TweakStatuses.Keys) {
+        if ($Ui.TweakStatuses[$tid] -ne 'Applied') { continue }
+        $definition = if ($Ui.TweakDefinitionMap) { $Ui.TweakDefinitionMap[$tid] } else { $null }
+        if ($definition) {
+            [void]$lines.Add(("$([char]0x2022) [Tweak] {0} ({1})" -f $definition.Config.title, $tid))
             $activeCount++
         }
     }
@@ -8019,11 +9215,11 @@ function Show-AppliedChangesDialog {
     }
 
     if ($activeCount -eq 0) {
-        [void]$lines.Add("Nenhum tweak do cat$([char]0x00E1)logo est$([char]0x00E1) marcado como aplicado no momento.")
+        [void]$lines.Add("Nenhum ajuste do cat$([char]0x00E1)logo est$([char]0x00E1) aplicado no momento.")
     }
 
     [void]$lines.Add('')
-    [void]$lines.Add("=== HIST$([char]0x00D3)RICO DE CAPTURA PARA REVERS$([char]0x00C3)O (state.json) ===")
+    [void]$lines.Add("Registrado para revers$([char]0x00E3)o (state.json):")
     $stateMap = Read-OptiKitStateFile
     if ($stateMap.Count -eq 0) {
         [void]$lines.Add('Nenhuma captura registrada no state.json.')
@@ -8036,7 +9232,7 @@ function Show-AppliedChangesDialog {
     }
 
     $msg = ($lines -join [Environment]::NewLine)
-    [void][System.Windows.MessageBox]::Show($Ui.Window, $msg, "Altera$([char]0x00E7)$([char]0x00F5)es Aplicadas no Sistema (OptiKit)", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
+    [void][System.Windows.MessageBox]::Show($Ui.Window, $msg, "Altera$([char]0x00E7)$([char]0x00F5)es aplicadas", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
 }
 
 # ============================================================================
@@ -8499,8 +9695,8 @@ function Start-OptiKitMain {
 
     $ui.BtnExportProfile.Add_Click({
         $tweaks = New-Object 'System.Collections.Generic.List[string]'
-        foreach ($tid in $ui.TweakCheckboxes.Keys) {
-            if ($ui.TweakCheckboxes[$tid].CheckBox.IsChecked -eq $true) { [void]$tweaks.Add($tid) }
+        foreach ($tid in $ui.SelectedTweakIds) {
+            [void]$tweaks.Add($tid)
         }
         $gameOpts = New-Object 'System.Collections.Generic.List[string]'
         foreach ($gid in $ui.GameOptCheckboxes.Keys) {
@@ -8540,7 +9736,7 @@ function Start-OptiKitMain {
             }
             catch {
                 Write-OptimizerLog -Level ERROR -Message ("Falha ao importar perfil: {0}" -f $_.Exception.Message)
-                [void][System.Windows.MessageBox]::Show($window, $_.Exception.Message, 'Importar Perfil (OptiKit)', [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
+                [void][System.Windows.MessageBox]::Show($window, $_.Exception.Message, 'Importar perfil', [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
             }
         }
     }.GetNewClosure())
@@ -8562,7 +9758,7 @@ function Start-OptiKitMain {
             return
         }
 
-        $confirm = [System.Windows.MessageBox]::Show($window, ("Reverter TODOS os {0} estado(s) capturados? Isso desfaz tweaks, otimiza$([char]0x00E7)$([char]0x00F5)es de jogos, plano de energia, USB, DirectX, DNS/DoH e Windows Update." -f $state.Count), 'Reverter Tudo (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        $confirm = [System.Windows.MessageBox]::Show($window, ("Reverter {0}?`r`n`r`nIsso desfaz ajustes, otimiza$([char]0x00E7)$([char]0x00F5)es de jogos, plano de energia, USB, DirectX, DNS e Windows Update registrados pelo OptiKit." -f (Format-OptiKitCount -Count $state.Count -Singular "altera$([char]0x00E7)$([char]0x00E3)o registrada" -Plural "altera$([char]0x00E7)$([char]0x00F5)es registradas")), 'Reverter tudo', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
         if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) {
             return
         }
@@ -8623,7 +9819,7 @@ function Start-OptiKitMain {
         }
         $providerKey = [string]$selected.Tag
         $providerName = [string]$selected.Content
-        $confirm = [System.Windows.MessageBox]::Show($window, ("Aplicar DNS over HTTPS via {0}?`r`n`r`nOs servidores DNS dos adaptadores f$([char]0x00ED)sicos ativos ser$([char]0x00E3)o alterados. O DNS original ser$([char]0x00E1) salvo para o Undo." -f $providerName), 'DNS over HTTPS (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+        $confirm = [System.Windows.MessageBox]::Show($window, ("Aplicar DNS over HTTPS com {0}?`r`n`r`nO DNS dos adaptadores f$([char]0x00ED)sicos ativos ser$([char]0x00E1) alterado. O DNS atual fica salvo para reverter." -f $providerName), 'Aplicar DNS over HTTPS', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
         if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
 
         Start-OptiKitWorkerTask -SyncHash $sync -Arguments @{ ProviderKey = $providerKey } -WorkerScript {
@@ -8633,7 +9829,7 @@ function Start-OptiKitMain {
 
     $ui.BtnUndoDoh.Add_Click({
         if (-not $ui.DohSupported) { return }
-        $confirm = [System.Windows.MessageBox]::Show($window, 'Restaurar o DNS original dos adaptadores e remover os templates DoH aplicados pelo OptiKit?', 'Reverter DNS over HTTPS (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        $confirm = [System.Windows.MessageBox]::Show($window, 'Restaurar o DNS original dos adaptadores e remover os templates DoH aplicados pelo OptiKit?', 'Reverter DNS over HTTPS', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
         if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
 
         Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
@@ -8642,7 +9838,7 @@ function Start-OptiKitMain {
     }.GetNewClosure())
 
     $ui.BtnWingetUpgrade.Add_Click({
-        $confirm = [System.Windows.MessageBox]::Show($window, "Atualizar TODOS os aplicativos gerenciados pelo Winget?``r``n``r``nA opera$([char]0x00E7)$([char]0x00E3)o pode demorar e alguns aplicativos podem exigir reinicializa$([char]0x00E7)$([char]0x00E3)o.", 'Atualizar Apps (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+        $confirm = [System.Windows.MessageBox]::Show($window, "Atualizar todos os aplicativos gerenciados pelo winget?`r`n`r`nPode demorar, e alguns aplicativos podem pedir reinicializa$([char]0x00E7)$([char]0x00E3)o.", 'Atualizar aplicativos', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
         if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
 
         Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
@@ -8651,7 +9847,7 @@ function Start-OptiKitMain {
     }.GetNewClosure())
 
     $ui.BtnAdvancedCleanup.Add_Click({
-        $confirm = [System.Windows.MessageBox]::Show($window, "Limpeza avan$([char]0x00E7)ada:`r`n`r`n$([char]0x2022) Cache do Windows Update`r`n$([char]0x2022) Cache do Delivery Optimization`r`n$([char]0x2022) Lixeira`r`n$([char]0x2022) Prefetch`r`n$([char]0x2022) Component Store via DISM`r`n`r`nPode demorar v$([char]0x00E1)rios minutos. Continuar?", "Limpeza Avan$([char]0x00E7)ada (OptiKit)", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        $confirm = [System.Windows.MessageBox]::Show($window, "Limpeza avan$([char]0x00E7)ada:`r`n`r`n$([char]0x2022) Cache do Windows Update`r`n$([char]0x2022) Cache do Delivery Optimization`r`n$([char]0x2022) Lixeira`r`n$([char]0x2022) Prefetch`r`n$([char]0x2022) Component Store via DISM`r`n`r`nPode demorar v$([char]0x00E1)rios minutos. Continuar?", "Limpeza avan$([char]0x00E7)ada", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
         if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
 
         Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
@@ -8696,10 +9892,10 @@ function Start-OptiKitMain {
         param([string]$ActionMode)
 
         $selectedTweaks = New-Object 'System.Collections.Generic.List[hashtable]'
-        foreach ($tid in $ui.TweakCheckboxes.Keys) {
-            $entry = $ui.TweakCheckboxes[$tid]
-            if ($entry.CheckBox.IsChecked -eq $true) {
-                [void]$selectedTweaks.Add(@{ Id = $tid; Config = $entry.Config })
+        foreach ($tid in $ui.SelectedTweakIds) {
+            $definition = if ($ui.TweakDefinitionMap) { $ui.TweakDefinitionMap[$tid] } else { $null }
+            if ($definition) {
+                [void]$selectedTweaks.Add(@{ Id = $tid; Config = $definition.Config })
             }
         }
 
@@ -8734,21 +9930,21 @@ function Start-OptiKitMain {
         }
 
         $rebootItems = @($selectedTweaks | Where-Object { $_.Config.requiresReboot } | ForEach-Object { $_.Config.title })
-        $modeTitle = if ($ActionMode -eq 'Apply') { 'Aplicar Selecionados' } else { 'Reverter Selecionados (Undo)' }
+        $modeTitle = if ($ActionMode -eq 'Apply') { 'Aplicar selecionados' } else { 'Reverter selecionados' }
 
         if (-not $IsSmokeTest) {
-            $summaryText = "Opera$([char]0x00E7)$([char]0x00E3)o: $modeTitle`r`n$([char]0x2022) Tweaks de Sistema: $($selectedTweaks.Count)`r`n$([char]0x2022) Otimiza$([char]0x00E7)$([char]0x00F5)es de Jogos: $($selectedGameOpts.Count)"
+            $summaryText = "Opera$([char]0x00E7)$([char]0x00E3)o: $modeTitle`r`n$([char]0x2022) Ajustes do Windows: $($selectedTweaks.Count)`r`n$([char]0x2022) Otimiza$([char]0x00E7)$([char]0x00F5)es de jogos: $($selectedGameOpts.Count)"
             if ($ActionMode -eq 'Apply') {
-                $summaryText += "`r`n$([char]0x2022) Aplicativos Winget: $($selectedApps.Count)"
+                $summaryText += "`r`n$([char]0x2022) Aplicativos (winget): $($selectedApps.Count)"
             }
             if ($rebootItems.Count -gt 0) {
-                $summaryText += "`r`n`r`n$([char]0x26A0)$([char]0xFE0F) Itens que exigem reinicializa$([char]0x00E7)$([char]0x00E3)o:`r`n- " + ($rebootItems -join "`r`n- ")
+                $summaryText += "`r`n`r`nExigem reinicializa$([char]0x00E7)$([char]0x00E3)o:`r`n- " + ($rebootItems -join "`r`n- ")
             }
             if ($script:OptiKit -and $script:OptiKit.DryRun) {
-                $summaryText += "`r`n`r`n$([char]0x26A0)$([char]0xFE0F) MODO DRY-RUN (SIMULA$([char]0x00C7)$([char]0x00C3)O) ATIVO:`r`nNenhuma altera$([char]0x00E7)$([char]0x00E3)o real ser$([char]0x00E1) gravada no Windows. Para aplicar de verdade, execute o win.ps1 sem a flag -DryRun."
+                $summaryText += "`r`n`r`nModo simula$([char]0x00E7)$([char]0x00E3)o ativo: nada ser$([char]0x00E1) gravado no Windows. Para aplicar de verdade, execute o win.ps1 sem -DryRun."
             }
             $summaryText += "`r`n`r`nDeseja prosseguir?"
-            $confirm = [System.Windows.MessageBox]::Show($window, $summaryText, "Confirmar Execu$([char]0x00E7)$([char]0x00E3)o (OptiKit)", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+            $confirm = [System.Windows.MessageBox]::Show($window, $summaryText, 'Confirmar', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
             if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) {
                 return
             }
@@ -8844,20 +10040,35 @@ function Start-OptiKitMain {
     $uiTimer.Add_Tick({
         $logItem = $null
         $appended = $false
+        $lastLevel = $null
         while ($sync.LogQueue.TryDequeue([ref]$logItem)) {
             $ui.TxtConsoleOutput.AppendText($logItem.Formatted + [Environment]::NewLine)
             $appended = $true
+            $lastLevel = [string]$logItem.Level
+            if (($lastLevel -eq 'ERROR') -and $ui.LogPanel) {
+                $ui.LogPanel.Visibility = 'Visible'
+            }
         }
         if ($appended) {
             $ui.TxtConsoleOutput.ScrollToEnd()
+        }
+        if ($lastLevel) {
+            $statusBrushKey = switch ($lastLevel) {
+                'ERROR' { 'Brush.Danger' }
+                'WARN' { 'Brush.Warning' }
+                default { 'Brush.Text.Secondary' }
+            }
+            $ui.TxtStatusMessage.Foreground = $window.FindResource($statusBrushKey)
         }
 
         $ui.MainProgressBar.Value = [double]$sync.Progress
         $ui.TxtStatusMessage.Text = [string]$sync.StatusText
 
         $busy = [bool]$sync.IsBusy
-        $ui.BtnApplySelected.IsEnabled = (-not $busy)
-        $ui.BtnUndoSelected.IsEnabled = (-not $busy)
+        $ui.MainProgressBar.Visibility = if ($busy) { 'Visible' } else { 'Hidden' }
+        $hasSelection = ([int]$ui.SelectionCount -gt 0)
+        $ui.BtnApplySelected.IsEnabled = ((-not $busy) -and $hasSelection)
+        $ui.BtnUndoSelected.IsEnabled = ((-not $busy) -and $hasSelection)
         $ui.BtnUndoAll.IsEnabled = (-not $busy)
         $ui.BtnResetNetwork.IsEnabled = (-not $busy)
         $ui.BtnRunSfcDism.IsEnabled = (-not $busy)
@@ -8892,7 +10103,7 @@ function Start-OptiKitMain {
             $update = $sync.PendingUpdateInfo
             $sync.PendingUpdateInfo = $null
             if ($update -and $ui.BadgeUpdate) {
-                $ui.TxtUpdateBadge.Text = ("Nova vers$([char]0x00E3)o v{0} dispon$([char]0x00ED)vel" -f $update.Version)
+                $ui.TxtUpdateBadge.Text = ("Vers$([char]0x00E3)o {0} dispon$([char]0x00ED)vel" -f $update.Version)
                 $ui.BadgeUpdate.ToolTip = "Clique para abrir a p$([char]0x00E1)gina de releases do OptiKit."
                 $ui.BadgeUpdate.Visibility = 'Visible'
             }
