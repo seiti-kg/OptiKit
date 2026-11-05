@@ -140,7 +140,7 @@ $configFiles = @{
     Presets      = Join-Path $repoRoot 'config\presets.json'
 }
 
-$logoPath = Join-Path $repoRoot 'assets\optikit_logo_ui.jpg'
+$logoPath = Join-Path $repoRoot 'assets\optikit_logo_ui.png'
 if (-not (Test-Path -LiteralPath $logoPath)) {
     throw "Logo compacto obrigatório ausente: $logoPath"
 }

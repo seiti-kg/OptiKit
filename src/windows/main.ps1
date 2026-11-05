@@ -146,8 +146,8 @@ function Get-OptiKitCatalogConfigs {
         GameLogos    = [System.IO.File]::ReadAllText((Join-Path $baseDir 'config\game-logos.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         Presets      = [System.IO.File]::ReadAllText((Join-Path $baseDir 'config\presets.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         ThemeXaml    = [System.IO.File]::ReadAllText((Join-Path $baseDir 'src\windows\ui\theme.xaml'), [System.Text.Encoding]::UTF8)
-        LogoBase64   = if (Test-Path -LiteralPath (Join-Path $baseDir 'assets\optikit_logo_ui.jpg')) {
-            [Convert]::ToBase64String([System.IO.File]::ReadAllBytes((Join-Path $baseDir 'assets\optikit_logo_ui.jpg')))
+        LogoBase64   = if (Test-Path -LiteralPath (Join-Path $baseDir 'assets\optikit_logo_ui.png')) {
+            [Convert]::ToBase64String([System.IO.File]::ReadAllBytes((Join-Path $baseDir 'assets\optikit_logo_ui.png')))
         } else { $null }
     }
 }
