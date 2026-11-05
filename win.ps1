@@ -2490,6 +2490,15 @@ $script:EmbeddedGameProfilesJson = @'
 }
 '@
 
+$script:EmbeddedGameLogosJson = @'
+{
+  "_notice": "\u00cdcones de Simple Icons (CC0 1.0). Logos s\u00e3o marcas dos respectivos titulares, usados apenas para identifica\u00e7\u00e3o.",
+  "ProfileValorant": "M23.792 2.152a.252.252 0 0 0-.098.083c-3.384 4.23-6.769 8.46-10.15 12.69-.107.093-.025.288.119.265 2.439.003 4.877 0 7.316.001a.66.66 0 0 0 .552-.25c.774-.967 1.55-1.934 2.324-2.903a.72.72 0 0 0 .144-.49c-.002-3.077 0-6.153-.003-9.23.016-.11-.1-.206-.204-.167zM.077 2.166c-.077.038-.074.132-.076.205.002 3.074.001 6.15.001 9.225a.679.679 0 0 0 .158.463l7.64 9.55c.12.152.308.25.505.247 2.455 0 4.91.003 7.365 0 .142.02.222-.174.116-.265C10.661 15.176 5.526 8.766.4 2.35c-.08-.094-.174-.272-.322-.184z",
+  "ProfileCS2": "M21.7101 3.2348a.0218.0218 0 0 1-.0216-.0215c.001-.0815.003-.3698.004-.424 0-.1292-.1428-.1831-.2117-.0829-.0113.016-.1457.212-.2287.3323a.0244.0244 0 0 1-.0198.0103h-6.5508a.0473.0473 0 0 1-.0473-.0463l-.0131-.177a.0477.0477 0 0 1 .056-.0477l.335.0319a.059.059 0 0 0 .0624-.0445l.2441-.989a.0475.0475 0 0 0-.0295-.0542l-.2268-.0848a.0427.0427 0 0 1-.0263-.0295c-.0412-.1722-.3766-1.3235-1.9935-1.581-.7867-.125-1.302.2107-1.577.4784a1.594 1.594 0 0 0-.3018.4095l-.0965.2125c-.008.0164-.046.2157-.046.234l.0513.9815a.109.109 0 0 0 .0422.0856l.3546.153-.1958.3244a.055.055 0 0 1-.053.0402s-.417.0108-.6227.0192c-.3856.0155-1.2444.4858-1.8773 1.8385-.6219 1.3282-.724 1.5496-.724 1.5496a.0736.0736 0 0 1-.0684.0398l-.5776.0019c-.0356 0-.0736.0285-.0886.0608l-.8982 2.5428c-.0149.0323-.006.081.0173.1081l.627.3918a.059.059 0 0 1 .0195.059l-.3274.9664a.1916.1916 0 0 1-.0235.0618l-.4343.3824a.1056.1056 0 0 0-.0356.059l-.5978 1.5308a.0632.0632 0 0 1-.0608.0455l-.3355.0018a.1633.1633 0 0 0-.162.1488l-.2007 2.2883a1.7194 1.7194 0 0 1-.0159.1207l-.1583.908a.128.128 0 0 1-.0333.0553l-.5584.4263c-.2559.2443-.5988.6903-.7665 1.0015l-1.86 3.9235c-.045.0833-.0811.227-.0788.3221l.1321.2354c.002.0842-.0319.4559-.0707.5307L.817 23.6545a.0985.0985 0 0 0-.003.0856l.0309.0706.0932.1859 1.8913.0029c.1173.0106.247-.1396.2507-.3005l.1027-1.2965-.0268-.1952 3.6063-4.232c.0942-.1146.222-.3168.2861-.4506l1.7186-3.7892a.1712.1712 0 0 1 .1004-.088l.1086-.035a.1694.1694 0 0 1 .1827.0528c.1505.1807.5042.781.6765 1.0315.1425.2079.8495 1.2304 1.1582 1.5675.0853.0926.3481.198.4658.2696a.083.083 0 0 1 .029.1119l-1.0298 1.8083-.4549 2.1357a.9542.9542 0 0 0-.0356.1526l-.4118 1.4831c.003.1873-.141.2856-.1527.5064l-.15 1.084a.0581.0581 0 0 0 .0582.0614l2.5445.014c.0951-.0003.1902-.0045.2854-.0067a1.1049 1.1049 0 0 0 .0755-.0069c.1242-.0158.5629-.0754.75-.1503.1097-.0388.1809-.0819.2268-.1295.1855-.1935.2002-.278.2034-.3975.001-.0212-.011-.0726-.0283-.1049-.0053-.0117-.0316-.0382-.059-.0477l-1.1815-.3562a.3693.3693 0 0 1-.1889-.1338l-.3172-.469a.0865.0865 0 0 1 .0173-.0973l.618-.609a.2017.2017 0 0 0 .0483-.072l1.9036-4.488c.089-.285.0595-.6056 0-.9445-.044-.2504-.6854-1.3264-.8532-1.6236-.1476-.262-1.0677-1.8707-1.286-2.2517-.0793-.1376-.1894-.1328-.2287-.276l-.0726-1.1173a.0398.0398 0 0 1 .0356-.0505l.3312-.0276a.093.093 0 0 0 .0741-.0487l1.147-2.1544a.0958.0958 0 0 0-.002-.094l-.2349-.2907a.0874.0874 0 0 1-.001-.0875l.3515-.3796a.054.054 0 0 1 .0736-.0206l.9343.5266a.3819.3819 0 0 0 .186.0505c.259-.0019.6858-.1549.908-.2906a.3833.3833 0 0 0 .1386-.148l.4583-1.0703c.006-.0136.0262-.0117.029.0028l.1278.5953a.0635.0635 0 0 0 .0788.0501l1.3494-.3a.0662.0662 0 0 0 .05-.0786l-.318-1.3437a.0716.0716 0 0 1 .009-.0534l.1313-.2036a.281.281 0 0 0 .036-.0814l.1589-.725a.0408.0408 0 0 1 .0397-.0323l3.7327.0047a.0916.0916 0 0 0 .0932-.0931v-.6336a.022.022 0 0 1 .0216-.0216h1.4393a.0465.0465 0 0 0 .0464-.0463v-.2855a.0465.0465 0 0 0-.0464-.0463h-1.4398z",
+  "ProfileUE5": "M12 0a12 12 0 1012 12A12 12 0 0012 0zm0 23.52A11.52 11.52 0 1123.52 12 11.52 11.52 0 0112 23.52zm7.13-9.791c-.206.997-1.126 3.557-4.06 4.942l-1.179-1.325-1.988 2a7.338 7.338 0 01-5.804-2.978 2.859 2.859 0 00.65.123c.326.006.678-.114.678-.66v-5.394a.89.89 0 00-1.116-.89c-.92.212-1.656 2.509-1.656 2.509a7.304 7.304 0 012.528-5.597 7.408 7.408 0 013.73-1.721c-1.006.573-1.57 1.507-1.57 2.29 0 1.262.76 1.109.984.923v7.28a1.157 1.157 0 00.148.256 1.075 1.075 0 00.88.445c.76 0 1.747-.868 1.747-.868V9.172c0-.6-.452-1.324-.905-1.572 0 0 .838-.149 1.484.346a5.537 5.537 0 01.387-.425c1.508-1.48 2.929-1.902 4.112-2.112 0 0-2.151 1.69-2.151 3.96 0 1.687.043 5.801.043 5.801.799.771 1.986-.342 3.059-1.441Z"
+}
+'@
+
 $script:EmbeddedPresetsJson = @'
 {
   "GamerRecomendado": {
@@ -8577,11 +8586,39 @@ function New-OptiKitGameSection {
     $tile.Background = Get-OptiKitUiResource -Ui $Ui -Key 'Brush.Bg.Surface'
     $tile.Margin = New-Object System.Windows.Thickness(0, 0, 12, 0)
     $tile.VerticalAlignment = 'Top'
-    $monogram = New-OptiKitText -Ui $Ui -Text $identity.ShortName -Style 'Text.Meta' -Brush $identity.AccentBrush
-    $monogram.FontWeight = 'SemiBold'
-    $monogram.HorizontalAlignment = 'Center'
-    $monogram.VerticalAlignment = 'Center'
-    $tile.Child = $monogram
+    $logoData = $null
+    if ($Ui.Configs -and $Ui.Configs.GameLogos -and -not [string]::IsNullOrWhiteSpace($ProfileKey)) {
+        $logoProp = $Ui.Configs.GameLogos.PSObject.Properties[$ProfileKey]
+        if ($logoProp -and -not [string]::IsNullOrWhiteSpace([string]$logoProp.Value)) {
+            $logoData = [string]$logoProp.Value
+        }
+    }
+
+    $tileChild = $null
+    if ($logoData) {
+        try {
+            $logo = New-Object System.Windows.Shapes.Path
+            $logo.Data = [System.Windows.Media.Geometry]::Parse($logoData)
+            $logo.Fill = Get-OptiKitUiResource -Ui $Ui -Key $identity.AccentBrush
+            $logo.Stretch = 'Uniform'
+            $logo.Width = 24
+            $logo.Height = 24
+            $logo.HorizontalAlignment = 'Center'
+            $logo.VerticalAlignment = 'Center'
+            $tileChild = $logo
+        }
+        catch {
+            Write-Verbose ("Logo inv$([char]0x00E1)lido para '{0}': {1}" -f $ProfileKey, $_.Exception.Message)
+        }
+    }
+    if (-not $tileChild) {
+        $monogram = New-OptiKitText -Ui $Ui -Text $identity.ShortName -Style 'Text.Meta' -Brush $identity.AccentBrush
+        $monogram.FontWeight = 'SemiBold'
+        $monogram.HorizontalAlignment = 'Center'
+        $monogram.VerticalAlignment = 'Center'
+        $tileChild = $monogram
+    }
+    $tile.Child = $tileChild
     [System.Windows.Controls.Grid]::SetColumn($tile, 0)
     [void]$head.Children.Add($tile)
 
@@ -9449,11 +9486,12 @@ function Invoke-OptiKitRelaunch {
 }
 
 function Get-OptiKitCatalogConfigs {
-    if ($script:EmbeddedAppsJson -and $script:EmbeddedWinTweaksJson -and $script:EmbeddedGameProfilesJson -and $script:EmbeddedPresetsJson) {
+    if ($script:EmbeddedAppsJson -and $script:EmbeddedWinTweaksJson -and $script:EmbeddedGameProfilesJson -and $script:EmbeddedGameLogosJson -and $script:EmbeddedPresetsJson) {
         return @{
             Apps         = $script:EmbeddedAppsJson | ConvertFrom-Json
             WinTweaks    = $script:EmbeddedWinTweaksJson | ConvertFrom-Json
             GameProfiles = $script:EmbeddedGameProfilesJson | ConvertFrom-Json
+            GameLogos    = $script:EmbeddedGameLogosJson | ConvertFrom-Json
             Presets      = $script:EmbeddedPresetsJson | ConvertFrom-Json
             ThemeXaml    = $script:EmbeddedThemeXaml
         }
@@ -9464,6 +9502,7 @@ function Get-OptiKitCatalogConfigs {
         Apps         = [System.IO.File]::ReadAllText((Join-Path $baseDir 'config\apps.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         WinTweaks    = [System.IO.File]::ReadAllText((Join-Path $baseDir 'config\win-tweaks.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         GameProfiles = [System.IO.File]::ReadAllText((Join-Path $baseDir 'config\game-profiles.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+        GameLogos    = [System.IO.File]::ReadAllText((Join-Path $baseDir 'config\game-logos.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         Presets      = [System.IO.File]::ReadAllText((Join-Path $baseDir 'config\presets.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         ThemeXaml    = [System.IO.File]::ReadAllText((Join-Path $baseDir 'src\windows\ui\theme.xaml'), [System.Text.Encoding]::UTF8)
     }

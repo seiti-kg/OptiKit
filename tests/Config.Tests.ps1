@@ -5,11 +5,13 @@ BeforeAll {
     $script:AppsPath = Join-Path $script:RepoRoot 'config\apps.json'
     $script:TweaksPath = Join-Path $script:RepoRoot 'config\win-tweaks.json'
     $script:GamesPath = Join-Path $script:RepoRoot 'config\game-profiles.json'
+    $script:GameLogosPath = Join-Path $script:RepoRoot 'config\game-logos.json'
     $script:PresetsPath = Join-Path $script:RepoRoot 'config\presets.json'
 
     $script:Apps = [System.IO.File]::ReadAllText($script:AppsPath, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
     $script:Tweaks = [System.IO.File]::ReadAllText($script:TweaksPath, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
     $script:Games = [System.IO.File]::ReadAllText($script:GamesPath, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+    $script:GameLogos = [System.IO.File]::ReadAllText($script:GameLogosPath, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
     $script:Presets = [System.IO.File]::ReadAllText($script:PresetsPath, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
 }
 
@@ -133,6 +135,16 @@ Describe 'Validação de Schema e Integridade dos Catálogos JSON' {
                 $shortNames += $p.Value.shortName
             }
             @($shortNames | Sort-Object -Unique).Count | Should -Be @($script:Games.PSObject.Properties).Count
+        }
+
+        It 'Deve ter logo vetorial válido para jogos e manter o global em monograma' {
+            Add-Type -AssemblyName PresentationCore -ErrorAction SilentlyContinue
+            foreach ($key in @('ProfileValorant', 'ProfileCS2', 'ProfileUE5')) {
+                $logoPath = [string]$script:GameLogos.$key
+                $logoPath | Should -Not -BeNullOrEmpty
+                { [System.Windows.Media.Geometry]::Parse($logoPath) } | Should -Not -Throw
+            }
+            $script:GameLogos.GlobalGamingTools | Should -BeNullOrEmpty
         }
     }
 

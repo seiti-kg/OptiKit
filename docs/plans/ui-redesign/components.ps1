@@ -811,11 +811,39 @@ function New-OptiKitGameSection {
     $tile.Background = Get-OptiKitUiResource -Ui $Ui -Key 'Brush.Bg.Surface'
     $tile.Margin = New-Object System.Windows.Thickness(0, 0, 12, 0)
     $tile.VerticalAlignment = 'Top'
-    $monogram = New-OptiKitText -Ui $Ui -Text $identity.ShortName -Style 'Text.Meta' -Brush $identity.AccentBrush
-    $monogram.FontWeight = 'SemiBold'
-    $monogram.HorizontalAlignment = 'Center'
-    $monogram.VerticalAlignment = 'Center'
-    $tile.Child = $monogram
+    $logoData = $null
+    if ($Ui.Configs -and $Ui.Configs.GameLogos -and -not [string]::IsNullOrWhiteSpace($ProfileKey)) {
+        $logoProp = $Ui.Configs.GameLogos.PSObject.Properties[$ProfileKey]
+        if ($logoProp -and -not [string]::IsNullOrWhiteSpace([string]$logoProp.Value)) {
+            $logoData = [string]$logoProp.Value
+        }
+    }
+
+    $tileChild = $null
+    if ($logoData) {
+        try {
+            $logo = New-Object System.Windows.Shapes.Path
+            $logo.Data = [System.Windows.Media.Geometry]::Parse($logoData)
+            $logo.Fill = Get-OptiKitUiResource -Ui $Ui -Key $identity.AccentBrush
+            $logo.Stretch = 'Uniform'
+            $logo.Width = 24
+            $logo.Height = 24
+            $logo.HorizontalAlignment = 'Center'
+            $logo.VerticalAlignment = 'Center'
+            $tileChild = $logo
+        }
+        catch {
+            Write-Verbose ("Logo inválido para '{0}': {1}" -f $ProfileKey, $_.Exception.Message)
+        }
+    }
+    if (-not $tileChild) {
+        $monogram = New-OptiKitText -Ui $Ui -Text $identity.ShortName -Style 'Text.Meta' -Brush $identity.AccentBrush
+        $monogram.FontWeight = 'SemiBold'
+        $monogram.HorizontalAlignment = 'Center'
+        $monogram.VerticalAlignment = 'Center'
+        $tileChild = $monogram
+    }
+    $tile.Child = $tileChild
     [System.Windows.Controls.Grid]::SetColumn($tile, 0)
     [void]$head.Children.Add($tile)
 

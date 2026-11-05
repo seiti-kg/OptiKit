@@ -39,6 +39,7 @@ Describe 'Compilador Monolítico (build.ps1 -> win.ps1)' {
             $catalogs.WinTweaks.WPFTweaksDisableGameDVR.title | Should -Match 'Gravação em 2º Plano'
             $catalogs.Apps.Discord.category | Should -Be 'Comunicação'
             $catalogs.Presets.MinimoSeguro.name | Should -Be 'Mínimo Seguro'
+            $catalogs.GameLogos.ProfileValorant | Should -Not -BeNullOrEmpty
             $catalogs.ThemeXaml | Should -Match 'Instalar Apps'
         }
         finally {

@@ -126,11 +126,12 @@ function Invoke-OptiKitRelaunch {
 }
 
 function Get-OptiKitCatalogConfigs {
-    if ($script:EmbeddedAppsJson -and $script:EmbeddedWinTweaksJson -and $script:EmbeddedGameProfilesJson -and $script:EmbeddedPresetsJson) {
+    if ($script:EmbeddedAppsJson -and $script:EmbeddedWinTweaksJson -and $script:EmbeddedGameProfilesJson -and $script:EmbeddedGameLogosJson -and $script:EmbeddedPresetsJson) {
         return @{
             Apps         = $script:EmbeddedAppsJson | ConvertFrom-Json
             WinTweaks    = $script:EmbeddedWinTweaksJson | ConvertFrom-Json
             GameProfiles = $script:EmbeddedGameProfilesJson | ConvertFrom-Json
+            GameLogos    = $script:EmbeddedGameLogosJson | ConvertFrom-Json
             Presets      = $script:EmbeddedPresetsJson | ConvertFrom-Json
             ThemeXaml    = $script:EmbeddedThemeXaml
         }
@@ -141,6 +142,7 @@ function Get-OptiKitCatalogConfigs {
         Apps         = [System.IO.File]::ReadAllText((Join-Path $baseDir 'config\apps.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         WinTweaks    = [System.IO.File]::ReadAllText((Join-Path $baseDir 'config\win-tweaks.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         GameProfiles = [System.IO.File]::ReadAllText((Join-Path $baseDir 'config\game-profiles.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+        GameLogos    = [System.IO.File]::ReadAllText((Join-Path $baseDir 'config\game-logos.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         Presets      = [System.IO.File]::ReadAllText((Join-Path $baseDir 'config\presets.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         ThemeXaml    = [System.IO.File]::ReadAllText((Join-Path $baseDir 'src\windows\ui\theme.xaml'), [System.Text.Encoding]::UTF8)
     }

@@ -42,7 +42,7 @@ $configs = Get-OptiKitCatalogConfigs
 $hardware = Get-OptiKitHardware
 $window = [Windows.Markup.XamlReader]::Parse([IO.File]::ReadAllText((Join-Path $repo 'docs\plans\ui-redesign\theme.xaml'), [Text.Encoding]::UTF8))
 
-$ui = @{ Window = $window; AppCheckboxes = @{}; TweakCheckboxes = @{}; GameOptCheckboxes = @{}; ResponsiveGrids = @{}; SearchGroups = (New-Object 'System.Collections.Generic.List[object]') }
+$ui = @{ Window = $window; Configs = $configs; AppCheckboxes = @{}; TweakCheckboxes = @{}; GameOptCheckboxes = @{}; ResponsiveGrids = @{}; SearchGroups = (New-Object 'System.Collections.Generic.List[object]') }
 foreach ($n in 'MainTabControl', 'AppsCategoriesHost', 'TweaksCategoriesHost', 'GameProfilesHost', 'DiagnosticsHost', 'TxtDiagnosticsSummary', 'GridStartupItems', 'CmbPresets', 'CmbDohProvider', 'TxtSelectionCounter', 'TxtHardwareSummary', 'TxtStatusMessage', 'TxtConsoleOutput', 'LogPanel', 'TxtSearchBox', 'TxtAppsEmpty', 'TxtTweaksEmpty', 'TxtGamesEmpty', 'BadgeDryRun', 'BadgeUpdate', 'TxtUpdateBadge', 'CmbTweakSort', 'CmbTweakImpact', 'CmbTweakRisk', 'CmbTweakStatus', 'BtnClearTweakFilters', 'TxtTweakCount') {
     $ui[$n] = $window.FindName($n)
 }
@@ -125,7 +125,7 @@ foreach ($gp in $configs.GameProfiles.PSObject.Properties) {
     $prof = $gp.Value
     $exe = if ($prof.status -eq 'active') { Find-GameExecutable -ProfileConfig $prof } else { $null }
     if ($gp.Name -ne 'ProfileValorant') { $exe = $null }
-    $section = New-OptiKitGameSection -Ui $ui -GameProfile $prof -ExePath $exe -First:$first
+    $section = New-OptiKitGameSection -Ui $ui -ProfileKey $gp.Name -GameProfile $prof -ExePath $exe -First:$first
     $first = $false
     $entries = New-Object 'System.Collections.Generic.List[object]'
     foreach ($opt in @($prof.optimizations)) {

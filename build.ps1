@@ -136,6 +136,7 @@ $configFiles = @{
     Apps         = Join-Path $repoRoot 'config\apps.json'
     WinTweaks    = Join-Path $repoRoot 'config\win-tweaks.json'
     GameProfiles = Join-Path $repoRoot 'config\game-profiles.json'
+    GameLogos    = Join-Path $repoRoot 'config\game-logos.json'
     Presets      = Join-Path $repoRoot 'config\presets.json'
 }
 
@@ -232,6 +233,10 @@ $outBuilder = New-Object System.Text.StringBuilder
 [void]$outBuilder.AppendLine('')
 [void]$outBuilder.AppendLine('$script:EmbeddedGameProfilesJson = @''')
 [void]$outBuilder.AppendLine($rawConfigs['GameProfiles'])
+[void]$outBuilder.AppendLine('''@')
+[void]$outBuilder.AppendLine('')
+[void]$outBuilder.AppendLine('$script:EmbeddedGameLogosJson = @''')
+[void]$outBuilder.AppendLine($rawConfigs['GameLogos'])
 [void]$outBuilder.AppendLine('''@')
 [void]$outBuilder.AppendLine('')
 [void]$outBuilder.AppendLine('$script:EmbeddedPresetsJson = @''')
