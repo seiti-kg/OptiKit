@@ -1,8 +1,6 @@
 <p align="center">
-  <img src="assets/optikit_logo.jpg" alt="OptiKit" width="360">
+  <img src="assets/optikit_logo_readme.jpg" alt="OptiKit" width="360">
 </p>
-
-<h1 align="center">OptiKit</h1>
 
 <p align="center">
   <em>pós-formatação, debloat e otimização de sistema e jogos para Windows 10/11</em>
