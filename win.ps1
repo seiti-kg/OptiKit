@@ -3283,7 +3283,7 @@ $script:EmbeddedThemeXaml = @'
         <Border Grid.Row="0" Grid.Column="0" Background="{StaticResource Brush.Bg.Rail}" BorderBrush="{StaticResource Brush.Border.Subtle}" BorderThickness="0,0,1,0">
             <DockPanel Margin="12,20,12,16">
                 <StackPanel DockPanel.Dock="Top" Margin="0,0,0,20">
-                    <Image x:Name="ImgOptiKitLogo" Width="190" Height="51" Stretch="Uniform" HorizontalAlignment="Left" Margin="0,0,0,4" ToolTip="OptiKit" AutomationProperties.Name="OptiKit" />
+                    <Image x:Name="ImgOptiKitLogo" Width="190" Height="51" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,0,0,4" ToolTip="OptiKit" AutomationProperties.Name="OptiKit" />
                     <TextBlock x:Name="TxtBrandFallback" Text="OptiKit" Style="{StaticResource Text.Title}" Visibility="Collapsed" />
                     <Border x:Name="BadgeDryRun" Visibility="Collapsed" HorizontalAlignment="Left" Margin="0,8,0,0" Padding="8,2" CornerRadius="4" BorderThickness="1" BorderBrush="{StaticResource Brush.Warning}">
                         <TextBlock Text="Modo simula&#x00E7;&#x00E3;o" Style="{StaticResource Text.Caption}" Foreground="{StaticResource Brush.Warning}" />
