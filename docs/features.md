@@ -8,7 +8,7 @@
 - **46 aplicativos** instaláveis via Winget, com bootstrap automático em instalações novas.
 - **3 perfis de jogos** (VALORANT, Counter-Strike 2 e Unreal Engine 5/AAA) e **3 ferramentas globais** de jogos.
 - **4 presets** prontos: `GamerRecomendado`, `MinimoSeguro`, `PerfilValorant` e `Notebook`.
-- **7 abas** na interface: Instalar apps, Ajustes do Windows, Jogos, Benchmark, Diagnóstico, Inicialização e Manutenção.
+- **6 abas** na interface: Instalar apps, Ajustes do Windows, Jogos, Diagnóstico, Inicialização e Manutenção.
 
 ## Interface
 
@@ -21,16 +21,7 @@ A interface WPF é gerada dinamicamente a partir dos catálogos JSON e inclui:
 - Reverter tudo a partir do `state.json`.
 - Exportação de relatório HTML da sessão.
 - Aviso de nova versão publicada no GitHub.
-- Benchmark com captura de FPS médio, 1% low, 0.1% low, frame time P95/P99 e GPU busy.
 - Modo de simulação (`-DryRun`) sem alterar o sistema.
-
-## Benchmark (PresentMon)
-
-- Captura de 30 segundos do processo de jogo selecionado, sem alterar o sistema.
-- Métricas: FPS médio, 1% low, 0.1% low, frame time P95/P99, GPU busy, frames e duração.
-- Comparação com a captura anterior do mesmo processo.
-- CSV e JSON salvos em `%ProgramData%\optikit\benchmarks`.
-- PresentMon 2.6.0 é baixado sob demanda para `%ProgramData%\optikit\tools`, com hash SHA-256 verificado; não é embutido no `win.ps1`.
 
 ## Instalação de pacotes (Winget)
 
@@ -129,6 +120,5 @@ A interface WPF é gerada dinamicamente a partir dos catálogos JSON e inclui:
 - **Windows 10:** o alvo principal é Windows 11; Windows 10 22H2 é suportado em melhor esforço.
 - **Anti-cheats:** os guardrails reduzem o risco de conflito, mas não garantem compatibilidade com todos os anti-cheats ou versões futuras.
 - **Distribuição:** o projeto é um script PowerShell sem instalador assinado nem auto-update; o aviso de nova versão é apenas informativo. O Windows pode exibir aviso do SmartScreen/antivírus.
-- **Benchmark:** exige um jogo em execução e internet no primeiro uso para baixar o PresentMon; a captura usa ETW e pode não funcionar se o processo estiver minimizado ou sem swapchain.
 
 Consulte também as [diretrizes técnicas](guidelines.md) e os [tweaks rejeitados](rejected.md).

@@ -1266,7 +1266,6 @@ function Initialize-OptiKitUi {
         'TweaksCategoriesHost', 'BtnRefreshState', 'BtnUncheckAllTweaks',
         'CmbTweakSort', 'CmbTweakImpact', 'CmbTweakRisk', 'CmbTweakStatus', 'BtnClearTweakFilters', 'TxtTweakCount',
         'GameProfilesHost',
-        'CmbBenchmarkProcess', 'BtnRefreshBenchmarkProcesses', 'BtnStartBenchmark', 'BtnStopBenchmark', 'TxtBenchmarkStatus', 'GridBenchmarkResults',
         'BtnRefreshDiagnostics', 'TxtDiagnosticsSummary', 'DiagnosticsHost',
         'BtnResetNetwork', 'BtnRunSfcDism', 'BtnCancelMaintenance', 'BtnRebootUefi', 'BtnClearTemp', 'BtnOpenBackupsDir',
         'BtnExportProfile', 'BtnImportProfile', 'BtnExportReport',

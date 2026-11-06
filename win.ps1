@@ -3181,9 +3181,6 @@ $script:EmbeddedThemeXaml = @'
                 <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="5">
                     <Setter Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="6">
-                    <Setter Property="Visibility" Value="Collapsed" />
-                </DataTrigger>
             </Style.Triggers>
         </Style>
 
@@ -3320,12 +3317,6 @@ $script:EmbeddedThemeXaml = @'
                             <TextBlock Text="Jogos" VerticalAlignment="Center" />
                         </StackPanel>
                     </ListBoxItem>
-                    <ListBoxItem AutomationProperties.Name="Benchmark">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE9D2;" />
-                            <TextBlock Text="Benchmark" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </ListBoxItem>
                     <ListBoxItem AutomationProperties.Name="Diagn&#x00F3;stico">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE9D9;" />
@@ -3429,40 +3420,7 @@ $script:EmbeddedThemeXaml = @'
                 </Grid>
             </TabItem>
 
-            <!-- 3. Benchmark -->
-            <TabItem Header="Benchmark">
-                <Grid Margin="32,24,0,0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <StackPanel Grid.Row="0" Margin="0,0,32,16">
-                        <TextBlock Text="Benchmark" Style="{StaticResource Text.Title}" />
-                        <TextBlock Text="Captura FPS e frame time de um jogo em execu&#x00E7;&#x00E3;o via PresentMon. N&#x00E3;o altera o sistema." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
-                    </StackPanel>
-                    <DockPanel Grid.Row="1" Margin="0,0,32,12" LastChildFill="True">
-                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Bottom">
-                            <Button x:Name="BtnRefreshBenchmarkProcesses" Style="{StaticResource Button.Subtle}" Content="Atualizar" Margin="0,0,8,0" />
-                            <Button x:Name="BtnStopBenchmark" Content="Parar" IsEnabled="False" Margin="0,0,8,0" />
-                            <Button x:Name="BtnStartBenchmark" Style="{StaticResource Button.Primary}" Content="Iniciar captura" />
-                        </StackPanel>
-                        <ComboBox x:Name="CmbBenchmarkProcess" Width="280" IsEditable="True" IsTextSearchEnabled="True" HorizontalAlignment="Left" ToolTip="Processo do jogo em execu&#x00E7;&#x00E3;o" AutomationProperties.Name="Processo do jogo" />
-                    </DockPanel>
-                    <DataGrid x:Name="GridBenchmarkResults" Grid.Row="2" Style="{StaticResource DataGrid.Clean}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" RowHeaderWidth="0" Margin="0,0,32,12">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="M&#x00E9;trica" Binding="{Binding Metric}" Width="*" ElementStyle="{StaticResource Cell.Text}" />
-                            <DataGridTextColumn Header="Atual" Binding="{Binding Current}" Width="110" ElementStyle="{StaticResource Cell.Meta}" />
-                            <DataGridTextColumn Header="Anterior" Binding="{Binding Previous}" Width="110" ElementStyle="{StaticResource Cell.Meta}" />
-                            <DataGridTextColumn Header="Delta" Binding="{Binding Delta}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
-                        </DataGrid.Columns>
-                    </DataGrid>
-                    <TextBlock x:Name="TxtBenchmarkStatus" Grid.Row="3" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Text="Selecione um jogo em execu&#x00E7;&#x00E3;o e inicie a captura." Margin="0,0,32,24" />
-                </Grid>
-            </TabItem>
-
-            <!-- 4. Diagn&#x00F3;stico -->
+            <!-- 3. Diagn&#x00F3;stico -->
             <TabItem Header="Diagn&#x00F3;stico">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>
@@ -3482,7 +3440,7 @@ $script:EmbeddedThemeXaml = @'
                 </Grid>
             </TabItem>
 
-            <!-- 5. Inicializa&#x00E7;&#x00E3;o -->
+            <!-- 4. Inicializa&#x00E7;&#x00E3;o -->
             <TabItem Header="Inicializa&#x00E7;&#x00E3;o">
                 <Grid Margin="32,24,32,0">
                     <Grid.RowDefinitions>
@@ -3511,7 +3469,7 @@ $script:EmbeddedThemeXaml = @'
                 </Grid>
             </TabItem>
 
-            <!-- 6. Manuten&#x00E7;&#x00E3;o -->
+            <!-- 5. Manuten&#x00E7;&#x00E3;o -->
             <TabItem Header="Manuten&#x00E7;&#x00E3;o">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>
@@ -8259,298 +8217,6 @@ function Get-OptiKitHardwareDiagnostics {
 }
 
 # ============================================================================
-# Module: src/windows/modules/benchmark-engine.ps1
-# ============================================================================
-# Benchmark de jogos via PresentMon: captura, analise de frame time e historico local
-
-$script:OptiKitPresentMonVersion = '2.6.0'
-$script:OptiKitPresentMonUrl = 'https://github.com/GameTechDev/PresentMon/releases/download/v2.6.0/PresentMon-2.6.0-x64.exe'
-$script:OptiKitPresentMonSha256 = 'B2A706BC6AD475749E3B7E3409263AA1E6906D45BDCF993F6DBC0F660188F1AF'
-
-function Get-OptiKitBenchmarkDirectory {
-    [CmdletBinding()]
-    param()
-
-    $root = if ($script:OptiKit -and $script:OptiKit.DataRoot) { [string]$script:OptiKit.DataRoot } else { Join-Path $env:ProgramData 'optikit' }
-    $path = Join-Path $root 'benchmarks'
-    if (-not (Test-Path -LiteralPath $path)) {
-        New-Item -Path $path -ItemType Directory -Force | Out-Null
-    }
-    return $path
-}
-
-function Get-OptiKitPresentMonPath {
-    [CmdletBinding()]
-    param()
-
-    $root = if ($script:OptiKit -and $script:OptiKit.DataRoot) { [string]$script:OptiKit.DataRoot } else { Join-Path $env:ProgramData 'optikit' }
-    $toolsDir = Join-Path $root 'tools'
-    if (-not (Test-Path -LiteralPath $toolsDir)) {
-        New-Item -Path $toolsDir -ItemType Directory -Force | Out-Null
-    }
-
-    $target = Join-Path $toolsDir 'PresentMon-2.6.0-x64.exe'
-    if (Test-Path -LiteralPath $target) {
-        try {
-            $hash = (Get-FileHash -LiteralPath $target -Algorithm SHA256 -ErrorAction Stop).Hash
-            if ($hash -ieq $script:OptiKitPresentMonSha256) {
-                return $target
-            }
-            Remove-Item -LiteralPath $target -Force -ErrorAction SilentlyContinue
-        }
-        catch {
-            Write-Verbose ("Falha ao validar o PresentMon existente: {0}" -f $_.Exception.Message)
-        }
-    }
-
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    $download = "$target.download"
-    try {
-        Invoke-WebRequest -Uri $script:OptiKitPresentMonUrl -OutFile $download -UseBasicParsing -ErrorAction Stop
-        $hash = (Get-FileHash -LiteralPath $download -Algorithm SHA256 -ErrorAction Stop).Hash
-        if ($hash -ine $script:OptiKitPresentMonSha256) {
-            Remove-Item -LiteralPath $download -Force -ErrorAction SilentlyContinue
-            throw 'Falha de integridade ao baixar o PresentMon 2.6.0.'
-        }
-        Move-Item -LiteralPath $download -Destination $target -Force
-        Unblock-File -LiteralPath $target -ErrorAction SilentlyContinue
-        Write-OptimizerLog -Level INFO -Message ("PresentMon {0} baixado e verificado." -f $script:OptiKitPresentMonVersion)
-        return $target
-    }
-    catch {
-        Remove-Item -LiteralPath $download -Force -ErrorAction SilentlyContinue
-        if ($_.Exception.Message -like 'Falha de integridade*') { throw }
-        throw ("N$([char]0x00E3)o foi poss$([char]0x00ED)vel baixar o PresentMon 2.6.0: {0}" -f $_.Exception.Message)
-    }
-}
-
-function Start-OptiKitBenchmark {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)][string]$ProcessName,
-        [int]$DurationSeconds = 30
-    )
-
-    $procName = [System.IO.Path]::GetFileNameWithoutExtension($ProcessName)
-    if ([string]::IsNullOrWhiteSpace($procName)) {
-        throw 'Informe o processo do jogo.'
-    }
-    if ($DurationSeconds -lt 5) {
-        throw "A dura$([char]0x00E7)$([char]0x00E3)o m$([char]0x00ED)nima do benchmark $([char]0x00E9) de 5 segundos."
-    }
-
-    $process = Get-Process -Name $procName -ErrorAction Stop | Select-Object -First 1
-    if (-not $process) {
-        throw ("Processo '{0}' n$([char]0x00E3)o encontrado." -f $procName)
-    }
-
-    $exe = Get-OptiKitPresentMonPath
-    $dir = Get-OptiKitBenchmarkDirectory
-    $base = 'benchmark_{0}_{1}' -f (Get-Date -Format 'yyyyMMdd_HHmmss'), ([Guid]::NewGuid().ToString('N').Substring(0, 8))
-    $csv = Join-Path $dir "$base.csv"
-    $json = Join-Path $dir "$base.json"
-
-    $presentMonArgs = @(
-        '--process_name', ($procName + '.exe'),
-        '--output_file', ('"{0}"' -f $csv),
-        '--timed', [string]$DurationSeconds,
-        '--terminate_after_timed',
-        '--no_console_stats',
-        '--session_name', 'OptiKitBenchmark',
-        '--stop_existing_session'
-    )
-    $presentMon = Start-Process -FilePath $exe -ArgumentList $presentMonArgs -PassThru -WindowStyle Hidden
-    Write-OptimizerLog -Level INFO -Message ("Benchmark iniciado para '{0}' por {1}s." -f $procName, $DurationSeconds)
-
-    return [pscustomobject]@{
-        Process         = $presentMon
-        ProcessName     = $procName
-        CsvPath         = $csv
-        JsonPath        = $json
-        DurationSeconds = $DurationSeconds
-        StartedAt       = Get-Date
-    }
-}
-
-function Stop-OptiKitBenchmark {
-    [CmdletBinding()]
-    param(
-        [System.Diagnostics.Process]$Process
-    )
-
-    if ($null -eq $Process) { return }
-    try {
-        if (-not $Process.HasExited) {
-            $Process.Kill()
-            [void]$Process.WaitForExit(5000)
-        }
-    }
-    catch {
-        Write-Verbose ("Falha ao encerrar o PresentMon: {0}" -f $_.Exception.Message)
-    }
-}
-
-function Get-OptiKitBenchmarkResult {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)][string]$CsvPath
-    )
-
-    $rows = @(Import-Csv -LiteralPath $CsvPath -ErrorAction Stop)
-    if ($rows.Count -eq 0) {
-        throw "CSV de benchmark sem frames v$([char]0x00E1)lidos."
-    }
-    if (-not $rows[0].PSObject.Properties['MsBetweenPresents']) {
-        throw 'CSV de benchmark sem coluna MsBetweenPresents.'
-    }
-
-    $frameTimes = New-Object 'System.Collections.Generic.List[double]'
-    $gpuValues = New-Object 'System.Collections.Generic.List[double]'
-    foreach ($row in $rows) {
-        $rawFrame = [string]$row.MsBetweenPresents
-        $frameMs = 0.0
-        if ([double]::TryParse($rawFrame, [Globalization.NumberStyles]::Float, [Globalization.CultureInfo]::InvariantCulture, [ref]$frameMs) -and $frameMs -gt 0) {
-            [void]$frameTimes.Add($frameMs)
-        }
-
-        $gpuProp = $row.PSObject.Properties['MsGPUBusy']
-        if ($gpuProp) {
-            $rawGpu = [string]$gpuProp.Value
-            $gpuMs = 0.0
-            if ([double]::TryParse($rawGpu, [Globalization.NumberStyles]::Float, [Globalization.CultureInfo]::InvariantCulture, [ref]$gpuMs) -and $gpuMs -ge 0) {
-                [void]$gpuValues.Add($gpuMs)
-            }
-        }
-    }
-
-    $count = $frameTimes.Count
-    if ($count -lt 10) {
-        throw "CSV de benchmark sem frames v$([char]0x00E1)lidos."
-    }
-
-    $avgMs = ($frameTimes | Measure-Object -Average).Average
-    $slowest = @($frameTimes | Sort-Object -Descending)
-    $oneCount = [Math]::Max(1, [int][Math]::Ceiling($count * 0.01))
-    $pointOneCount = [Math]::Max(1, [int][Math]::Ceiling($count * 0.001))
-    $oneAvgMs = ($slowest[0..($oneCount - 1)] | Measure-Object -Average).Average
-    $pointOneAvgMs = ($slowest[0..($pointOneCount - 1)] | Measure-Object -Average).Average
-    $p95Index = [Math]::Max(0, [int][Math]::Ceiling($count * 0.05) - 1)
-    $p99Index = [Math]::Max(0, [int][Math]::Ceiling($count * 0.01) - 1)
-    $gpuBusy = if ($gpuValues.Count -gt 0) { ($gpuValues | Measure-Object -Average).Average } else { $null }
-
-    return [pscustomobject]@{
-        AverageFps          = (1000 / $avgMs)
-        OnePercentLow       = (1000 / $oneAvgMs)
-        PointOnePercentLow  = (1000 / $pointOneAvgMs)
-        FrameTimeP95Ms      = [double]$slowest[$p95Index]
-        FrameTimeP99Ms      = [double]$slowest[$p99Index]
-        GpuBusyAvgMs        = $gpuBusy
-        Frames              = $count
-        DurationSeconds     = (($frameTimes | Measure-Object -Sum).Sum / 1000)
-        CsvPath             = $CsvPath
-    }
-}
-
-function Export-OptiKitBenchmarkResult {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)][pscustomobject]$Result,
-        [Parameter(Mandatory = $true)][string]$ProcessName,
-        [Parameter(Mandatory = $true)][string]$CsvPath,
-        [Parameter(Mandatory = $true)][string]$OutputPath
-    )
-
-    $version = if ($script:OptiKitVersion) { [string]$script:OptiKitVersion } else { '0.3.0' }
-    $payload = [pscustomobject]@{
-        Version            = $version
-        ProcessName        = $ProcessName
-        CapturedAt         = (Get-Date).ToString('o')
-        CsvPath            = $CsvPath
-        AverageFps         = $Result.AverageFps
-        OnePercentLow      = $Result.OnePercentLow
-        PointOnePercentLow = $Result.PointOnePercentLow
-        FrameTimeP95Ms     = $Result.FrameTimeP95Ms
-        FrameTimeP99Ms     = $Result.FrameTimeP99Ms
-        GpuBusyAvgMs       = $Result.GpuBusyAvgMs
-        Frames             = $Result.Frames
-        DurationSeconds    = $Result.DurationSeconds
-    }
-    $json = $payload | ConvertTo-Json -Depth 4
-    [System.IO.File]::WriteAllText($OutputPath, $json, (New-Object System.Text.UTF8Encoding($false)))
-    return $OutputPath
-}
-
-function Get-OptiKitBenchmarkComparisonRows {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)][pscustomobject]$Current,
-        [pscustomobject]$Previous
-    )
-
-    $formatNumber = {
-        param($Value, [string]$Format)
-        if ($null -eq $Value) { return "$([char]0x2014)" }
-        return ($Format -f [double]$Value)
-    }
-    $formatDelta = {
-        param($CurrentValue, $PreviousValue, [string]$Format)
-        if ($null -eq $PreviousValue -or $null -eq $CurrentValue) { return "$([char]0x2014)" }
-        $delta = [double]$CurrentValue - [double]$PreviousValue
-        $text = $Format -f [Math]::Abs($delta)
-        if ($delta -ge 0) { return "+$text" }
-        return "-$text"
-    }
-
-    $rows = New-Object 'System.Collections.Generic.List[object]'
-    $definitions = @(
-        @{ Metric = "FPS m$([char]0x00E9)dio"; Current = $Current.AverageFps; Previous = if ($Previous) { $Previous.AverageFps } else { $null }; Format = '{0:N1}'; DeltaFormat = '{0:N1}' },
-        @{ Metric = '1% low'; Current = $Current.OnePercentLow; Previous = if ($Previous) { $Previous.OnePercentLow } else { $null }; Format = '{0:N1}'; DeltaFormat = '{0:N1}' },
-        @{ Metric = '0.1% low'; Current = $Current.PointOnePercentLow; Previous = if ($Previous) { $Previous.PointOnePercentLow } else { $null }; Format = '{0:N1}'; DeltaFormat = '{0:N1}' },
-        @{ Metric = 'Frame time P95'; Current = $Current.FrameTimeP95Ms; Previous = if ($Previous) { $Previous.FrameTimeP95Ms } else { $null }; Format = '{0:N2} ms'; DeltaFormat = '{0:N2} ms' },
-        @{ Metric = 'Frame time P99'; Current = $Current.FrameTimeP99Ms; Previous = if ($Previous) { $Previous.FrameTimeP99Ms } else { $null }; Format = '{0:N2} ms'; DeltaFormat = '{0:N2} ms' },
-        @{ Metric = "GPU busy m$([char]0x00E9)dio"; Current = $Current.GpuBusyAvgMs; Previous = if ($Previous) { $Previous.GpuBusyAvgMs } else { $null }; Format = '{0:N2} ms'; DeltaFormat = '{0:N2} ms' },
-        @{ Metric = 'Frames'; Current = $Current.Frames; Previous = if ($Previous) { $Previous.Frames } else { $null }; Format = '{0:N0}'; DeltaFormat = '{0:N0}' },
-        @{ Metric = "Dura$([char]0x00E7)$([char]0x00E3)o"; Current = $Current.DurationSeconds; Previous = if ($Previous) { $Previous.DurationSeconds } else { $null }; Format = '{0:N1} s'; DeltaFormat = '{0:N1} s' }
-    )
-
-    foreach ($definition in $definitions) {
-        [void]$rows.Add([pscustomobject]@{
-            Metric   = [string]$definition.Metric
-            Current  = (& $formatNumber $definition.Current $definition.Format)
-            Previous = (& $formatNumber $definition.Previous $definition.Format)
-            Delta    = (& $formatDelta $definition.Current $definition.Previous $definition.DeltaFormat)
-        })
-    }
-    return $rows.ToArray()
-}
-
-function Get-OptiKitLatestBenchmark {
-    [CmdletBinding()]
-    param(
-        [string]$ExcludePath,
-        [Parameter(Mandatory = $true)][string]$ProcessName
-    )
-
-    $dir = Get-OptiKitBenchmarkDirectory
-    $files = @(Get-ChildItem -LiteralPath $dir -Filter '*.json' -ErrorAction SilentlyContinue |
-        Where-Object { $_.FullName -ne $ExcludePath } |
-        Sort-Object LastWriteTime -Descending)
-
-    foreach ($file in $files) {
-        try {
-            $item = Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
-            if ($item.ProcessName -and ([string]$item.ProcessName -ieq $ProcessName)) {
-                return $item
-            }
-        }
-        catch {
-            Write-OptimizerLog -Level WARN -Message ("Benchmark anterior inv$([char]0x00E1)lido ignorado: {0}" -f $file.Name)
-        }
-    }
-    return $null
-}
-
-# ============================================================================
 # Module: src/windows/ui/ui-builder.ps1
 # ============================================================================
 # Construtor din-mico de controles WPF a partir dos cat-logos JSON (Data-Driven UI Builder)
@@ -9806,7 +9472,6 @@ function Initialize-OptiKitUi {
         'TweaksCategoriesHost', 'BtnRefreshState', 'BtnUncheckAllTweaks',
         'CmbTweakSort', 'CmbTweakImpact', 'CmbTweakRisk', 'CmbTweakStatus', 'BtnClearTweakFilters', 'TxtTweakCount',
         'GameProfilesHost',
-        'CmbBenchmarkProcess', 'BtnRefreshBenchmarkProcesses', 'BtnStartBenchmark', 'BtnStopBenchmark', 'TxtBenchmarkStatus', 'GridBenchmarkResults',
         'BtnRefreshDiagnostics', 'TxtDiagnosticsSummary', 'DiagnosticsHost',
         'BtnResetNetwork', 'BtnRunSfcDism', 'BtnCancelMaintenance', 'BtnRebootUefi', 'BtnClearTemp', 'BtnOpenBackupsDir',
         'BtnExportProfile', 'BtnImportProfile', 'BtnExportReport',
@@ -10861,175 +10526,6 @@ function Start-OptiKitMain {
 
     $ui.BtnRefreshDiagnostics.Add_Click($triggerDiagnostics)
 
-    # Benchmark de jogos (PresentMon)
-    $benchmarkState = [hashtable]::Synchronized(@{
-        Running         = $false
-        Process         = $null
-        ProcessName     = ''
-        CsvPath         = ''
-        JsonPath        = ''
-        StartedAt       = $null
-        DurationSeconds = 30
-    })
-    $benchmarkTimer = New-Object System.Windows.Threading.DispatcherTimer
-    $benchmarkTimer.Interval = [TimeSpan]::FromMilliseconds(500)
-
-    $resetBenchmarkControls = {
-        $ui.BtnStartBenchmark.IsEnabled = (-not $sync.IsBusy)
-        $ui.BtnStopBenchmark.IsEnabled = $false
-        $ui.CmbBenchmarkProcess.IsEnabled = $true
-        $ui.BtnRefreshBenchmarkProcesses.IsEnabled = $true
-    }.GetNewClosure()
-
-    $finishBenchmark = {
-        if (-not $benchmarkState.Running) { return }
-        $benchmarkState.Running = $false
-        $benchmarkTimer.Stop()
-        try {
-            if ($benchmarkState.Process -and -not $benchmarkState.Process.HasExited) {
-                [void]$benchmarkState.Process.WaitForExit(5000)
-            }
-            $previous = Get-OptiKitLatestBenchmark -ExcludePath $benchmarkState.JsonPath -ProcessName $benchmarkState.ProcessName
-            $result = Get-OptiKitBenchmarkResult -CsvPath $benchmarkState.CsvPath
-            $rows = Get-OptiKitBenchmarkComparisonRows -Current $result -Previous $previous
-            Export-OptiKitBenchmarkResult -Result $result -ProcessName $benchmarkState.ProcessName -CsvPath $benchmarkState.CsvPath -OutputPath $benchmarkState.JsonPath | Out-Null
-            $ui.GridBenchmarkResults.ItemsSource = $rows
-            $ui.TxtBenchmarkStatus.Text = ("Captura conclu$([char]0x00ED)da: {0} frames em {1:N1} s." -f $result.Frames, $result.DurationSeconds)
-            Write-OptimizerLog -Level OK -Message ("Benchmark conclu$([char]0x00ED)do: {0} FPS m$([char]0x00E9)dio, {1:N1} FPS 1% low." -f $result.AverageFps, $result.OnePercentLow)
-        }
-        catch {
-            $ui.TxtBenchmarkStatus.Text = ("Falha no benchmark: {0}" -f $_.Exception.Message)
-            Write-OptimizerLog -Level WARN -Message ("Falha no benchmark: {0}" -f $_.Exception.Message)
-        }
-        finally {
-            if ($benchmarkState.Process) {
-                try { $benchmarkState.Process.Dispose() } catch { Write-Verbose $_.Exception.Message }
-            }
-            $benchmarkState.Process = $null
-            $benchmarkState.ProcessName = ''
-            $benchmarkState.CsvPath = ''
-            $benchmarkState.JsonPath = ''
-            $benchmarkState.StartedAt = $null
-            & $resetBenchmarkControls
-        }
-    }.GetNewClosure()
-
-    $benchmarkTimer.Add_Tick({
-        if (-not $benchmarkState.Running) {
-            $benchmarkTimer.Stop()
-            return
-        }
-        try {
-            $elapsed = ((Get-Date) - [datetime]$benchmarkState.StartedAt).TotalSeconds
-            $remaining = [Math]::Max(0, [double]$benchmarkState.DurationSeconds - $elapsed)
-            $ui.TxtBenchmarkStatus.Text = ("Capturando... {0:N0}s restantes" -f $remaining)
-
-            if ($benchmarkState.Process -and $benchmarkState.Process.HasExited) {
-                & $finishBenchmark
-                return
-            }
-            if ($elapsed -gt ([double]$benchmarkState.DurationSeconds + 15)) {
-                Stop-OptiKitBenchmark -Process $benchmarkState.Process
-                $benchmarkState.Running = $false
-                $benchmarkTimer.Stop()
-                $ui.TxtBenchmarkStatus.Text = 'Tempo esgotado ao aguardar o PresentMon.'
-                Write-OptimizerLog -Level WARN -Message 'Tempo esgotado ao aguardar o PresentMon.'
-                if ($benchmarkState.Process) {
-                    try { $benchmarkState.Process.Dispose() } catch { Write-Verbose $_.Exception.Message }
-                }
-                $benchmarkState.Process = $null
-                $benchmarkState.ProcessName = ''
-                $benchmarkState.CsvPath = ''
-                $benchmarkState.JsonPath = ''
-                $benchmarkState.StartedAt = $null
-                & $resetBenchmarkControls
-            }
-        }
-        catch {
-            $benchmarkState.Running = $false
-            $benchmarkTimer.Stop()
-            $ui.TxtBenchmarkStatus.Text = ("Falha no benchmark: {0}" -f $_.Exception.Message)
-            Write-OptimizerLog -Level WARN -Message ("Falha no benchmark: {0}" -f $_.Exception.Message)
-            if ($benchmarkState.Process) {
-                Stop-OptiKitBenchmark -Process $benchmarkState.Process
-                try { $benchmarkState.Process.Dispose() } catch { Write-Verbose $_.Exception.Message }
-            }
-            $benchmarkState.Process = $null
-            $benchmarkState.ProcessName = ''
-            $benchmarkState.CsvPath = ''
-            $benchmarkState.JsonPath = ''
-            $benchmarkState.StartedAt = $null
-            & $resetBenchmarkControls
-        }
-    }.GetNewClosure())
-
-    $refreshBenchmarkProcesses = {
-        if (-not $ui.CmbBenchmarkProcess) { return }
-        try {
-            $ui.CmbBenchmarkProcess.Items.Clear()
-            $names = @(Get-Process -ErrorAction Stop |
-                Where-Object { $_.MainWindowHandle -ne 0 -and $_.ProcessName -notin @('OptiKit', 'powershell', 'pwsh', 'explorer') } |
-                Select-Object -ExpandProperty ProcessName |
-                Sort-Object -Unique)
-            foreach ($name in $names) {
-                [void]$ui.CmbBenchmarkProcess.Items.Add($name)
-            }
-            if ($names.Count -gt 0) {
-                $ui.CmbBenchmarkProcess.SelectedIndex = 0
-                $ui.TxtBenchmarkStatus.Text = "Selecione um jogo em execu$([char]0x00E7)$([char]0x00E3)o e inicie a captura."
-            }
-            else {
-                $ui.TxtBenchmarkStatus.Text = 'Abra um jogo antes de capturar.'
-            }
-        }
-        catch {
-            $ui.TxtBenchmarkStatus.Text = ("Falha ao listar processos: {0}" -f $_.Exception.Message)
-            Write-OptimizerLog -Level WARN -Message ("Falha ao listar processos para benchmark: {0}" -f $_.Exception.Message)
-        }
-    }.GetNewClosure()
-
-    $ui.BtnRefreshBenchmarkProcesses.Add_Click($refreshBenchmarkProcesses)
-    $ui.BtnStartBenchmark.Add_Click({
-        if ($sync.IsBusy -or $benchmarkState.Running) { return }
-        $name = [string]$ui.CmbBenchmarkProcess.Text
-        if ([string]::IsNullOrWhiteSpace($name)) {
-            $ui.TxtBenchmarkStatus.Text = 'Selecione ou digite o processo do jogo.'
-            return
-        }
-
-        $ui.TxtBenchmarkStatus.Text = 'Preparando PresentMon...'
-        try {
-            $benchmark = Start-OptiKitBenchmark -ProcessName $name -DurationSeconds 30
-        }
-        catch {
-            $ui.TxtBenchmarkStatus.Text = ("Falha ao iniciar: {0}" -f $_.Exception.Message)
-            Write-OptimizerLog -Level WARN -Message ("Falha ao iniciar benchmark: {0}" -f $_.Exception.Message)
-            return
-        }
-
-        $benchmarkState.Process = $benchmark.Process
-        $benchmarkState.ProcessName = $benchmark.ProcessName
-        $benchmarkState.CsvPath = $benchmark.CsvPath
-        $benchmarkState.JsonPath = $benchmark.JsonPath
-        $benchmarkState.StartedAt = $benchmark.StartedAt
-        $benchmarkState.DurationSeconds = $benchmark.DurationSeconds
-        $benchmarkState.Running = $true
-        $ui.GridBenchmarkResults.ItemsSource = $null
-        $ui.BtnStartBenchmark.IsEnabled = $false
-        $ui.BtnStopBenchmark.IsEnabled = $true
-        $ui.CmbBenchmarkProcess.IsEnabled = $false
-        $ui.BtnRefreshBenchmarkProcesses.IsEnabled = $false
-        $benchmarkTimer.Start()
-    }.GetNewClosure())
-
-    $ui.BtnStopBenchmark.Add_Click({
-        if (-not $benchmarkState.Running) { return }
-        $ui.TxtBenchmarkStatus.Text = 'Finalizando captura...'
-        Stop-OptiKitBenchmark -Process $benchmarkState.Process
-    }.GetNewClosure())
-
-    & $refreshBenchmarkProcesses
-
     $ui.BtnViewApplied.Add_Click({
         Show-AppliedChangesDialog -Ui $ui
     }.GetNewClosure())
@@ -11230,12 +10726,6 @@ function Start-OptiKitMain {
         $ui.BtnAdvancedCleanup.IsEnabled = (-not $busy)
         $ui.BtnCancelMaintenance.IsEnabled = $busy
 
-        $benchmarkRunning = [bool]$benchmarkState.Running
-        $ui.BtnStartBenchmark.IsEnabled = ((-not $busy) -and (-not $benchmarkRunning))
-        $ui.BtnStopBenchmark.IsEnabled = $benchmarkRunning
-        $ui.CmbBenchmarkProcess.IsEnabled = (-not $benchmarkRunning)
-        $ui.BtnRefreshBenchmarkProcesses.IsEnabled = (-not $benchmarkRunning)
-
         if (-not $busy -and $sync.PendingDiagnosticsStart) {
             $sync.PendingDiagnosticsStart = $false
             & $triggerDiagnostics
@@ -11308,8 +10798,6 @@ function Start-OptiKitMain {
 
     $window.Add_Closed({
         $uiTimer.Stop()
-        $benchmarkTimer.Stop()
-        Stop-OptiKitBenchmark -Process $benchmarkState.Process
         if ($sync.ActivePowerShell) {
             try { $sync.ActivePowerShell.Dispose() } catch { Write-Verbose $_.Exception.Message }
         }

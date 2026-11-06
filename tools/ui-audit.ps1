@@ -237,17 +237,6 @@ function Set-UiAuditData {
     Update-OptiKitStateBadges -Ui $Ui -StateReport $state
     Update-OptiKitDiagnosticsUi -Ui $Ui -Items @($diag)
     if ($Ui.GridStartupItems) { $Ui.GridStartupItems.ItemsSource = @($startup) }
-    if ($Ui.CmbBenchmarkProcess) {
-        [void]$Ui.CmbBenchmarkProcess.Items.Add('game.exe')
-        $Ui.CmbBenchmarkProcess.SelectedIndex = 0
-    }
-    if ($Ui.GridBenchmarkResults) {
-        $Ui.GridBenchmarkResults.ItemsSource = @(
-            [pscustomobject]@{ Metric = 'FPS médio'; Current = '144.2'; Previous = '138.9'; Delta = '+5.3' },
-            [pscustomobject]@{ Metric = '1% low'; Current = '112.4'; Previous = '105.1'; Delta = '+7.3' }
-        )
-    }
-    if ($Ui.TxtBenchmarkStatus) { $Ui.TxtBenchmarkStatus.Text = 'Captura concluída: 3600 frames em 30.0 s.' }
     if ($Ui.CmbPresets -and ($Ui.CmbPresets.Items.Count -gt 1)) { $Ui.CmbPresets.SelectedIndex = 1 }
     if ($Ui.TxtConsoleOutput) {
         $lines = @(

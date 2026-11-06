@@ -691,175 +691,6 @@ function Start-OptiKitMain {
 
     $ui.BtnRefreshDiagnostics.Add_Click($triggerDiagnostics)
 
-    # Benchmark de jogos (PresentMon)
-    $benchmarkState = [hashtable]::Synchronized(@{
-        Running         = $false
-        Process         = $null
-        ProcessName     = ''
-        CsvPath         = ''
-        JsonPath        = ''
-        StartedAt       = $null
-        DurationSeconds = 30
-    })
-    $benchmarkTimer = New-Object System.Windows.Threading.DispatcherTimer
-    $benchmarkTimer.Interval = [TimeSpan]::FromMilliseconds(500)
-
-    $resetBenchmarkControls = {
-        $ui.BtnStartBenchmark.IsEnabled = (-not $sync.IsBusy)
-        $ui.BtnStopBenchmark.IsEnabled = $false
-        $ui.CmbBenchmarkProcess.IsEnabled = $true
-        $ui.BtnRefreshBenchmarkProcesses.IsEnabled = $true
-    }.GetNewClosure()
-
-    $finishBenchmark = {
-        if (-not $benchmarkState.Running) { return }
-        $benchmarkState.Running = $false
-        $benchmarkTimer.Stop()
-        try {
-            if ($benchmarkState.Process -and -not $benchmarkState.Process.HasExited) {
-                [void]$benchmarkState.Process.WaitForExit(5000)
-            }
-            $previous = Get-OptiKitLatestBenchmark -ExcludePath $benchmarkState.JsonPath -ProcessName $benchmarkState.ProcessName
-            $result = Get-OptiKitBenchmarkResult -CsvPath $benchmarkState.CsvPath
-            $rows = Get-OptiKitBenchmarkComparisonRows -Current $result -Previous $previous
-            Export-OptiKitBenchmarkResult -Result $result -ProcessName $benchmarkState.ProcessName -CsvPath $benchmarkState.CsvPath -OutputPath $benchmarkState.JsonPath | Out-Null
-            $ui.GridBenchmarkResults.ItemsSource = $rows
-            $ui.TxtBenchmarkStatus.Text = ("Captura concluída: {0} frames em {1:N1} s." -f $result.Frames, $result.DurationSeconds)
-            Write-OptimizerLog -Level OK -Message ("Benchmark concluído: {0} FPS médio, {1:N1} FPS 1% low." -f $result.AverageFps, $result.OnePercentLow)
-        }
-        catch {
-            $ui.TxtBenchmarkStatus.Text = ("Falha no benchmark: {0}" -f $_.Exception.Message)
-            Write-OptimizerLog -Level WARN -Message ("Falha no benchmark: {0}" -f $_.Exception.Message)
-        }
-        finally {
-            if ($benchmarkState.Process) {
-                try { $benchmarkState.Process.Dispose() } catch { Write-Verbose $_.Exception.Message }
-            }
-            $benchmarkState.Process = $null
-            $benchmarkState.ProcessName = ''
-            $benchmarkState.CsvPath = ''
-            $benchmarkState.JsonPath = ''
-            $benchmarkState.StartedAt = $null
-            & $resetBenchmarkControls
-        }
-    }.GetNewClosure()
-
-    $benchmarkTimer.Add_Tick({
-        if (-not $benchmarkState.Running) {
-            $benchmarkTimer.Stop()
-            return
-        }
-        try {
-            $elapsed = ((Get-Date) - [datetime]$benchmarkState.StartedAt).TotalSeconds
-            $remaining = [Math]::Max(0, [double]$benchmarkState.DurationSeconds - $elapsed)
-            $ui.TxtBenchmarkStatus.Text = ("Capturando... {0:N0}s restantes" -f $remaining)
-
-            if ($benchmarkState.Process -and $benchmarkState.Process.HasExited) {
-                & $finishBenchmark
-                return
-            }
-            if ($elapsed -gt ([double]$benchmarkState.DurationSeconds + 15)) {
-                Stop-OptiKitBenchmark -Process $benchmarkState.Process
-                $benchmarkState.Running = $false
-                $benchmarkTimer.Stop()
-                $ui.TxtBenchmarkStatus.Text = 'Tempo esgotado ao aguardar o PresentMon.'
-                Write-OptimizerLog -Level WARN -Message 'Tempo esgotado ao aguardar o PresentMon.'
-                if ($benchmarkState.Process) {
-                    try { $benchmarkState.Process.Dispose() } catch { Write-Verbose $_.Exception.Message }
-                }
-                $benchmarkState.Process = $null
-                $benchmarkState.ProcessName = ''
-                $benchmarkState.CsvPath = ''
-                $benchmarkState.JsonPath = ''
-                $benchmarkState.StartedAt = $null
-                & $resetBenchmarkControls
-            }
-        }
-        catch {
-            $benchmarkState.Running = $false
-            $benchmarkTimer.Stop()
-            $ui.TxtBenchmarkStatus.Text = ("Falha no benchmark: {0}" -f $_.Exception.Message)
-            Write-OptimizerLog -Level WARN -Message ("Falha no benchmark: {0}" -f $_.Exception.Message)
-            if ($benchmarkState.Process) {
-                Stop-OptiKitBenchmark -Process $benchmarkState.Process
-                try { $benchmarkState.Process.Dispose() } catch { Write-Verbose $_.Exception.Message }
-            }
-            $benchmarkState.Process = $null
-            $benchmarkState.ProcessName = ''
-            $benchmarkState.CsvPath = ''
-            $benchmarkState.JsonPath = ''
-            $benchmarkState.StartedAt = $null
-            & $resetBenchmarkControls
-        }
-    }.GetNewClosure())
-
-    $refreshBenchmarkProcesses = {
-        if (-not $ui.CmbBenchmarkProcess) { return }
-        try {
-            $ui.CmbBenchmarkProcess.Items.Clear()
-            $names = @(Get-Process -ErrorAction Stop |
-                Where-Object { $_.MainWindowHandle -ne 0 -and $_.ProcessName -notin @('OptiKit', 'powershell', 'pwsh', 'explorer') } |
-                Select-Object -ExpandProperty ProcessName |
-                Sort-Object -Unique)
-            foreach ($name in $names) {
-                [void]$ui.CmbBenchmarkProcess.Items.Add($name)
-            }
-            if ($names.Count -gt 0) {
-                $ui.CmbBenchmarkProcess.SelectedIndex = 0
-                $ui.TxtBenchmarkStatus.Text = 'Selecione um jogo em execução e inicie a captura.'
-            }
-            else {
-                $ui.TxtBenchmarkStatus.Text = 'Abra um jogo antes de capturar.'
-            }
-        }
-        catch {
-            $ui.TxtBenchmarkStatus.Text = ("Falha ao listar processos: {0}" -f $_.Exception.Message)
-            Write-OptimizerLog -Level WARN -Message ("Falha ao listar processos para benchmark: {0}" -f $_.Exception.Message)
-        }
-    }.GetNewClosure()
-
-    $ui.BtnRefreshBenchmarkProcesses.Add_Click($refreshBenchmarkProcesses)
-    $ui.BtnStartBenchmark.Add_Click({
-        if ($sync.IsBusy -or $benchmarkState.Running) { return }
-        $name = [string]$ui.CmbBenchmarkProcess.Text
-        if ([string]::IsNullOrWhiteSpace($name)) {
-            $ui.TxtBenchmarkStatus.Text = 'Selecione ou digite o processo do jogo.'
-            return
-        }
-
-        $ui.TxtBenchmarkStatus.Text = 'Preparando PresentMon...'
-        try {
-            $benchmark = Start-OptiKitBenchmark -ProcessName $name -DurationSeconds 30
-        }
-        catch {
-            $ui.TxtBenchmarkStatus.Text = ("Falha ao iniciar: {0}" -f $_.Exception.Message)
-            Write-OptimizerLog -Level WARN -Message ("Falha ao iniciar benchmark: {0}" -f $_.Exception.Message)
-            return
-        }
-
-        $benchmarkState.Process = $benchmark.Process
-        $benchmarkState.ProcessName = $benchmark.ProcessName
-        $benchmarkState.CsvPath = $benchmark.CsvPath
-        $benchmarkState.JsonPath = $benchmark.JsonPath
-        $benchmarkState.StartedAt = $benchmark.StartedAt
-        $benchmarkState.DurationSeconds = $benchmark.DurationSeconds
-        $benchmarkState.Running = $true
-        $ui.GridBenchmarkResults.ItemsSource = $null
-        $ui.BtnStartBenchmark.IsEnabled = $false
-        $ui.BtnStopBenchmark.IsEnabled = $true
-        $ui.CmbBenchmarkProcess.IsEnabled = $false
-        $ui.BtnRefreshBenchmarkProcesses.IsEnabled = $false
-        $benchmarkTimer.Start()
-    }.GetNewClosure())
-
-    $ui.BtnStopBenchmark.Add_Click({
-        if (-not $benchmarkState.Running) { return }
-        $ui.TxtBenchmarkStatus.Text = 'Finalizando captura...'
-        Stop-OptiKitBenchmark -Process $benchmarkState.Process
-    }.GetNewClosure())
-
-    & $refreshBenchmarkProcesses
-
     $ui.BtnViewApplied.Add_Click({
         Show-AppliedChangesDialog -Ui $ui
     }.GetNewClosure())
@@ -1060,12 +891,6 @@ function Start-OptiKitMain {
         $ui.BtnAdvancedCleanup.IsEnabled = (-not $busy)
         $ui.BtnCancelMaintenance.IsEnabled = $busy
 
-        $benchmarkRunning = [bool]$benchmarkState.Running
-        $ui.BtnStartBenchmark.IsEnabled = ((-not $busy) -and (-not $benchmarkRunning))
-        $ui.BtnStopBenchmark.IsEnabled = $benchmarkRunning
-        $ui.CmbBenchmarkProcess.IsEnabled = (-not $benchmarkRunning)
-        $ui.BtnRefreshBenchmarkProcesses.IsEnabled = (-not $benchmarkRunning)
-
         if (-not $busy -and $sync.PendingDiagnosticsStart) {
             $sync.PendingDiagnosticsStart = $false
             & $triggerDiagnostics
@@ -1138,8 +963,6 @@ function Start-OptiKitMain {
 
     $window.Add_Closed({
         $uiTimer.Stop()
-        $benchmarkTimer.Stop()
-        Stop-OptiKitBenchmark -Process $benchmarkState.Process
         if ($sync.ActivePowerShell) {
             try { $sync.ActivePowerShell.Dispose() } catch { Write-Verbose $_.Exception.Message }
         }
