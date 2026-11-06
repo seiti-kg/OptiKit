@@ -9518,7 +9518,7 @@ function Select-OptiKitPreset {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)][hashtable]$Ui,
-        [Parameter(Mandatory = $true)][string]$PresetKey
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$PresetKey
     )
 
     $Ui.SuppressConfirmDialog = $true
