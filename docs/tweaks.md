@@ -27,7 +27,7 @@
 | `WPFTweaksClassicContextMenu` | Restaurar Menu de Contexto Clássico no Windows 11 | Interface & Windows 11 | **Alto** | `Safe` | Win11 | Não |
 | `WPFTweaksDisableBingSearch` | Desativar Busca Web do Bing no Menu Iniciar | Interface & Windows 11 | **Alto** | `Safe` | Win10, Win11 | Não |
 | `WPFTweaksDisableWidgets` | Desativar Widgets e Notícias/Interesses na Barra de Tarefas | Interface & Windows 11 | **Alto** | `Safe` | Win10, Win11 | Não |
-| `WPFTweaksDisableCopilot` | Desativar Windows Copilot e Remover Botão da Barra de Tarefas | Interface & Windows 11 | **Médio** | `Safe` | Win10, Win11 | Não |
+| `WPFTweaksDisableCopilot` | Desativar Windows Copilot e Ocultar Botão da Barra de Tarefas | Interface & Windows 11 | **Médio** | `Safe` | Win10, Win11 | Não |
 | `WPFTweaksShowFileExtensions` | Mostrar Extensões de Arquivos no Explorer | Interface & Windows 11 | **Médio** | `Safe` | Win10, Win11 | Não |
 | `WPFTweaksDisableStartSuggestions` | Desativar Sugestões, Dicas e Anúncios no Menu Iniciar e Tela de Bloqueio | Interface & Windows 11 | **Médio** | `Safe` | Win10, Win11 | Não |
 | `WPFTweaksDisableStickyKeys` | Desativar Atalho das Teclas de Aderência (5x Shift) | Interface & Windows 11 | **Médio** | `Safe` | Win10, Win11 | Não |
@@ -175,10 +175,10 @@
 - **Descrição:** Desativa o painel de Widgets do Windows 11 (WindowsWebExperiencePack) e o feed de Notícias e Interesses do Windows 10.
 - **Justificativa Técnica (Rationale):** O painel de Widgets mantém processos WebView2 (msedgewebview2.exe) residentes em memória RAM mesmo sem o usuário abrir o painel. A política AllowNewsAndInterests=0 encerra o recurso completamente.
 
-#### Desativar Windows Copilot e Remover Botão da Barra de Tarefas (`WPFTweaksDisableCopilot`)
+#### Desativar Windows Copilot e Ocultar Botão da Barra de Tarefas (`WPFTweaksDisableCopilot`)
 - **Categoria:** Interface & Windows 11 | **Impacto:** Médio | **Risco:** Safe
-- **Descrição:** Oculta o botão do Copilot na barra de tarefas, aplica a política de bloqueio e remove o pacote Appx Microsoft.Copilot.
-- **Justificativa Técnica (Rationale):** Em versões recentes do Windows 11 (23H2/24H2+), a política TurnOffWindowsCopilot sozinha foi substituída pelo pacote Appx Microsoft.Copilot. Combinar a remoção do pacote com a política e ocultação do botão garante desativação completa.
+- **Descrição:** Oculta o botão do Copilot na barra de tarefas e aplica as políticas de bloqueio do Windows Copilot sem remover pacotes do sistema.
+- **Justificativa Técnica (Rationale):** As políticas TurnOffWindowsCopilot e ShowCopilotButton desativam os pontos de entrada do Copilot sem remover o pacote Appx. A remoção do pacote é desnecessária e aumenta o risco de quebrar dependências do shell.
 
 #### Mostrar Extensões de Arquivos no Explorer (`WPFTweaksShowFileExtensions`)
 - **Categoria:** Interface & Windows 11 | **Impacto:** Médio | **Risco:** Safe

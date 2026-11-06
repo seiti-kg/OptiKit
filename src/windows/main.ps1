@@ -204,7 +204,7 @@ function Start-OptiKitWorkerTask {
         'Find-GameExecutable', 'Set-AppCompatFlags', 'Set-DirectXGpuPreference',
         'Optimize-NetworkAdapterGaming', 'Disable-RiotClientStartup', 'Clear-ShaderCache',
         'Invoke-GameOptimization', 'Test-GameOptimizationApplied',
-        'Invoke-NetworkReset', 'Invoke-NativeStep', 'Invoke-CancelableProcess', 'Invoke-SystemIntegrityRepair', 'Clear-TemporaryFiles',
+        'Invoke-NetworkReset', 'Invoke-NativeStep', 'Invoke-CancelableProcess', 'Invoke-SystemIntegrityRepair', 'Repair-OptiKitSettingsApp', 'Clear-TemporaryFiles',
         'Restart-OptiKitToUefi',
         'Clear-OptiKitDirectory', 'Invoke-AdvancedCleanup',
         'Get-OptiKitDohProviders', 'Get-OptiKitDnsAdapters', 'Test-OptiKitDohSupported',
@@ -603,6 +603,15 @@ function Start-OptiKitMain {
         }
     }.GetNewClosure())
 
+    $ui.BtnRepairSettings.Add_Click({
+        $confirm = [System.Windows.MessageBox]::Show($window, 'Re-registrar o app de Configurações do Windows e a dependência Microsoft.UI.Xaml.CBS? Use isto se Win+I não abrir.', 'Reparar Configurações', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+        if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
+
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
+            Repair-OptiKitSettingsApp
+        }
+    }.GetNewClosure())
+
     $ui.BtnRebootUefi.Add_Click({
         $confirm = [System.Windows.MessageBox]::Show($window, "Reiniciar agora para a BIOS/UEFI?`r`n`r`nSalve seu trabalho. O OptiKit não altera configurações da BIOS; a tela de firmware abre na próxima inicialização.", 'Reiniciar para a BIOS (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
         if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
@@ -880,6 +889,7 @@ function Start-OptiKitMain {
         $ui.BtnUndoAll.IsEnabled = (-not $busy)
         $ui.BtnResetNetwork.IsEnabled = (-not $busy)
         $ui.BtnRunSfcDism.IsEnabled = (-not $busy)
+        $ui.BtnRepairSettings.IsEnabled = (-not $busy)
         $ui.BtnRebootUefi.IsEnabled = (-not $busy)
         $ui.BtnClearTemp.IsEnabled = (-not $busy)
         $ui.BtnRefreshDiagnostics.IsEnabled = (-not $busy)

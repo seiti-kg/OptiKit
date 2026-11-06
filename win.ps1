@@ -1165,10 +1165,10 @@ $script:EmbeddedWinTweaksJson = @'
     "checkScript": null
   },
   "WPFTweaksDisableCopilot": {
-    "title": "Desativar Windows Copilot e Remover Bot\u00e3o da Barra de Tarefas",
+    "title": "Desativar Windows Copilot e Ocultar Bot\u00e3o da Barra de Tarefas",
     "category": "Interface & Windows 11",
-    "description": "Oculta o bot\u00e3o do Copilot na barra de tarefas, aplica a pol\u00edtica de bloqueio e remove o pacote Appx Microsoft.Copilot.",
-    "rationale": "Em vers\u00f5es recentes do Windows 11 (23H2/24H2+), a pol\u00edtica TurnOffWindowsCopilot sozinha foi substitu\u00edda pelo pacote Appx Microsoft.Copilot. Combinar a remo\u00e7\u00e3o do pacote com a pol\u00edtica e oculta\u00e7\u00e3o do bot\u00e3o garante desativa\u00e7\u00e3o completa.",
+    "description": "Oculta o bot\u00e3o do Copilot na barra de tarefas e aplica as pol\u00edticas de bloqueio do Windows Copilot sem remover pacotes do sistema.",
+    "rationale": "As pol\u00edticas TurnOffWindowsCopilot e ShowCopilotButton desativam os pontos de entrada do Copilot sem remover o pacote Appx. A remo\u00e7\u00e3o do pacote \u00e9 desnecess\u00e1ria e aumenta o risco de quebrar depend\u00eancias do shell.",
     "impact": "M\u00e9dio",
     "riskLevel": "Safe",
     "osSupport": ["Win10", "Win11"],
@@ -1200,12 +1200,7 @@ $script:EmbeddedWinTweaksJson = @'
     ],
     "services": [],
     "scheduledTasks": [],
-    "appx": [
-      {
-        "name": "Microsoft.Copilot",
-        "storeId": "9NHT9RB2F4HD"
-      }
-    ],
+    "appx": [],
     "invokeScript": [],
     "undoScript": [],
     "checkScript": null
@@ -3496,6 +3491,16 @@ $script:EmbeddedThemeXaml = @'
                             <Border Style="{StaticResource Divider}" />
                             <DockPanel Style="{StaticResource Action.Row}">
                                 <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
+                                    <Button x:Name="BtnRepairSettings" Content="Reparar" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Action.Text}">
+                                    <TextBlock Text="Configura&#x00E7;&#x00F5;es do Windows" />
+                                    <TextBlock Text="Re-registra o app de Configura&#x00E7;&#x00F5;es e a depend&#x00EA;ncia UI.Xaml. Use se Win+I n&#x00E3;o abrir." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+                            <Border Style="{StaticResource Divider}" />
+                            <DockPanel Style="{StaticResource Action.Row}">
+                                <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
                                     <Button x:Name="BtnResetNetwork" Content="Redefinir" />
                                 </StackPanel>
                                 <StackPanel Style="{StaticResource Action.Text}">
@@ -5021,7 +5026,10 @@ $script:ProtectedAppxPackages = @(
     'Microsoft.DesktopAppInstaller',
     'Microsoft.VCLibs.140.00',
     'Microsoft.UI.Xaml.2.7',
-    'Microsoft.UI.Xaml.2.8'
+    'Microsoft.UI.Xaml.2.8',
+    'Microsoft.UI.Xaml.CBS',
+    'windows.immersivecontrolpanel',
+    'Microsoft.Windows.Settings'
 )
 
 $script:AllowedTweakScripts = @(
@@ -6467,6 +6475,54 @@ function Invoke-SystemIntegrityRepair {
 
         Write-OptimizerLog -Level OK -Message "Verifica$([char]0x00E7)$([char]0x00E3)o de integridade SFC/DISM finalizada."
     } | Out-Null
+}
+
+function Repair-OptiKitSettingsApp {
+    [CmdletBinding()]
+    param()
+
+    if ($script:OptiKit -and $script:OptiKit.DryRun) {
+        Write-OptimizerLog -Level DRYRUN -Message "Re-registrar Microsoft.UI.Xaml.CBS e o app de Configura$([char]0x00E7)$([char]0x00F5)es do Windows."
+        return
+    }
+
+    $dependency = Get-AppxPackage -Name 'Microsoft.UI.Xaml.CBS' -ErrorAction SilentlyContinue | Select-Object -First 1
+    $dependencyManifest = if ($dependency -and $dependency.InstallLocation) {
+        Join-Path $dependency.InstallLocation 'AppxManifest.xml'
+    }
+    else {
+        $dependencyDir = Get-ChildItem -Path (Join-Path $env:SystemRoot 'SystemApps') -Filter 'Microsoft.UI.Xaml.CBS*' -Directory -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($dependencyDir) { Join-Path $dependencyDir.FullName 'AppxManifest.xml' } else { $null }
+    }
+
+    if ($dependencyManifest -and (Test-Path -LiteralPath $dependencyManifest)) {
+        Write-OptimizerLog -Level INFO -Message 'Re-registrando Microsoft.UI.Xaml.CBS...'
+        try {
+            Add-AppxPackage -DisableDevelopmentMode -Register $dependencyManifest -ErrorAction Stop
+        }
+        catch {
+            Write-OptimizerLog -Level WARN -Message ("Falha ao re-registrar Microsoft.UI.Xaml.CBS: {0}" -f $_.Exception.Message)
+        }
+    }
+    else {
+        Write-OptimizerLog -Level WARN -Message "Microsoft.UI.Xaml.CBS n$([char]0x00E3)o encontrado; tentando registrar o app de Configura$([char]0x00E7)$([char]0x00F5)es mesmo assim."
+    }
+
+    $settings = Get-AppxPackage -Name 'windows.immersivecontrolpanel' -ErrorAction SilentlyContinue | Select-Object -First 1
+    $settingsManifest = if ($settings -and $settings.InstallLocation) {
+        Join-Path $settings.InstallLocation 'AppxManifest.xml'
+    }
+    else {
+        Join-Path $env:SystemRoot 'ImmersiveControlPanel\AppxManifest.xml'
+    }
+
+    if (-not (Test-Path -LiteralPath $settingsManifest)) {
+        throw "Manifesto do app de Configura$([char]0x00E7)$([char]0x00F5)es do Windows n$([char]0x00E3)o encontrado. Execute SFC/DISM ou repare o Windows."
+    }
+
+    Write-OptimizerLog -Level INFO -Message "Re-registrando o app de Configura$([char]0x00E7)$([char]0x00F5)es do Windows..."
+    Add-AppxPackage -DisableDevelopmentMode -Register $settingsManifest -ErrorAction Stop
+    Write-OptimizerLog -Level OK -Message "App de Configura$([char]0x00E7)$([char]0x00F5)es do Windows reparado. Teste abrir Win+I."
 }
 
 function Restart-OptiKitToUefi {
@@ -9473,7 +9529,7 @@ function Initialize-OptiKitUi {
         'CmbTweakSort', 'CmbTweakImpact', 'CmbTweakRisk', 'CmbTweakStatus', 'BtnClearTweakFilters', 'TxtTweakCount',
         'GameProfilesHost',
         'BtnRefreshDiagnostics', 'TxtDiagnosticsSummary', 'DiagnosticsHost',
-        'BtnResetNetwork', 'BtnRunSfcDism', 'BtnCancelMaintenance', 'BtnRebootUefi', 'BtnClearTemp', 'BtnOpenBackupsDir',
+        'BtnResetNetwork', 'BtnRunSfcDism', 'BtnRepairSettings', 'BtnCancelMaintenance', 'BtnRebootUefi', 'BtnClearTemp', 'BtnOpenBackupsDir',
         'BtnExportProfile', 'BtnImportProfile', 'BtnExportReport',
         'CmbDohProvider', 'BtnApplyDoh', 'BtnUndoDoh', 'BtnWingetUpgrade', 'BtnAdvancedCleanup',
         'GridStartupItems', 'BtnEnableStartup', 'BtnDisableStartup', 'BtnRefreshStartup',
@@ -10039,7 +10095,7 @@ function Start-OptiKitWorkerTask {
         'Find-GameExecutable', 'Set-AppCompatFlags', 'Set-DirectXGpuPreference',
         'Optimize-NetworkAdapterGaming', 'Disable-RiotClientStartup', 'Clear-ShaderCache',
         'Invoke-GameOptimization', 'Test-GameOptimizationApplied',
-        'Invoke-NetworkReset', 'Invoke-NativeStep', 'Invoke-CancelableProcess', 'Invoke-SystemIntegrityRepair', 'Clear-TemporaryFiles',
+        'Invoke-NetworkReset', 'Invoke-NativeStep', 'Invoke-CancelableProcess', 'Invoke-SystemIntegrityRepair', 'Repair-OptiKitSettingsApp', 'Clear-TemporaryFiles',
         'Restart-OptiKitToUefi',
         'Clear-OptiKitDirectory', 'Invoke-AdvancedCleanup',
         'Get-OptiKitDohProviders', 'Get-OptiKitDnsAdapters', 'Test-OptiKitDohSupported',
@@ -10438,6 +10494,15 @@ function Start-OptiKitMain {
         }
     }.GetNewClosure())
 
+    $ui.BtnRepairSettings.Add_Click({
+        $confirm = [System.Windows.MessageBox]::Show($window, "Re-registrar o app de Configura$([char]0x00E7)$([char]0x00F5)es do Windows e a depend$([char]0x00EA)ncia Microsoft.UI.Xaml.CBS? Use isto se Win+I n$([char]0x00E3)o abrir.", "Reparar Configura$([char]0x00E7)$([char]0x00F5)es", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+        if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
+
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
+            Repair-OptiKitSettingsApp
+        }
+    }.GetNewClosure())
+
     $ui.BtnRebootUefi.Add_Click({
         $confirm = [System.Windows.MessageBox]::Show($window, "Reiniciar agora para a BIOS/UEFI?`r`n`r`nSalve seu trabalho. O OptiKit n$([char]0x00E3)o altera configura$([char]0x00E7)$([char]0x00F5)es da BIOS; a tela de firmware abre na pr$([char]0x00F3)xima inicializa$([char]0x00E7)$([char]0x00E3)o.", 'Reiniciar para a BIOS (OptiKit)', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
         if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
@@ -10715,6 +10780,7 @@ function Start-OptiKitMain {
         $ui.BtnUndoAll.IsEnabled = (-not $busy)
         $ui.BtnResetNetwork.IsEnabled = (-not $busy)
         $ui.BtnRunSfcDism.IsEnabled = (-not $busy)
+        $ui.BtnRepairSettings.IsEnabled = (-not $busy)
         $ui.BtnRebootUefi.IsEnabled = (-not $busy)
         $ui.BtnClearTemp.IsEnabled = (-not $busy)
         $ui.BtnRefreshDiagnostics.IsEnabled = (-not $busy)

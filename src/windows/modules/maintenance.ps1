@@ -139,6 +139,54 @@ function Invoke-SystemIntegrityRepair {
     } | Out-Null
 }
 
+function Repair-OptiKitSettingsApp {
+    [CmdletBinding()]
+    param()
+
+    if ($script:OptiKit -and $script:OptiKit.DryRun) {
+        Write-OptimizerLog -Level DRYRUN -Message 'Re-registrar Microsoft.UI.Xaml.CBS e o app de Configurações do Windows.'
+        return
+    }
+
+    $dependency = Get-AppxPackage -Name 'Microsoft.UI.Xaml.CBS' -ErrorAction SilentlyContinue | Select-Object -First 1
+    $dependencyManifest = if ($dependency -and $dependency.InstallLocation) {
+        Join-Path $dependency.InstallLocation 'AppxManifest.xml'
+    }
+    else {
+        $dependencyDir = Get-ChildItem -Path (Join-Path $env:SystemRoot 'SystemApps') -Filter 'Microsoft.UI.Xaml.CBS*' -Directory -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($dependencyDir) { Join-Path $dependencyDir.FullName 'AppxManifest.xml' } else { $null }
+    }
+
+    if ($dependencyManifest -and (Test-Path -LiteralPath $dependencyManifest)) {
+        Write-OptimizerLog -Level INFO -Message 'Re-registrando Microsoft.UI.Xaml.CBS...'
+        try {
+            Add-AppxPackage -DisableDevelopmentMode -Register $dependencyManifest -ErrorAction Stop
+        }
+        catch {
+            Write-OptimizerLog -Level WARN -Message ("Falha ao re-registrar Microsoft.UI.Xaml.CBS: {0}" -f $_.Exception.Message)
+        }
+    }
+    else {
+        Write-OptimizerLog -Level WARN -Message 'Microsoft.UI.Xaml.CBS não encontrado; tentando registrar o app de Configurações mesmo assim.'
+    }
+
+    $settings = Get-AppxPackage -Name 'windows.immersivecontrolpanel' -ErrorAction SilentlyContinue | Select-Object -First 1
+    $settingsManifest = if ($settings -and $settings.InstallLocation) {
+        Join-Path $settings.InstallLocation 'AppxManifest.xml'
+    }
+    else {
+        Join-Path $env:SystemRoot 'ImmersiveControlPanel\AppxManifest.xml'
+    }
+
+    if (-not (Test-Path -LiteralPath $settingsManifest)) {
+        throw 'Manifesto do app de Configurações do Windows não encontrado. Execute SFC/DISM ou repare o Windows.'
+    }
+
+    Write-OptimizerLog -Level INFO -Message 'Re-registrando o app de Configurações do Windows...'
+    Add-AppxPackage -DisableDevelopmentMode -Register $settingsManifest -ErrorAction Stop
+    Write-OptimizerLog -Level OK -Message 'App de Configurações do Windows reparado. Teste abrir Win+I.'
+}
+
 function Restart-OptiKitToUefi {
     [CmdletBinding()]
     param()

@@ -41,7 +41,7 @@ A janela tem seis abas:
 3. **Jogos** — perfis por título, detecção de executável e ferramentas globais.
 4. **Diagnóstico** — leitura de hardware, BIOS, discos, estabilidade e Defender.
 5. **Inicialização** — programas de startup compatíveis com o Gerenciador de Tarefas.
-6. **Manutenção** — reset de rede/DNS, SFC/DISM, limpeza, reboot para UEFI e atualização via Winget.
+6. **Manutenção** — reset de rede/DNS, SFC/DISM, reparo do app de Configurações, limpeza, reboot para UEFI e atualização via Winget.
 
 Ações globais:
 
@@ -50,6 +50,10 @@ Ações globais:
 - **Exportar relatório** gera um HTML com resumo da sessão e diagnóstico.
 - **Atualizar apps** executa `winget upgrade --all`.
 - **Reverter DNS** restaura os servidores DNS originais.
+
+### Reparar as Configurações do Windows
+
+Se `Win+I` não abrir o app de Configurações, use **Manutenção > Configurações do Windows > Reparar**. A ação re-registra `Microsoft.UI.Xaml.CBS` e `windows.immersivecontrolpanel` para o usuário atual. Se o manifesto do app não existir, execute primeiro o reparo SFC/DISM.
 
 ## Modo desatendido
 

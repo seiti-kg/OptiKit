@@ -677,10 +677,10 @@
     "checkScript": null
   },
   "WPFTweaksDisableCopilot": {
-    "title": "Desativar Windows Copilot e Remover Botão da Barra de Tarefas",
+    "title": "Desativar Windows Copilot e Ocultar Botão da Barra de Tarefas",
     "category": "Interface & Windows 11",
-    "description": "Oculta o botão do Copilot na barra de tarefas, aplica a política de bloqueio e remove o pacote Appx Microsoft.Copilot.",
-    "rationale": "Em versões recentes do Windows 11 (23H2/24H2+), a política TurnOffWindowsCopilot sozinha foi substituída pelo pacote Appx Microsoft.Copilot. Combinar a remoção do pacote com a política e ocultação do botão garante desativação completa.",
+    "description": "Oculta o botão do Copilot na barra de tarefas e aplica as políticas de bloqueio do Windows Copilot sem remover pacotes do sistema.",
+    "rationale": "As políticas TurnOffWindowsCopilot e ShowCopilotButton desativam os pontos de entrada do Copilot sem remover o pacote Appx. A remoção do pacote é desnecessária e aumenta o risco de quebrar dependências do shell.",
     "impact": "Médio",
     "riskLevel": "Safe",
     "osSupport": ["Win10", "Win11"],
@@ -712,12 +712,7 @@
     ],
     "services": [],
     "scheduledTasks": [],
-    "appx": [
-      {
-        "name": "Microsoft.Copilot",
-        "storeId": "9NHT9RB2F4HD"
-      }
-    ],
+    "appx": [],
     "invokeScript": [],
     "undoScript": [],
     "checkScript": null

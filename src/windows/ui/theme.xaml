@@ -895,6 +895,16 @@
                             <Border Style="{StaticResource Divider}" />
                             <DockPanel Style="{StaticResource Action.Row}">
                                 <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
+                                    <Button x:Name="BtnRepairSettings" Content="Reparar" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Action.Text}">
+                                    <TextBlock Text="Configurações do Windows" />
+                                    <TextBlock Text="Re-registra o app de Configurações e a dependência UI.Xaml. Use se Win+I não abrir." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+                            <Border Style="{StaticResource Divider}" />
+                            <DockPanel Style="{StaticResource Action.Row}">
+                                <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
                                     <Button x:Name="BtnResetNetwork" Content="Redefinir" />
                                 </StackPanel>
                                 <StackPanel Style="{StaticResource Action.Text}">

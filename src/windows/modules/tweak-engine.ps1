@@ -25,7 +25,10 @@ $script:ProtectedAppxPackages = @(
     'Microsoft.DesktopAppInstaller',
     'Microsoft.VCLibs.140.00',
     'Microsoft.UI.Xaml.2.7',
-    'Microsoft.UI.Xaml.2.8'
+    'Microsoft.UI.Xaml.2.8',
+    'Microsoft.UI.Xaml.CBS',
+    'windows.immersivecontrolpanel',
+    'Microsoft.Windows.Settings'
 )
 
 $script:AllowedTweakScripts = @(

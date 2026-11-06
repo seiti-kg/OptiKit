@@ -108,4 +108,9 @@ Describe 'Appx Undo/Apply (tweak-engine.ps1)' {
         $record | Should -Not -BeNullOrEmpty
         @($record.captured)[0].existed | Should -BeTrue
     }
+
+    It 'Deve bloquear a remoção do app de Configurações e da dependência UI.Xaml.CBS' {
+        { Invoke-AppxRemoval -PackageName 'windows.immersivecontrolpanel' -StoreId '' -Mode 'Apply' } | Should -Throw '*protegido*'
+        { Invoke-AppxRemoval -PackageName 'Microsoft.UI.Xaml.CBS' -StoreId '' -Mode 'Apply' } | Should -Throw '*protegido*'
+    }
 }

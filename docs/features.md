@@ -99,6 +99,7 @@ A interface WPF é gerada dinamicamente a partir dos catálogos JSON e inclui:
 
 - Reset de rede/DNS.
 - `DISM /RestoreHealth` + `SFC /scannow` em segundo plano, com cancelamento.
+- Reparo do app de Configurações do Windows (`windows.immersivecontrolpanel`) e da dependência `Microsoft.UI.Xaml.CBS`.
 - Limpeza de arquivos temporários.
 - Reinício para a BIOS/UEFI na próxima inicialização.
 - Gerenciador de programas de inicialização compatível com o Gerenciador de Tarefas (`StartupApproved`).

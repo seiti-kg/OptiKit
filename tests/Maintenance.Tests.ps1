@@ -110,4 +110,33 @@ Describe 'Manutenção (maintenance.ps1)' {
         { Restart-OptiKitToUefi } | Should -Throw '*UEFI*'
         Should -Invoke Invoke-NativeStep -Times 0 -Exactly
     }
+
+    It 'Repair-OptiKitSettingsApp deve registrar a dependência UI.Xaml e o app de Configurações' {
+        Mock Get-AppxPackage {
+            param($Name)
+            if ($Name -eq 'Microsoft.UI.Xaml.CBS') {
+                [pscustomobject]@{ InstallLocation = 'C:\Windows\SystemApps\Microsoft.UI.Xaml.CBS_8wekyb3d8bbwe' }
+            }
+            elseif ($Name -eq 'windows.immersivecontrolpanel') {
+                [pscustomobject]@{ InstallLocation = 'C:\Windows\ImmersiveControlPanel' }
+            }
+        }
+        Mock Test-Path { $true }
+        Mock Add-AppxPackage {}
+
+        Repair-OptiKitSettingsApp
+
+        Should -Invoke Add-AppxPackage -Times 2 -Exactly -ParameterFilter {
+            $Path -like '*AppxManifest.xml'
+        }
+    }
+
+    It 'Repair-OptiKitSettingsApp deve falhar quando o manifesto não existe' {
+        Mock Get-AppxPackage { $null }
+        Mock Test-Path { $false }
+        Mock Add-AppxPackage {}
+
+        { Repair-OptiKitSettingsApp } | Should -Throw '*Manifesto*'
+        Should -Invoke Add-AppxPackage -Times 0 -Exactly
+    }
 }
