@@ -2535,8 +2535,7 @@ $script:EmbeddedPresetsJson = @'
     "apps": [
       "VCRedistX64",
       "VCRedistX86",
-      "DirectXRuntime",
-      "SevenZip"
+      "DirectXRuntime"
     ]
   },
   "MinimoSeguro": {
