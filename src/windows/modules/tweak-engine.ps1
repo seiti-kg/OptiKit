@@ -759,6 +759,11 @@ function Resolve-OptiKitSelection {
         Apps              = @($preset.apps)
     }
 
+    if ((@($selection.Tweaks) -contains 'WPFTweaksEnableHAGS') -and (Test-OptiKitHagsVramConstrained -Hardware (Get-OptiKitHardware))) {
+        $selection.Tweaks = @($selection.Tweaks | Where-Object { $_ -ne 'WPFTweaksEnableHAGS' })
+        Write-OptimizerLog -Level WARN -Message ("HAGS ignorado no preset '{0}': GPU com VRAM limitada; ative manualmente se usar Frame Generation." -f $PresetKey)
+    }
+
     Assert-OptiKitSelection -Configs $Configs -Selection $selection
     return $selection
 }

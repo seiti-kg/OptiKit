@@ -115,3 +115,63 @@ Describe 'Diagnósticos estendidos (diagnostics.ps1)' {
         $item.Detail | Should -Match 'Assinaturas com 2 dia'
     }
 }
+
+Describe 'Diagnósticos de gaming (VRAM, janela e energia)' {
+    BeforeEach {
+        $testRoot = Join-Path $TestDrive ("gaming_diagnostics_" + [Guid]::NewGuid().ToString('N'))
+        Initialize-OptiKitEnvironment -DataRoot $testRoot -DryRun:$false | Out-Null
+    }
+
+    It 'Deve avisar quando HAGS está ativo em GPU de 8 GB' {
+        Mock Get-RegistryEntryState {
+            param($Path, $Name, $FallbackType)
+            switch ($Name) {
+                'HwSchMode' { [pscustomobject]@{ ValueExisted = $true; Value = 2 } }
+                'AutoGameModeEnabled' { [pscustomobject]@{ ValueExisted = $true; Value = 1 } }
+                'AllowAutoGameMode' { [pscustomobject]@{ ValueExisted = $true; Value = 1 } }
+                default { [pscustomobject]@{ ValueExisted = $false; Value = $null } }
+            }
+        }
+        Mock Get-ActivePowerPlanGuid { '8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c' }
+        Mock Get-OptiKitHardware { [pscustomobject]@{ IsX3D = $false; IsLaptop = $false; GpuVramGB = 8 } }
+
+        $item = Get-OptiKitDiagnosticGamingToggles
+        $item.Status | Should -Be 'Warn'
+        $item.Detail | Should -Match 'VRAM'
+    }
+
+    It 'Deve considerar HAGS OK em GPU de 16 GB' {
+        Mock Get-RegistryEntryState {
+            param($Path, $Name, $FallbackType)
+            switch ($Name) {
+                'HwSchMode' { [pscustomobject]@{ ValueExisted = $true; Value = 2 } }
+                'AutoGameModeEnabled' { [pscustomobject]@{ ValueExisted = $true; Value = 1 } }
+                'AllowAutoGameMode' { [pscustomobject]@{ ValueExisted = $true; Value = 1 } }
+                default { [pscustomobject]@{ ValueExisted = $false; Value = $null } }
+            }
+        }
+        Mock Get-ActivePowerPlanGuid { '8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c' }
+        Mock Get-OptiKitHardware { [pscustomobject]@{ IsX3D = $false; IsLaptop = $false; GpuVramGB = 16 } }
+
+        $item = Get-OptiKitDiagnosticGamingToggles
+        $item.Status | Should -Be 'OK'
+    }
+
+    It 'Deve avisar sobre otimizações de janela desativadas e economia de energia ativa' {
+        Mock Test-OptiKitWindowedGameOptimizations { $false }
+        Mock Get-OptiKitEnergySaverState { $true }
+
+        $item = Get-OptiKitDiagnosticWindowsGamingState
+        $item.Status | Should -Be 'Warn'
+        $item.Summary | Should -Match 'janela'
+        $item.Summary | Should -Match 'energia'
+    }
+
+    It 'Deve considerar otimizações de janela e energia OK' {
+        Mock Test-OptiKitWindowedGameOptimizations { $true }
+        Mock Get-OptiKitEnergySaverState { $false }
+
+        $item = Get-OptiKitDiagnosticWindowsGamingState
+        $item.Status | Should -Be 'OK'
+    }
+}

@@ -1008,6 +1008,10 @@ function Select-OptiKitPreset {
                 Write-OptimizerLog -Level WARN -Message ("Tweak '{0}' do preset '{1}' não está disponível neste Windows." -f $tid, $PresetKey)
                 continue
             }
+            if ($tid -eq 'WPFTweaksEnableHAGS' -and (Test-OptiKitHagsVramConstrained -Hardware $Ui.Hardware)) {
+                Write-OptimizerLog -Level WARN -Message ("HAGS ignorado no preset '{0}': GPU com {1} GB de VRAM; ative manualmente se usar Frame Generation." -f $PresetKey, $Ui.Hardware.GpuVramGB)
+                continue
+            }
             if ($definition.BlockReason) {
                 Write-OptimizerLog -Level WARN -Message ("Tweak '{0}' ignorado no preset '{1}': {2}" -f $tid, $PresetKey, $definition.BlockReason)
                 continue
@@ -1262,6 +1266,7 @@ function Initialize-OptiKitUi {
         'TweaksCategoriesHost', 'BtnRefreshState', 'BtnUncheckAllTweaks',
         'CmbTweakSort', 'CmbTweakImpact', 'CmbTweakRisk', 'CmbTweakStatus', 'BtnClearTweakFilters', 'TxtTweakCount',
         'GameProfilesHost',
+        'CmbBenchmarkProcess', 'BtnRefreshBenchmarkProcesses', 'BtnStartBenchmark', 'BtnStopBenchmark', 'TxtBenchmarkStatus', 'GridBenchmarkResults',
         'BtnRefreshDiagnostics', 'TxtDiagnosticsSummary', 'DiagnosticsHost',
         'BtnResetNetwork', 'BtnRunSfcDism', 'BtnCancelMaintenance', 'BtnRebootUefi', 'BtnClearTemp', 'BtnOpenBackupsDir',
         'BtnExportProfile', 'BtnImportProfile', 'BtnExportReport',

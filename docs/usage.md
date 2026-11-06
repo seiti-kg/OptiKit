@@ -34,14 +34,24 @@ powershell -ExecutionPolicy Bypass -File .\win.ps1
 
 ## Interface
 
-A janela tem seis abas:
+A janela tem sete abas:
 
 1. **Instalar apps** — catálogo Winget com seleção e instalação silenciosa.
 2. **Ajustes do Windows** — busca, filtros, estado atual e aplicação/reversão por seleção.
 3. **Jogos** — perfis por título, detecção de executável e ferramentas globais.
-4. **Diagnóstico** — leitura de hardware, BIOS, discos, estabilidade e Defender.
-5. **Inicialização** — programas de startup compatíveis com o Gerenciador de Tarefas.
-6. **Manutenção** — reset de rede/DNS, SFC/DISM, limpeza, reboot para UEFI e atualização via Winget.
+4. **Benchmark** — captura FPS/frame time via PresentMon e compara com a captura anterior.
+5. **Diagnóstico** — leitura de hardware, BIOS, discos, estabilidade e Defender.
+6. **Inicialização** — programas de startup compatíveis com o Gerenciador de Tarefas.
+7. **Manutenção** — reset de rede/DNS, SFC/DISM, limpeza, reboot para UEFI e atualização via Winget.
+
+### Benchmark
+
+1. Abra o jogo e deixe-o em execução.
+2. Na aba **Benchmark**, selecione o processo do jogo e clique em **Iniciar captura**.
+3. Aguarde 30 segundos; a grade mostra FPS médio, 1% low, 0.1% low, frame time P95/P99, GPU busy, frames e duração.
+4. Na segunda captura do mesmo processo, as colunas **Anterior** e **Delta** comparam com o resultado salvo anteriormente.
+
+O PresentMon é baixado uma única vez para `%ProgramData%\optikit\tools` e verificado por SHA-256. A captura não altera o sistema.
 
 Ações globais:
 
@@ -88,6 +98,8 @@ O log da execução fica em `%ProgramData%\optikit\logs\optikit_<sessão>.log`.
 | `%ProgramData%\optikit\state.json` | Estado original dos ajustes aplicados, usado pelo Undo. |
 | `%ProgramData%\optikit\backups\` | Exportações `.reg` das chaves afetadas. |
 | `%ProgramData%\optikit\logs\` | Logs por sessão. |
+| `%ProgramData%\optikit\benchmarks\` | CSVs e JSONs das capturas de benchmark. |
+| `%ProgramData%\optikit\tools\` | PresentMon verificado por hash. |
 
 O `state.json` é gravado de forma atômica. Chaves de registro são exportadas antes da alteração. A criação de Ponto de Restauração é tentada antes de aplicar uma seleção, mas depende da Proteção do Sistema estar habilitada.
 
@@ -96,6 +108,7 @@ O `state.json` é gravado de forma atômica. Chaves de registro são exportadas 
 - A remoção de Appx é revertida reinstalando o pacote via Store ID; o pacote precisa existir na Store e os dados locais podem não voltar.
 - Ajustes aplicados por outros programas, GPOs ou VPNs podem sobrescrever o estado do OptiKit.
 - O one-liner aponta para `main`; para reprodutibilidade, use uma release fixa.
+- O benchmark exige um jogo em execução e internet no primeiro uso para baixar o PresentMon.
 - O projeto não possui instalador assinado nem auto-update; o Windows pode exibir aviso do SmartScreen/antivírus.
 
 Consulte [funcionalidades](features.md), [diretrizes técnicas](guidelines.md) e o [catálogo técnico](tweaks.md).

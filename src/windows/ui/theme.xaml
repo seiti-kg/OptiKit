@@ -580,6 +580,9 @@
                 <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="5">
                     <Setter Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="6">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
             </Style.Triggers>
         </Style>
 
@@ -716,6 +719,12 @@
                             <TextBlock Text="Jogos" VerticalAlignment="Center" />
                         </StackPanel>
                     </ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="Benchmark">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE9D2;" />
+                            <TextBlock Text="Benchmark" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
                     <ListBoxItem AutomationProperties.Name="Diagnóstico">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE9D9;" />
@@ -819,7 +828,40 @@
                 </Grid>
             </TabItem>
 
-            <!-- 3. Diagnóstico -->
+            <!-- 3. Benchmark -->
+            <TabItem Header="Benchmark">
+                <Grid Margin="32,24,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Margin="0,0,32,16">
+                        <TextBlock Text="Benchmark" Style="{StaticResource Text.Title}" />
+                        <TextBlock Text="Captura FPS e frame time de um jogo em execução via PresentMon. Não altera o sistema." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                    </StackPanel>
+                    <DockPanel Grid.Row="1" Margin="0,0,32,12" LastChildFill="True">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Bottom">
+                            <Button x:Name="BtnRefreshBenchmarkProcesses" Style="{StaticResource Button.Subtle}" Content="Atualizar" Margin="0,0,8,0" />
+                            <Button x:Name="BtnStopBenchmark" Content="Parar" IsEnabled="False" Margin="0,0,8,0" />
+                            <Button x:Name="BtnStartBenchmark" Style="{StaticResource Button.Primary}" Content="Iniciar captura" />
+                        </StackPanel>
+                        <ComboBox x:Name="CmbBenchmarkProcess" Width="280" IsEditable="True" IsTextSearchEnabled="True" HorizontalAlignment="Left" ToolTip="Processo do jogo em execução" AutomationProperties.Name="Processo do jogo" />
+                    </DockPanel>
+                    <DataGrid x:Name="GridBenchmarkResults" Grid.Row="2" Style="{StaticResource DataGrid.Clean}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" RowHeaderWidth="0" Margin="0,0,32,12">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Métrica" Binding="{Binding Metric}" Width="*" ElementStyle="{StaticResource Cell.Text}" />
+                            <DataGridTextColumn Header="Atual" Binding="{Binding Current}" Width="110" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Anterior" Binding="{Binding Previous}" Width="110" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Delta" Binding="{Binding Delta}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock x:Name="TxtBenchmarkStatus" Grid.Row="3" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Text="Selecione um jogo em execução e inicie a captura." Margin="0,0,32,24" />
+                </Grid>
+            </TabItem>
+
+            <!-- 4. Diagnóstico -->
             <TabItem Header="Diagnóstico">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>
@@ -839,7 +881,7 @@
                 </Grid>
             </TabItem>
 
-            <!-- 4. Inicialização -->
+            <!-- 5. Inicialização -->
             <TabItem Header="Inicialização">
                 <Grid Margin="32,24,32,0">
                     <Grid.RowDefinitions>
@@ -868,7 +910,7 @@
                 </Grid>
             </TabItem>
 
-            <!-- 5. Manutenção -->
+            <!-- 6. Manutenção -->
             <TabItem Header="Manutenção">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>

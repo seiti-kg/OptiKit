@@ -188,6 +188,7 @@ $moduleOrder = @(
     'src\windows\modules\startup-manager.ps1',
     'src\windows\core\state-checker.ps1',
     'src\windows\modules\diagnostics.ps1',
+    'src\windows\modules\benchmark-engine.ps1',
     'src\windows\ui\ui-builder.ps1',
     'src\windows\main.ps1'
 )

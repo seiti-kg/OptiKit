@@ -25,6 +25,58 @@ function Resolve-OptiKitCpuFlags {
     }
 }
 
+function Get-OptiKitGpuVramBytes {
+    [CmdletBinding()]
+    param()
+
+    $maxBytes = [uint64]0
+    try {
+        $classRoot = 'HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}'
+        foreach ($key in @(Get-ChildItem -LiteralPath $classRoot -ErrorAction SilentlyContinue)) {
+            try {
+                $props = Get-ItemProperty -LiteralPath $key.PSPath -ErrorAction SilentlyContinue
+                $prop = if ($props) { $props.PSObject.Properties['HardwareInformation.qwMemorySize'] } else { $null }
+                if ($prop -and $null -ne $prop.Value) {
+                    $value = [uint64]$prop.Value
+                    if ($value -gt $maxBytes) { $maxBytes = $value }
+                }
+            }
+            catch {
+                Write-Verbose ("Falha ao ler VRAM da chave {0}: {1}" -f $key.PSPath, $_.Exception.Message)
+            }
+        }
+    }
+    catch {
+        Write-Verbose ("Falha ao enumerar as chaves de vídeo para VRAM: {0}" -f $_.Exception.Message)
+    }
+
+    if ($maxBytes -eq 0) {
+        try {
+            foreach ($gpu in @(Get-CimInstance -ClassName Win32_VideoController -ErrorAction SilentlyContinue)) {
+                $adapterRam = [uint64]$gpu.AdapterRAM
+                if ($adapterRam -gt $maxBytes) { $maxBytes = $adapterRam }
+            }
+        }
+        catch {
+            Write-Verbose ("Falha ao obter VRAM via Win32_VideoController: {0}" -f $_.Exception.Message)
+        }
+    }
+
+    return $maxBytes
+}
+
+function Test-OptiKitHagsVramConstrained {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][pscustomobject]$Hardware
+    )
+
+    $prop = $Hardware.PSObject.Properties['GpuVramGB']
+    if (-not $prop -or $null -eq $prop.Value) { return $false }
+    $gb = [double]$prop.Value
+    return ($gb -gt 0 -and $gb -le 8)
+}
+
 function Get-OptiKitHardware {
     [CmdletBinding()]
     param(
@@ -127,6 +179,7 @@ function Get-OptiKitHardware {
     $osLabel = if ($isWin11) { "Windows 11 (Build $osBuild)" } else { "Windows 10 (Build $osBuild)" }
     $chassisLabel = if ($isLaptop) { 'Notebook' } else { 'Desktop' }
     $gpuPrimary = if ($gpuNames.Count -gt 0) { $gpuNames[0] } else { 'GPU Padrão' }
+    $vramBytes = Get-OptiKitGpuVramBytes
 
     $script:OptiKitHardwareCache = [pscustomobject]@{
         CpuName         = $cpuName
@@ -136,6 +189,8 @@ function Get-OptiKitHardware {
         IsLaptop        = $isLaptop
         GpuNames        = $gpuNames.ToArray()
         GpuVendors      = $gpuVendors.ToArray()
+        GpuVramBytes    = [uint64]$vramBytes
+        GpuVramGB       = [math]::Round(([double]$vramBytes / 1GB), 0)
         SystemDiskIsSSD = $isSsd
         OsBuild         = $osBuild
         IsWin11         = $isWin11

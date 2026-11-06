@@ -216,6 +216,42 @@ function Get-OptiKitDiagnosticDeviceGuard {
     }
 }
 
+function Get-OptiKitEnergySaverState {
+    [CmdletBinding()]
+    param()
+
+    if (-not ('OptiKit.PowerStatus' -as [type])) {
+        Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+
+namespace OptiKit {
+    public static class PowerStatus {
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SYSTEM_POWER_STATUS {
+            public byte ACLineStatus;
+            public byte BatteryFlag;
+            public byte BatteryLifePercent;
+            public byte SystemStatusFlag;
+            public uint BatteryLifeTime;
+            public uint BatteryFullLifeTime;
+        }
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetSystemPowerStatus(out SYSTEM_POWER_STATUS status);
+    }
+}
+'@
+    }
+
+    $status = New-Object 'OptiKit.PowerStatus+SYSTEM_POWER_STATUS'
+    if (-not [OptiKit.PowerStatus]::GetSystemPowerStatus([ref]$status)) {
+        return $null
+    }
+    return (($status.SystemStatusFlag -band 1) -ne 0)
+}
+
 function Get-OptiKitDiagnosticGamingToggles {
     [CmdletBinding()]
     param()
@@ -242,8 +278,13 @@ function Get-OptiKitDiagnosticGamingToggles {
         if (-not $hagsOn) { [void]$warnings.Add('HAGS desativado') }
         if (-not $gameModeOn) { [void]$warnings.Add('Game Mode desativado') }
         if (-not $planOk) { [void]$warnings.Add(("Plano de energia: {0}" -f $planName)) }
+        $vramNote = ''
+        if ($hagsOn -and (Test-OptiKitHagsVramConstrained -Hardware $hardware)) {
+            $vramNote = (" HAGS ativo com VRAM limitada ({0} GB): teste desativar se faltar VRAM. Frame Generation exige HAGS." -f $hardware.GpuVramGB)
+            [void]$warnings.Add(("HAGS com VRAM limitada ({0} GB)" -f $hardware.GpuVramGB))
+        }
 
-        $detail = ("HAGS={0}; Game Mode={1}; Plano={2}. {3}" -f $(if ($hagsOn) { 'on' } else { 'off' }), $(if ($gameModeOn) { 'on' } else { 'off' }), $planName, $planNote)
+        $detail = ("HAGS={0}; Game Mode={1}; Plano={2}. {3}{4}" -f $(if ($hagsOn) { 'on' } else { 'off' }), $(if ($gameModeOn) { 'on' } else { 'off' }), $planName, $planNote, $vramNote)
         if ($warnings.Count -gt 0) {
             return New-OptiKitDiagnosticItem -Id 'GamingToggles' -Title 'HAGS, Game Mode e Plano de Energia' -Status 'Warn' -Summary ($warnings -join '; ') -Detail $detail -ActionText 'Aplicar tweaks de Desempenho & Energia'
         }
@@ -251,6 +292,45 @@ function Get-OptiKitDiagnosticGamingToggles {
     }
     catch {
         return New-OptiKitDiagnosticItem -Id 'GamingToggles' -Title 'HAGS, Game Mode e Plano de Energia' -Status 'Unknown' -Summary 'Falha ao consultar as configurações de gaming.' -Detail $_.Exception.Message
+    }
+}
+
+function Get-OptiKitDiagnosticWindowsGamingState {
+    [CmdletBinding()]
+    param()
+
+    try {
+        $windowed = Test-OptiKitWindowedGameOptimizations
+        $energy = Get-OptiKitEnergySaverState
+        $warnings = New-Object 'System.Collections.Generic.List[string]'
+        $details = New-Object 'System.Collections.Generic.List[string]'
+
+        if (-not $windowed) {
+            [void]$warnings.Add('Otimizações para jogos em janela desativadas')
+            [void]$details.Add('Otimizações de janela=off')
+        }
+        else {
+            [void]$details.Add('Otimizações de janela=on')
+        }
+
+        if ($energy -eq $true) {
+            [void]$warnings.Add('Economia de energia/battery saver ativo')
+            [void]$details.Add('Economia de energia=on')
+        }
+        elseif ($energy -eq $false) {
+            [void]$details.Add('Economia de energia=off')
+        }
+        else {
+            [void]$details.Add('Economia de energia=desconhecida')
+        }
+
+        if ($warnings.Count -gt 0) {
+            return New-OptiKitDiagnosticItem -Id 'WindowsGamingState' -Title 'Otimizações de jogos e energia' -Status 'Warn' -Summary ($warnings -join '; ') -Detail (($details -join '; ') + '.') -ActionText 'Revisar configurações de vídeo e energia'
+        }
+        return New-OptiKitDiagnosticItem -Id 'WindowsGamingState' -Title 'Otimizações de jogos e energia' -Status 'OK' -Summary 'Otimizações de janela e energia sem alertas.' -Detail (($details -join '; ') + '.')
+    }
+    catch {
+        return New-OptiKitDiagnosticItem -Id 'WindowsGamingState' -Title 'Otimizações de jogos e energia' -Status 'Unknown' -Summary 'Falha ao consultar otimizações de jogos e energia.' -Detail $_.Exception.Message
     }
 }
 
@@ -629,6 +709,7 @@ function Get-OptiKitHardwareDiagnostics {
         'Get-OptiKitDiagnosticMonitor',
         'Get-OptiKitDiagnosticDeviceGuard',
         'Get-OptiKitDiagnosticGamingToggles',
+        'Get-OptiKitDiagnosticWindowsGamingState',
         'Get-OptiKitDiagnosticX3dService',
         'Get-OptiKitDiagnosticGpuDriver'
     )) {

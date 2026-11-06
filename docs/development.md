@@ -9,7 +9,7 @@
 ├── config/                         # Catálogos JSON (apps, win-tweaks, game-profiles, presets)
 ├── src/windows/                    # Código-fonte modular
 │   ├── core/                       # Logger, backup/state, verificação de estado
-│   ├── modules/                    # Tweaks, jogos, Winget, hardware, rede, manutenção, startup
+│   ├── modules/                    # Tweaks, jogos, Winget, hardware, rede, manutenção, startup e benchmark
 │   ├── ui/                         # Tema XAML e construção da interface WPF
 │   └── main.ps1                    # Entrada, CLI, orquestração e modo desatendido
 ├── docs/                           # Documentação
@@ -44,7 +44,7 @@ Não edite `win.ps1` manualmente: alterações são sobrescritas pelo build.
 ## Testes e CI
 
 - Pester 5+ em Windows PowerShell 5.1.
-- Cobertura de configuração, build, backup, undo, tweaks, jogos, Winget, automação, Appx, whitelist e smoke.
+- Cobertura de configuração, build, backup, undo, tweaks, jogos, Winget, benchmark, automação, Appx, whitelist e smoke.
 - `Invoke-ScriptAnalyzer` com as regras do repositório.
 - CI no GitHub Actions: job Windows (build + Pester) e job Linux condicional de ShellCheck.
 

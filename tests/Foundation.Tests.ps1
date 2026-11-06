@@ -166,4 +166,12 @@ Describe 'Fundação v0.2 (hardware guard + DirectX)' {
         $restored = (Get-ItemProperty -LiteralPath $key -Name 'DirectXUserGlobalSettings').DirectXUserGlobalSettings
         $restored | Should -Be $original
     }
+
+    It 'Deve considerar HAGS limitado somente para VRAM conhecida de 8 GB ou menos' {
+        (Test-OptiKitHagsVramConstrained -Hardware ([pscustomobject]@{ GpuVramGB = 8 })) | Should -BeTrue
+        (Test-OptiKitHagsVramConstrained -Hardware ([pscustomobject]@{ GpuVramGB = 6 })) | Should -BeTrue
+        (Test-OptiKitHagsVramConstrained -Hardware ([pscustomobject]@{ GpuVramGB = 16 })) | Should -BeFalse
+        (Test-OptiKitHagsVramConstrained -Hardware ([pscustomobject]@{ GpuVramGB = 0 })) | Should -BeFalse
+        (Test-OptiKitHagsVramConstrained -Hardware ([pscustomobject]@{ CpuName = 'sem VRAM' })) | Should -BeFalse
+    }
 }

@@ -251,9 +251,9 @@
   "WPFTweaksEnableHAGS": {
     "title": "Ativar Agendamento de GPU Acelerado por Hardware (HAGS)",
     "category": "Desempenho & Energia",
-    "description": "Habilita o Hardware-Accelerated GPU Scheduling (HwSchMode=2), exigido para DLSS 3 Frame Generation e redução de overhead de CPU.",
-    "rationale": "Transfere o gerenciamento de fila de memória de vídeo do kernel do Windows para o processador dedicado da GPU. Obrigatório para NVIDIA DLSS 3 Frame Generation. Requer reinicialização. Fonte: Microsoft DirectX Developer Blog.",
-    "impact": "Médio",
+    "description": "Habilita o Hardware-Accelerated GPU Scheduling (HwSchMode=2), exigido para DLSS Frame Generation e redução de overhead de CPU. Pode reservar cerca de 1 GB de VRAM em placas de 6/8 GB.",
+    "rationale": "Transfere o gerenciamento de fila de memória de vídeo do kernel do Windows para o processador dedicado da GPU. Obrigatório para NVIDIA DLSS Frame Generation. Em GPUs de 6/8 GB, o custo de VRAM pode causar stutter; se faltar memória, teste desativado. Requer reinicialização. Fontes: Microsoft DirectX Developer Blog e teste de VRAM da XDA.",
+    "impact": "Situacional",
     "riskLevel": "Safe",
     "osSupport": ["Win10", "Win11"],
     "minBuild": 19041,

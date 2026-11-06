@@ -15,7 +15,7 @@
 | `WPFTweaksUsbPollingOptimization` | Otimizar Portas USB para Alto Polling Rate (1000Hz a 8000Hz) | Desempenho & Energia | **Médio** | `Safe` | Win10, Win11 | Não |
 | `WPFTweaksDisableMPO` | Desativar Multiplane Overlay (MPO) no DWM | Desempenho & Energia | **Situacional** | `Moderate` | Win10, Win11 | Sim |
 | `WPFTweaksEnableGameMode` | Garantir Modo de Jogo (Windows Game Mode) Ativo | Desempenho & Energia | **Médio** | `Safe` | Win10, Win11 | Não |
-| `WPFTweaksEnableHAGS` | Ativar Agendamento de GPU Acelerado por Hardware (HAGS) | Desempenho & Energia | **Médio** | `Safe` | Win10, Win11 | Sim |
+| `WPFTweaksEnableHAGS` | Ativar Agendamento de GPU Acelerado por Hardware (HAGS) | Desempenho & Energia | **Situacional** | `Safe` | Win10, Win11 | Sim |
 | `WPFTweaksNetworkThrottling` | Desativar Throttling de Rede Multimídia (MMCSS) | Desempenho & Energia | **Baixo** | `Safe` | Win10, Win11 | Não |
 | `WPFTweaksDisableTelemetry` | Reduzir Telemetria do Windows e Serviços de Diagnóstico | Privacidade & Telemetria | **Médio** | `Safe` | Win10, Win11 | Não |
 | `WPFTweaksDisableAdvertisingId` | Desativar ID de Anúncio e Experiências Personalizadas | Privacidade & Telemetria | **Baixo** | `Safe` | Win10, Win11 | Não |
@@ -116,9 +116,9 @@
 - **Justificativa Técnica (Rationale):** No Windows 10 1903+ e Windows 11, o Game Mode é essencial para o agendador de threads (especialmente em CPUs híbridas Intel P/E-cores e AMD Ryzen X3D) e impede reinícios ou downloads do Windows Update durante jogos.
 
 #### Ativar Agendamento de GPU Acelerado por Hardware (HAGS) (`WPFTweaksEnableHAGS`)
-- **Categoria:** Desempenho & Energia | **Impacto:** Médio | **Risco:** Safe
-- **Descrição:** Habilita o Hardware-Accelerated GPU Scheduling (HwSchMode=2), exigido para DLSS 3 Frame Generation e redução de overhead de CPU.
-- **Justificativa Técnica (Rationale):** Transfere o gerenciamento de fila de memória de vídeo do kernel do Windows para o processador dedicado da GPU. Obrigatório para NVIDIA DLSS 3 Frame Generation. Requer reinicialização. Fonte: Microsoft DirectX Developer Blog.
+- **Categoria:** Desempenho & Energia | **Impacto:** Situacional | **Risco:** Safe
+- **Descrição:** Habilita o Hardware-Accelerated GPU Scheduling (HwSchMode=2), exigido para DLSS Frame Generation e redução de overhead de CPU. Pode reservar cerca de 1 GB de VRAM em placas de 6/8 GB.
+- **Justificativa Técnica (Rationale):** Transfere o gerenciamento de fila de memória de vídeo do kernel do Windows para o processador dedicado da GPU. Obrigatório para NVIDIA DLSS Frame Generation. Em GPUs de 6/8 GB, o custo de VRAM pode causar stutter; se faltar memória, teste desativado. Requer reinicialização. Fontes: Microsoft DirectX Developer Blog e teste de VRAM da XDA.
 
 #### Desativar Throttling de Rede Multimídia (MMCSS) (`WPFTweaksNetworkThrottling`)
 - **Categoria:** Desempenho & Energia | **Impacto:** Baixo | **Risco:** Safe

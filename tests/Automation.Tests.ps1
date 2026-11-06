@@ -206,4 +206,36 @@ Describe 'Automação v0.2' {
             }
         }
     }
+
+    It 'Deve filtrar HAGS de preset em GPU de 8 GB, manter em 16 GB e preservar perfil importado' {
+        $presets = $script:Configs.Presets | ConvertTo-Json -Depth 10 | ConvertFrom-Json
+        $presets | Add-Member -NotePropertyName 'HagsTest' -NotePropertyValue ([pscustomobject]@{
+            name              = 'HAGS Test'
+            description       = 'Preset sintético'
+            tweaks            = @('WPFTweaksEnableHAGS')
+            gameOptimizations = @()
+            apps              = @()
+        })
+        $configs = @{
+            Apps         = $script:Configs.Apps
+            WinTweaks    = $script:Configs.WinTweaks
+            GameProfiles = $script:Configs.GameProfiles
+            Presets      = $presets
+        }
+
+        Mock Get-OptiKitHardware { [pscustomobject]@{ GpuVramGB = 8 } }
+        $selection = Resolve-OptiKitSelection -Configs $configs -PresetKey 'HagsTest'
+        @($selection.Tweaks) | Should -Not -Contain 'WPFTweaksEnableHAGS'
+
+        Mock Get-OptiKitHardware { [pscustomobject]@{ GpuVramGB = 16 } }
+        $selection16 = Resolve-OptiKitSelection -Configs $configs -PresetKey 'HagsTest'
+        @($selection16.Tweaks) | Should -Contain 'WPFTweaksEnableHAGS'
+
+        $profile = ConvertTo-OptiKitProfile -Tweaks @('WPFTweaksEnableHAGS') -GameOptimizations @() -Apps @() -Preset 'GamerRecomendado'
+        $profilePath = Join-Path $TestDrive 'perfil_hags.json'
+        [System.IO.File]::WriteAllText($profilePath, ($profile | ConvertTo-Json -Depth 5), (New-Object System.Text.UTF8Encoding($false)))
+        Mock Get-OptiKitHardware { [pscustomobject]@{ GpuVramGB = 8 } }
+        $fromProfile = Resolve-OptiKitSelection -Configs $script:Configs -ConfigPath $profilePath
+        @($fromProfile.Tweaks) | Should -Contain 'WPFTweaksEnableHAGS'
+    }
 }

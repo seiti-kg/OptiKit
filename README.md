@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <strong>60 ajustes reversíveis</strong> · <strong>46 apps via Winget</strong> · <strong>perfis de jogos</strong> · <strong>diagnóstico read-only</strong>
+  <strong>60 ajustes reversíveis</strong> · <strong>46 apps via Winget</strong> · <strong>benchmark de jogos</strong> · <strong>diagnóstico read-only</strong>
 </p>
 
 Utilitário open-source de pós-formatação, debloat e otimização para Windows 10/11. Aplica ajustes reais, permite reverter pelo `state.json`/Undo e usa guardrails para não conflitar com anti-cheats de nível de kernel.
