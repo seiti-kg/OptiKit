@@ -52,7 +52,9 @@ A interface WPF é gerada dinamicamente a partir dos catálogos JSON e inclui:
 
 ## Diagnóstico de hardware (somente leitura)
 
-- RAM sem XMP/EXPO.
+- RAM sem XMP/EXPO e RAM em single-channel.
+- GPU híbrida (iGPU + dGPU) com recomendação de GPU dedicada.
+- Recomendação de HAGS para GPUs com VRAM limitada.
 - Monitor abaixo da taxa máxima.
 - VBS/HVCI ativo.
 - Estado de HAGS, Game Mode e plano de energia.

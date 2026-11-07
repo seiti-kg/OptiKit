@@ -4180,6 +4180,21 @@ function Resolve-OptiKitCpuFlags {
     }
 }
 
+function Get-OptiKitGpuKind {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Name
+    )
+
+    if ($Name -match '(?i)radeon(\(tm\))?\s+\d{3}m|radeon(\(tm\))?\s+graphics|radeon vega|intel\(r\) hd graphics|intel\(r\) uhd graphics|intel\(r\) iris|intel\(r\) arc(\(tm\))?\s+graphics|qualcomm adreno') {
+        return 'Integrated'
+    }
+    if ($Name -match '(?i)\b(rx|rtx|gtx)\s*\d|\barc(\(tm\))?\s*[ab]\d') {
+        return 'Discrete'
+    }
+    return 'Unknown'
+}
+
 function Get-OptiKitGpuVramBytes {
     [CmdletBinding()]
     param()
@@ -4333,23 +4348,51 @@ function Get-OptiKitHardware {
     $isWin11 = ($osBuild -ge 22000)
     $osLabel = if ($isWin11) { "Windows 11 (Build $osBuild)" } else { "Windows 10 (Build $osBuild)" }
     $chassisLabel = if ($isLaptop) { 'Notebook' } else { 'Desktop' }
-    $gpuPrimary = if ($gpuNames.Count -gt 0) { $gpuNames[0] } else { "GPU Padr$([char]0x00E3)o" }
+    $gpuDetails = @($gpuNames | ForEach-Object {
+        [pscustomobject]@{
+            Name = [string]$_
+            Kind = (Get-OptiKitGpuKind -Name ([string]$_))
+        }
+    })
+    $hasIntegratedGpu = [bool](@($gpuDetails | Where-Object { $_.Kind -eq 'Integrated' }).Count -gt 0)
+    $hasDiscreteGpu = [bool](@($gpuDetails | Where-Object { $_.Kind -eq 'Discrete' }).Count -gt 0)
+    $discreteGpu = @($gpuDetails | Where-Object { $_.Kind -eq 'Discrete' } | Select-Object -First 1)
+    $integratedGpu = @($gpuDetails | Where-Object { $_.Kind -eq 'Integrated' } | Select-Object -First 1)
+    $gpuPrimary = if ($discreteGpu.Count -gt 0) {
+        $discreteGpu[0].Name
+    }
+    elseif ($integratedGpu.Count -gt 0) {
+        $integratedGpu[0].Name
+    }
+    elseif ($gpuDetails.Count -gt 0) {
+        $gpuDetails[0].Name
+    }
+    else {
+        "GPU Padr$([char]0x00E3)o"
+    }
     $vramBytes = Get-OptiKitGpuVramBytes
+    $ramModules = @(Get-CimInstance -ClassName Win32_PhysicalMemory -ErrorAction SilentlyContinue)
 
     $script:OptiKitHardwareCache = [pscustomobject]@{
-        CpuName         = $cpuName
-        CpuCores        = $cpuCores
-        IsX3D           = $isX3D
-        IsX3DDualCcd    = $isX3DDualCcd
-        IsLaptop        = $isLaptop
-        GpuNames        = $gpuNames.ToArray()
-        GpuVendors      = $gpuVendors.ToArray()
-        GpuVramBytes    = [uint64]$vramBytes
-        GpuVramGB       = [math]::Round(([double]$vramBytes / 1GB), 0)
-        SystemDiskIsSSD = $isSsd
-        OsBuild         = $osBuild
-        IsWin11         = $isWin11
-        Summary         = "$cpuName | $gpuPrimary | $chassisLabel | $osLabel"
+        CpuName            = $cpuName
+        CpuCores           = $cpuCores
+        IsX3D              = $isX3D
+        IsX3DDualCcd       = $isX3DDualCcd
+        IsLaptop           = $isLaptop
+        GpuNames           = $gpuNames.ToArray()
+        GpuVendors         = $gpuVendors.ToArray()
+        GpuDetails         = $gpuDetails
+        HasIntegratedGpu   = $hasIntegratedGpu
+        HasDiscreteGpu     = $hasDiscreteGpu
+        HasHybridGraphics  = ($hasIntegratedGpu -and $hasDiscreteGpu)
+        GpuVramBytes       = [uint64]$vramBytes
+        GpuVramGB          = [math]::Round(([double]$vramBytes / 1GB), 0)
+        RamModuleCount     = $ramModules.Count
+        RamIsSingleChannel = ($ramModules.Count -eq 1)
+        SystemDiskIsSSD    = $isSsd
+        OsBuild            = $osBuild
+        IsWin11            = $isWin11
+        Summary            = "$cpuName | $gpuPrimary | $chassisLabel | $osLabel"
     }
 
     return $script:OptiKitHardwareCache
@@ -7879,6 +7922,47 @@ function Get-OptiKitDiagnosticWindowsGamingState {
     }
 }
 
+function Get-OptiKitDiagnosticHardwareRecommendations {
+    [CmdletBinding()]
+    param()
+
+    try {
+        $hardware = Get-OptiKitHardware
+        $warnings = New-Object 'System.Collections.Generic.List[string]'
+        $details = New-Object 'System.Collections.Generic.List[string]'
+
+        if ($hardware.HasHybridGraphics) {
+            $igpu = @($hardware.GpuDetails | Where-Object { $_.Kind -eq 'Integrated' } | Select-Object -First 1)
+            $dgpu = @($hardware.GpuDetails | Where-Object { $_.Kind -eq 'Discrete' } | Select-Object -First 1)
+            if ($igpu.Count -gt 0 -and $dgpu.Count -gt 0) {
+                [void]$warnings.Add(("GPUs h$([char]0x00ED)bridas detectadas: {0} + {1}" -f $igpu[0].Name, $dgpu[0].Name))
+                [void]$details.Add(("iGPU: {0}; dGPU: {1}. Conecte o monitor na dGPU e defina o jogo como Alto Desempenho em Configura$([char]0x00E7)$([char]0x00F5)es > V$([char]0x00ED)deo > Gr$([char]0x00E1)ficos." -f $igpu[0].Name, $dgpu[0].Name))
+            }
+        }
+
+        if ($hardware.RamModuleCount -eq 1) {
+            [void]$warnings.Add("RAM em single-channel (1 m$([char]0x00F3)dulo)")
+            [void]$details.Add("Instale um segundo m$([char]0x00F3)dulo para dual-channel; APUs e 1% lows se beneficiam.")
+        }
+
+        $hags = Get-RegistryEntryState -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers' -Name 'HwSchMode' -FallbackType 'DWord'
+        if ($hags.ValueExisted -and [int]$hags.Value -eq 2 -and (Test-OptiKitHagsVramConstrained -Hardware $hardware)) {
+            [void]$warnings.Add(("HAGS ativo com {0} GB de VRAM" -f $hardware.GpuVramGB))
+            [void]$details.Add('Teste desativar HAGS se houver stutter; Frame Generation exige HAGS.')
+        }
+
+        if ($warnings.Count -gt 0) {
+            return New-OptiKitDiagnosticItem -Id 'HardwareRecommendations' -Title "Recomenda$([char]0x00E7)$([char]0x00F5)es para este hardware" -Status 'Warn' -Summary ($warnings -join '; ') -Detail (($details -join ' ') + '.') -ActionText 'Revisar GPU, RAM e HAGS'
+        }
+
+        $gpuNames = @($hardware.GpuDetails | ForEach-Object { $_.Name }) -join ', '
+        return New-OptiKitDiagnosticItem -Id 'HardwareRecommendations' -Title "Recomenda$([char]0x00E7)$([char]0x00F5)es para este hardware" -Status 'OK' -Summary "Nenhuma recomenda$([char]0x00E7)$([char]0x00E3)o espec$([char]0x00ED)fica para este hardware." -Detail ("GPUs: {0}; m$([char]0x00F3)dulos de RAM: {1}." -f $gpuNames, $hardware.RamModuleCount)
+    }
+    catch {
+        return New-OptiKitDiagnosticItem -Id 'HardwareRecommendations' -Title "Recomenda$([char]0x00E7)$([char]0x00F5)es para este hardware" -Status 'Unknown' -Summary "Falha ao gerar recomenda$([char]0x00E7)$([char]0x00F5)es de hardware." -Detail $_.Exception.Message
+    }
+}
+
 function Get-OptiKitDiagnosticX3dService {
     [CmdletBinding()]
     param()
@@ -8255,6 +8339,7 @@ function Get-OptiKitHardwareDiagnostics {
         'Get-OptiKitDiagnosticDeviceGuard',
         'Get-OptiKitDiagnosticGamingToggles',
         'Get-OptiKitDiagnosticWindowsGamingState',
+        'Get-OptiKitDiagnosticHardwareRecommendations',
         'Get-OptiKitDiagnosticX3dService',
         'Get-OptiKitDiagnosticGpuDriver'
     )) {
@@ -10066,7 +10151,7 @@ function Start-OptiKitWorkerTask {
         'New-OptiKitBackupSession', 'ConvertTo-RegExePath', 'Export-RegistryKeyBackup',
         'Read-OptiKitStateFile', 'Write-OptiKitStateFile', 'Save-CapturedState',
         'Get-CapturedState', 'Remove-CapturedState', 'New-OptiKitRestorePoint',
-        'Get-OptiKitHardware', 'Resolve-OptiKitCpuFlags', 'Get-OptiKitGpuVramBytes', 'Test-OptiKitHagsVramConstrained',
+        'Get-OptiKitHardware', 'Resolve-OptiKitCpuFlags', 'Get-OptiKitGpuVramBytes', 'Test-OptiKitHagsVramConstrained', 'Get-OptiKitGpuKind',
         'Get-ActivePowerPlanGuid', 'Set-OptiKitSmartPowerPlan',
         'Enable-OptiKitUltimatePowerPlan', 'Restore-OptiKitPowerPlan',
         'Test-OptiKitSmartPowerPlan', 'Test-OptiKitUltimatePowerPlan',
@@ -10083,6 +10168,7 @@ function Start-OptiKitWorkerTask {
         'Get-OptiKitDiagnosticRam', 'Get-OptiKitDisplayModes', 'Get-OptiKitDiagnosticMonitor',
         'Get-OptiKitDiagnosticDeviceGuard', 'Get-OptiKitDiagnosticGamingToggles',
         'Get-OptiKitDiagnosticWindowsGamingState', 'Get-OptiKitEnergySaverState',
+        'Get-OptiKitDiagnosticHardwareRecommendations',
         'Get-OptiKitDiagnosticX3dService', 'Get-OptiKitDiagnosticGpuDriver',
         'Get-OptiKitStateUndoPlan', 'Invoke-OptiKitRevertAll',
         'Test-OptiKitUpdateAvailable', 'Export-OptiKitReport',

@@ -39,7 +39,7 @@ A janela tem seis abas:
 1. **Instalar apps** — catálogo Winget com seleção e instalação silenciosa.
 2. **Ajustes do Windows** — busca, filtros, estado atual e aplicação/reversão por seleção.
 3. **Jogos** — perfis por título, detecção de executável e ferramentas globais.
-4. **Diagnóstico** — leitura de hardware, BIOS, discos, estabilidade e Defender.
+4. **Diagnóstico** — leitura de hardware, BIOS, discos, estabilidade, Defender e recomendações para GPU híbrida/RAM/HAGS.
 5. **Inicialização** — programas de startup compatíveis com o Gerenciador de Tarefas.
 6. **Manutenção** — reset de rede/DNS, SFC/DISM, reparo do app de Configurações, limpeza, reboot para UEFI e atualização via Winget.
 

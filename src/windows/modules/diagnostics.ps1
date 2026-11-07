@@ -334,6 +334,47 @@ function Get-OptiKitDiagnosticWindowsGamingState {
     }
 }
 
+function Get-OptiKitDiagnosticHardwareRecommendations {
+    [CmdletBinding()]
+    param()
+
+    try {
+        $hardware = Get-OptiKitHardware
+        $warnings = New-Object 'System.Collections.Generic.List[string]'
+        $details = New-Object 'System.Collections.Generic.List[string]'
+
+        if ($hardware.HasHybridGraphics) {
+            $igpu = @($hardware.GpuDetails | Where-Object { $_.Kind -eq 'Integrated' } | Select-Object -First 1)
+            $dgpu = @($hardware.GpuDetails | Where-Object { $_.Kind -eq 'Discrete' } | Select-Object -First 1)
+            if ($igpu.Count -gt 0 -and $dgpu.Count -gt 0) {
+                [void]$warnings.Add(("GPUs híbridas detectadas: {0} + {1}" -f $igpu[0].Name, $dgpu[0].Name))
+                [void]$details.Add(("iGPU: {0}; dGPU: {1}. Conecte o monitor na dGPU e defina o jogo como Alto Desempenho em Configurações > Vídeo > Gráficos." -f $igpu[0].Name, $dgpu[0].Name))
+            }
+        }
+
+        if ($hardware.RamModuleCount -eq 1) {
+            [void]$warnings.Add('RAM em single-channel (1 módulo)')
+            [void]$details.Add('Instale um segundo módulo para dual-channel; APUs e 1% lows se beneficiam.')
+        }
+
+        $hags = Get-RegistryEntryState -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers' -Name 'HwSchMode' -FallbackType 'DWord'
+        if ($hags.ValueExisted -and [int]$hags.Value -eq 2 -and (Test-OptiKitHagsVramConstrained -Hardware $hardware)) {
+            [void]$warnings.Add(("HAGS ativo com {0} GB de VRAM" -f $hardware.GpuVramGB))
+            [void]$details.Add('Teste desativar HAGS se houver stutter; Frame Generation exige HAGS.')
+        }
+
+        if ($warnings.Count -gt 0) {
+            return New-OptiKitDiagnosticItem -Id 'HardwareRecommendations' -Title 'Recomendações para este hardware' -Status 'Warn' -Summary ($warnings -join '; ') -Detail (($details -join ' ') + '.') -ActionText 'Revisar GPU, RAM e HAGS'
+        }
+
+        $gpuNames = @($hardware.GpuDetails | ForEach-Object { $_.Name }) -join ', '
+        return New-OptiKitDiagnosticItem -Id 'HardwareRecommendations' -Title 'Recomendações para este hardware' -Status 'OK' -Summary 'Nenhuma recomendação específica para este hardware.' -Detail ("GPUs: {0}; módulos de RAM: {1}." -f $gpuNames, $hardware.RamModuleCount)
+    }
+    catch {
+        return New-OptiKitDiagnosticItem -Id 'HardwareRecommendations' -Title 'Recomendações para este hardware' -Status 'Unknown' -Summary 'Falha ao gerar recomendações de hardware.' -Detail $_.Exception.Message
+    }
+}
+
 function Get-OptiKitDiagnosticX3dService {
     [CmdletBinding()]
     param()
@@ -710,6 +751,7 @@ function Get-OptiKitHardwareDiagnostics {
         'Get-OptiKitDiagnosticDeviceGuard',
         'Get-OptiKitDiagnosticGamingToggles',
         'Get-OptiKitDiagnosticWindowsGamingState',
+        'Get-OptiKitDiagnosticHardwareRecommendations',
         'Get-OptiKitDiagnosticX3dService',
         'Get-OptiKitDiagnosticGpuDriver'
     )) {

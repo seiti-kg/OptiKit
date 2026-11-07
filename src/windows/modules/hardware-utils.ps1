@@ -25,6 +25,21 @@ function Resolve-OptiKitCpuFlags {
     }
 }
 
+function Get-OptiKitGpuKind {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Name
+    )
+
+    if ($Name -match '(?i)radeon(\(tm\))?\s+\d{3}m|radeon(\(tm\))?\s+graphics|radeon vega|intel\(r\) hd graphics|intel\(r\) uhd graphics|intel\(r\) iris|intel\(r\) arc(\(tm\))?\s+graphics|qualcomm adreno') {
+        return 'Integrated'
+    }
+    if ($Name -match '(?i)\b(rx|rtx|gtx)\s*\d|\barc(\(tm\))?\s*[ab]\d') {
+        return 'Discrete'
+    }
+    return 'Unknown'
+}
+
 function Get-OptiKitGpuVramBytes {
     [CmdletBinding()]
     param()
@@ -178,23 +193,51 @@ function Get-OptiKitHardware {
     $isWin11 = ($osBuild -ge 22000)
     $osLabel = if ($isWin11) { "Windows 11 (Build $osBuild)" } else { "Windows 10 (Build $osBuild)" }
     $chassisLabel = if ($isLaptop) { 'Notebook' } else { 'Desktop' }
-    $gpuPrimary = if ($gpuNames.Count -gt 0) { $gpuNames[0] } else { 'GPU Padrão' }
+    $gpuDetails = @($gpuNames | ForEach-Object {
+        [pscustomobject]@{
+            Name = [string]$_
+            Kind = (Get-OptiKitGpuKind -Name ([string]$_))
+        }
+    })
+    $hasIntegratedGpu = [bool](@($gpuDetails | Where-Object { $_.Kind -eq 'Integrated' }).Count -gt 0)
+    $hasDiscreteGpu = [bool](@($gpuDetails | Where-Object { $_.Kind -eq 'Discrete' }).Count -gt 0)
+    $discreteGpu = @($gpuDetails | Where-Object { $_.Kind -eq 'Discrete' } | Select-Object -First 1)
+    $integratedGpu = @($gpuDetails | Where-Object { $_.Kind -eq 'Integrated' } | Select-Object -First 1)
+    $gpuPrimary = if ($discreteGpu.Count -gt 0) {
+        $discreteGpu[0].Name
+    }
+    elseif ($integratedGpu.Count -gt 0) {
+        $integratedGpu[0].Name
+    }
+    elseif ($gpuDetails.Count -gt 0) {
+        $gpuDetails[0].Name
+    }
+    else {
+        'GPU Padrão'
+    }
     $vramBytes = Get-OptiKitGpuVramBytes
+    $ramModules = @(Get-CimInstance -ClassName Win32_PhysicalMemory -ErrorAction SilentlyContinue)
 
     $script:OptiKitHardwareCache = [pscustomobject]@{
-        CpuName         = $cpuName
-        CpuCores        = $cpuCores
-        IsX3D           = $isX3D
-        IsX3DDualCcd    = $isX3DDualCcd
-        IsLaptop        = $isLaptop
-        GpuNames        = $gpuNames.ToArray()
-        GpuVendors      = $gpuVendors.ToArray()
-        GpuVramBytes    = [uint64]$vramBytes
-        GpuVramGB       = [math]::Round(([double]$vramBytes / 1GB), 0)
-        SystemDiskIsSSD = $isSsd
-        OsBuild         = $osBuild
-        IsWin11         = $isWin11
-        Summary         = "$cpuName | $gpuPrimary | $chassisLabel | $osLabel"
+        CpuName            = $cpuName
+        CpuCores           = $cpuCores
+        IsX3D              = $isX3D
+        IsX3DDualCcd       = $isX3DDualCcd
+        IsLaptop           = $isLaptop
+        GpuNames           = $gpuNames.ToArray()
+        GpuVendors         = $gpuVendors.ToArray()
+        GpuDetails         = $gpuDetails
+        HasIntegratedGpu   = $hasIntegratedGpu
+        HasDiscreteGpu     = $hasDiscreteGpu
+        HasHybridGraphics  = ($hasIntegratedGpu -and $hasDiscreteGpu)
+        GpuVramBytes       = [uint64]$vramBytes
+        GpuVramGB          = [math]::Round(([double]$vramBytes / 1GB), 0)
+        RamModuleCount     = $ramModules.Count
+        RamIsSingleChannel = ($ramModules.Count -eq 1)
+        SystemDiskIsSSD    = $isSsd
+        OsBuild            = $osBuild
+        IsWin11            = $isWin11
+        Summary            = "$cpuName | $gpuPrimary | $chassisLabel | $osLabel"
     }
 
     return $script:OptiKitHardwareCache

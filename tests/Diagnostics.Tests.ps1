@@ -175,3 +175,47 @@ Describe 'Diagnósticos de gaming (VRAM, janela e energia)' {
         $item.Status | Should -Be 'OK'
     }
 }
+
+Describe 'Recomendações por hardware' {
+    BeforeEach {
+        $testRoot = Join-Path $TestDrive ("hardware_recommendations_" + [Guid]::NewGuid().ToString('N'))
+        Initialize-OptiKitEnvironment -DataRoot $testRoot -DryRun:$false | Out-Null
+    }
+
+    It 'Deve recomendar GPU dedicada, dual-channel e revisão do HAGS' {
+        Mock Get-OptiKitHardware {
+            [pscustomobject]@{
+                HasHybridGraphics = $true
+                GpuVramGB         = 8
+                RamModuleCount    = 1
+                GpuDetails        = @(
+                    [pscustomobject]@{ Name = 'AMD Radeon(TM) Graphics'; Kind = 'Integrated' },
+                    [pscustomobject]@{ Name = 'AMD Radeon RX 6600'; Kind = 'Discrete' }
+                )
+            }
+        }
+        Mock Get-RegistryEntryState { [pscustomobject]@{ ValueExisted = $true; Value = 2 } }
+
+        $item = Get-OptiKitDiagnosticHardwareRecommendations
+        $item.Status | Should -Be 'Warn'
+        $item.Summary | Should -Match 'híbridas'
+        $item.Summary | Should -Match 'single-channel'
+        $item.Summary | Should -Match 'HAGS'
+        $item.Detail | Should -Match 'RX 6600'
+    }
+
+    It 'Deve retornar OK quando não há recomendação específica' {
+        Mock Get-OptiKitHardware {
+            [pscustomobject]@{
+                HasHybridGraphics = $false
+                GpuVramGB         = 16
+                RamModuleCount    = 2
+                GpuDetails        = @([pscustomobject]@{ Name = 'AMD Radeon RX 6600'; Kind = 'Discrete' })
+            }
+        }
+        Mock Get-RegistryEntryState { [pscustomobject]@{ ValueExisted = $false; Value = $null } }
+
+        $item = Get-OptiKitDiagnosticHardwareRecommendations
+        $item.Status | Should -Be 'OK'
+    }
+}

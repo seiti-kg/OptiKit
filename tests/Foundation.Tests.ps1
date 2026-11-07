@@ -174,4 +174,15 @@ Describe 'Fundação v0.2 (hardware guard + DirectX)' {
         (Test-OptiKitHagsVramConstrained -Hardware ([pscustomobject]@{ GpuVramGB = 0 })) | Should -BeFalse
         (Test-OptiKitHagsVramConstrained -Hardware ([pscustomobject]@{ CpuName = 'sem VRAM' })) | Should -BeFalse
     }
+
+    It 'Deve classificar iGPU, dGPU e GPU desconhecida pelo nome' {
+        (Get-OptiKitGpuKind -Name 'AMD Radeon(TM) Graphics') | Should -Be 'Integrated'
+        (Get-OptiKitGpuKind -Name 'AMD Radeon 760M') | Should -Be 'Integrated'
+        (Get-OptiKitGpuKind -Name 'AMD Radeon RX 6600') | Should -Be 'Discrete'
+        (Get-OptiKitGpuKind -Name 'NVIDIA GeForce RTX 4060') | Should -Be 'Discrete'
+        (Get-OptiKitGpuKind -Name 'Intel(R) UHD Graphics') | Should -Be 'Integrated'
+        (Get-OptiKitGpuKind -Name 'Intel(R) Arc(TM) Graphics') | Should -Be 'Integrated'
+        (Get-OptiKitGpuKind -Name 'Intel(R) Arc(TM) A770') | Should -Be 'Discrete'
+        (Get-OptiKitGpuKind -Name 'GPU Desconhecida') | Should -Be 'Unknown'
+    }
 }
