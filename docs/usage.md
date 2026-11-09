@@ -34,14 +34,17 @@ powershell -ExecutionPolicy Bypass -File .\win.ps1
 
 ## Interface
 
-A janela tem seis abas:
+A janela tem nove abas:
 
 1. **Instalar apps** — catálogo Winget com seleção e instalação silenciosa.
 2. **Ajustes do Windows** — busca, filtros, estado atual e aplicação/reversão por seleção.
 3. **Jogos** — perfis por título, detecção de executável e ferramentas globais.
-4. **Diagnóstico** — leitura de hardware, BIOS, discos, estabilidade, Defender e recomendações para GPU híbrida/RAM/HAGS.
-5. **Inicialização** — programas de startup compatíveis com o Gerenciador de Tarefas.
-6. **Manutenção** — reset de rede/DNS, SFC/DISM, reparo do app de Configurações, limpeza, reboot para UEFI e atualização via Winget.
+4. **Segundo plano** — apps com janela; suspender e retomar processos selecionados.
+5. **Desinstalar** — programas Win32 e pacotes Appx instalados.
+6. **Duplicados** — localizador por tamanho, fingerprint e SHA-256 com envio para a Lixeira.
+7. **Diagnóstico** — leitura de hardware, BIOS, discos, estabilidade, Defender e recomendações para GPU híbrida/RAM/HAGS.
+8. **Inicialização** — programas de startup compatíveis com o Gerenciador de Tarefas.
+9. **Manutenção** — reset de rede/DNS, SFC/DISM, reparo do app de Configurações, limpeza, reboot para UEFI e atualização via Winget.
 
 Ações globais:
 
@@ -50,6 +53,18 @@ Ações globais:
 - **Exportar relatório** gera um HTML com resumo da sessão e diagnóstico.
 - **Atualizar apps** executa `winget upgrade --all`.
 - **Reverter DNS** restaura os servidores DNS originais.
+
+### Segundo plano
+
+Selecione um app com janela e use **Suspender**. O processo fica congelado até **Retomar**; **Retomar todos** libera todos os apps suspensos. O OptiKit retoma os apps automaticamente ao fechar. Serviços, shell, anti-cheats e o próprio OptiKit são bloqueados.
+
+### Desinstalar
+
+A aba lista programas Win32 e pacotes Appx instalados. Use a busca, selecione um item e confirme em **Desinstalar**. O comando oficial do programa é executado; o OptiKit não remove sobras manualmente.
+
+### Duplicados
+
+Escolha uma pasta de dados, o tamanho mínimo e clique em **Escanear**. Marque os arquivos que deseja remover e clique em **Mover para Lixeira**. É obrigatório manter pelo menos uma cópia de cada grupo; pastas de sistema são bloqueadas.
 
 ### Reparar as Configurações do Windows
 

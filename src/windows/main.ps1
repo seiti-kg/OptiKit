@@ -206,6 +206,8 @@ function Start-OptiKitWorkerTask {
         'Optimize-NetworkAdapterGaming', 'Disable-RiotClientStartup', 'Clear-ShaderCache',
         'Invoke-GameOptimization', 'Test-GameOptimizationApplied',
         'Invoke-NetworkReset', 'Invoke-NativeStep', 'Invoke-CancelableProcess', 'Invoke-SystemIntegrityRepair', 'Repair-OptiKitSettingsApp', 'Clear-TemporaryFiles',
+        'ConvertFrom-OptiKitRegistryEntry', 'ConvertFrom-OptiKitAppxPackage', 'Get-OptiKitInstalledPrograms', 'Get-OptiKitUninstallCommand', 'Uninstall-OptiKitProgram',
+        'Get-OptiKitFileFingerprint', 'Find-OptiKitDuplicateFiles',
         'Restart-OptiKitToUefi',
         'Clear-OptiKitDirectory', 'Invoke-AdvancedCleanup',
         'Get-OptiKitDohProviders', 'Get-OptiKitDnsAdapters', 'Test-OptiKitDohSupported',
@@ -424,6 +426,8 @@ function Start-OptiKitMain {
         CancelRequest        = $false
         PendingStateReport   = $null
         PendingDiagnosticsReport = $null
+        PendingInstalledPrograms = $null
+        PendingDuplicateReport = $null
         PendingDiagnosticsStart  = $false
         PendingUpdateInfo    = $null
         PendingStartupItems  = $null
@@ -701,6 +705,193 @@ function Start-OptiKitMain {
 
     $ui.BtnRefreshDiagnostics.Add_Click($triggerDiagnostics)
 
+    # Segundo plano
+    $refreshProcesses = {
+        try {
+            $items = @(Get-OptiKitBackgroundProcesses)
+            $ui.GridBackgroundProcesses.ItemsSource = $items
+            $suspended = @($items | Where-Object { $_.IsSuspended }).Count
+            $ui.TxtProcessStatus.Text = ("{0} app(s) com janela; {1} suspenso(s)." -f $items.Count, $suspended)
+        }
+        catch {
+            $ui.TxtProcessStatus.Text = ("Falha ao listar processos: {0}" -f $_.Exception.Message)
+            Write-OptimizerLog -Level WARN -Message ("Falha ao listar processos: {0}" -f $_.Exception.Message)
+        }
+    }.GetNewClosure()
+    $ui.BtnRefreshProcesses.Add_Click($refreshProcesses)
+    $ui.BtnSuspendProcess.Add_Click({
+        $selected = $ui.GridBackgroundProcesses.SelectedItem
+        if (-not $selected) {
+            $ui.TxtProcessStatus.Text = 'Selecione um app na lista.'
+            return
+        }
+        $confirm = [System.Windows.MessageBox]::Show($window, ("Suspender '{0}'?`r`n`r`nApps suspensos podem congelar downloads e conexões. Use Retomar para liberar." -f $selected.Name), 'Suspender app', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
+        try {
+            Suspend-OptiKitProcess -Id ([int]$selected.Id)
+            & $refreshProcesses
+            $ui.TxtProcessStatus.Text = ("'{0}' suspenso." -f $selected.Name)
+        }
+        catch {
+            $ui.TxtProcessStatus.Text = ("Falha ao suspender: {0}" -f $_.Exception.Message)
+        }
+    }.GetNewClosure())
+    $ui.BtnResumeProcess.Add_Click({
+        $selected = $ui.GridBackgroundProcesses.SelectedItem
+        if (-not $selected) {
+            $ui.TxtProcessStatus.Text = 'Selecione um app na lista.'
+            return
+        }
+        try {
+            Resume-OptiKitProcess -Id ([int]$selected.Id)
+            & $refreshProcesses
+            $ui.TxtProcessStatus.Text = ("'{0}' retomado." -f $selected.Name)
+        }
+        catch {
+            $ui.TxtProcessStatus.Text = ("Falha ao retomar: {0}" -f $_.Exception.Message)
+        }
+    }.GetNewClosure())
+    $ui.BtnResumeAllProcesses.Add_Click({
+        [void](Resume-OptiKitSuspendedProcesses)
+        & $refreshProcesses
+    }.GetNewClosure())
+
+    # Desinstalar
+    $toolState = [hashtable]::Synchronized(@{
+        InstalledPrograms = @()
+        DuplicateRows     = @()
+    })
+    $applyInstalledFilter = {
+        $query = [string]$ui.TxtUninstallSearch.Text
+        if ([string]::IsNullOrWhiteSpace($query)) {
+            $ui.GridInstalledPrograms.ItemsSource = @($toolState.InstalledPrograms)
+            return
+        }
+        $filtered = @($toolState.InstalledPrograms | Where-Object {
+            ([string]$_.DisplayName) -match [regex]::Escape($query) -or
+            ([string]$_.Publisher) -match [regex]::Escape($query) -or
+            ([string]$_.DisplayVersion) -match [regex]::Escape($query)
+        })
+        $ui.GridInstalledPrograms.ItemsSource = $filtered
+    }.GetNewClosure()
+    $ui.TxtUninstallSearch.Add_TextChanged({ & $applyInstalledFilter }.GetNewClosure())
+    $ui.BtnRefreshUninstall.Add_Click({
+        if ($sync.IsBusy) { return }
+        $ui.TxtUninstallStatus.Text = 'Carregando programas instalados...'
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
+            $SyncHash.PendingInstalledPrograms = @(Get-OptiKitInstalledPrograms)
+        }
+    }.GetNewClosure())
+    $ui.BtnUninstallSelected.Add_Click({
+        if ($sync.IsBusy) { return }
+        $selected = $ui.GridInstalledPrograms.SelectedItem
+        if (-not $selected) {
+            $ui.TxtUninstallStatus.Text = 'Selecione um programa na lista.'
+            return
+        }
+        $confirm = [System.Windows.MessageBox]::Show($window, ("Desinstalar '{0}'?`r`n`r`nO programa será removido pelo desinstalador oficial. Não há desfazer." -f $selected.DisplayName), 'Desinstalar programa', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
+        Start-OptiKitWorkerTask -SyncHash $sync -Arguments @{ Program = $selected } -WorkerScript {
+            Uninstall-OptiKitProgram -Program $WorkerArgs.Program
+            $SyncHash.PendingInstalledPrograms = @(Get-OptiKitInstalledPrograms)
+        }
+    }.GetNewClosure())
+
+    # Duplicados
+    $ui.CmbDuplicateMinSize.Items.Clear()
+    foreach ($option in @(
+        @{ Text = '1 MB'; Value = [int64]1MB },
+        @{ Text = '10 MB'; Value = [int64]10MB },
+        @{ Text = '100 MB'; Value = [int64]100MB }
+    )) {
+        $item = New-Object System.Windows.Controls.ComboBoxItem
+        $item.Content = $option.Text
+        $item.Tag = $option.Value
+        [void]$ui.CmbDuplicateMinSize.Items.Add($item)
+    }
+    $ui.CmbDuplicateMinSize.SelectedIndex = 0
+    $ui.BtnBrowseDuplicates.Add_Click({
+        $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
+        $dialog.Description = 'Escolha uma pasta de dados para procurar duplicados.'
+        if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+            $ui.TxtDuplicatePath.Text = $dialog.SelectedPath
+        }
+    }.GetNewClosure())
+    $ui.BtnScanDuplicates.Add_Click({
+        if ($sync.IsBusy) { return }
+        $path = [string]$ui.TxtDuplicatePath.Text
+        if ([string]::IsNullOrWhiteSpace($path)) {
+            $ui.TxtDuplicateStatus.Text = 'Escolha uma pasta primeiro.'
+            return
+        }
+        $minItem = $ui.CmbDuplicateMinSize.SelectedItem
+        $minBytes = if ($minItem) { [int64]$minItem.Tag } else { [int64]1MB }
+        $ui.TxtDuplicateStatus.Text = 'Escaneando...'
+        Start-OptiKitWorkerTask -SyncHash $sync -Arguments @{ Path = $path; MinimumSizeBytes = $minBytes } -WorkerScript {
+            $groups = @(Find-OptiKitDuplicateFiles -Path $WorkerArgs.Path -MinimumSizeBytes $WorkerArgs.MinimumSizeBytes)
+            $rows = New-Object 'System.Collections.Generic.List[object]'
+            $wasted = [int64]0
+            foreach ($group in $groups) {
+                $wasted += $group.Length * ($group.Files.Count - 1)
+                foreach ($file in @($group.Files)) {
+                    [void]$rows.Add([pscustomobject]@{
+                        Delete   = $false
+                        GroupId  = [string]$group.GroupId
+                        File     = [string]$file.Path
+                        SizeMB   = [math]::Round($file.Length / 1MB, 1)
+                        Modified = $file.LastWriteTime.ToString('yyyy-MM-dd HH:mm')
+                    })
+                }
+            }
+            $SyncHash.PendingDuplicateReport = [pscustomobject]@{
+                Rows        = $rows.ToArray()
+                Groups      = $groups.Count
+                WastedBytes = $wasted
+            }
+        }
+    }.GetNewClosure())
+    $ui.BtnCancelDuplicates.Add_Click({
+        $sync.CancelRequest = $true
+        $ui.TxtDuplicateStatus.Text = 'Cancelamento solicitado...'
+    }.GetNewClosure())
+    $ui.BtnDeleteDuplicates.Add_Click({
+        if ($sync.IsBusy) { return }
+        $rows = @($toolState.DuplicateRows)
+        if ($rows.Count -eq 0) {
+            $ui.TxtDuplicateStatus.Text = 'Nenhum resultado para excluir.'
+            return
+        }
+        $selected = @($rows | Where-Object { [bool]$_.Delete })
+        if ($selected.Count -eq 0) {
+            $ui.TxtDuplicateStatus.Text = 'Marque pelo menos um arquivo.'
+            return
+        }
+        try {
+            [void](Test-OptiKitDuplicateSelection -Rows $rows)
+        }
+        catch {
+            $ui.TxtDuplicateStatus.Text = $_.Exception.Message
+            return
+        }
+        $confirm = [System.Windows.MessageBox]::Show($window, ("Mover {0} arquivo(s) para a Lixeira?" -f $selected.Count), 'Mover duplicados', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
+        $failed = 0
+        foreach ($row in $selected) {
+            try {
+                Remove-OptiKitDuplicateFile -Path ([string]$row.File)
+                $toolState.DuplicateRows = @($toolState.DuplicateRows | Where-Object { $_.File -ne $row.File })
+            }
+            catch {
+                $failed++
+                Write-OptimizerLog -Level WARN -Message ("Falha ao mover para a Lixeira: {0}" -f $row.File)
+            }
+        }
+        $ui.GridDuplicateFiles.ItemsSource = @($toolState.DuplicateRows)
+        $ui.TxtDuplicateStatus.Text = ("{0} arquivo(s) movido(s) para a Lixeira; {1} falha(s)." -f ($selected.Count - $failed), $failed)
+    }.GetNewClosure())
+
+    & $refreshProcesses
+
     $ui.BtnViewApplied.Add_Click({
         Show-AppliedChangesDialog -Ui $ui
     }.GetNewClosure())
@@ -901,6 +1092,16 @@ function Start-OptiKitMain {
         $ui.BtnWingetUpgrade.IsEnabled = (-not $busy)
         $ui.BtnAdvancedCleanup.IsEnabled = (-not $busy)
         $ui.BtnCancelMaintenance.IsEnabled = $busy
+        $ui.BtnRefreshProcesses.IsEnabled = (-not $busy)
+        $ui.BtnSuspendProcess.IsEnabled = (-not $busy)
+        $ui.BtnResumeProcess.IsEnabled = (-not $busy)
+        $ui.BtnResumeAllProcesses.IsEnabled = (-not $busy)
+        $ui.BtnRefreshUninstall.IsEnabled = (-not $busy)
+        $ui.BtnUninstallSelected.IsEnabled = (-not $busy)
+        $ui.BtnBrowseDuplicates.IsEnabled = (-not $busy)
+        $ui.BtnScanDuplicates.IsEnabled = (-not $busy)
+        $ui.BtnCancelDuplicates.IsEnabled = $busy
+        $ui.BtnDeleteDuplicates.IsEnabled = (-not $busy)
 
         if (-not $busy -and $sync.PendingDiagnosticsStart) {
             $sync.PendingDiagnosticsStart = $false
@@ -917,6 +1118,21 @@ function Start-OptiKitMain {
             $diag = $sync.PendingDiagnosticsReport
             $sync.PendingDiagnosticsReport = $null
             Update-OptiKitDiagnosticsUi -Ui $ui -Items @($diag)
+        }
+
+        if ($null -ne $sync.PendingInstalledPrograms) {
+            $toolState.InstalledPrograms = @($sync.PendingInstalledPrograms)
+            $sync.PendingInstalledPrograms = $null
+            & $applyInstalledFilter
+            $ui.TxtUninstallStatus.Text = ("{0} programa(s) instalado(s)." -f $toolState.InstalledPrograms.Count)
+        }
+
+        if ($null -ne $sync.PendingDuplicateReport) {
+            $report = $sync.PendingDuplicateReport
+            $sync.PendingDuplicateReport = $null
+            $toolState.DuplicateRows = @($report.Rows)
+            $ui.GridDuplicateFiles.ItemsSource = @($toolState.DuplicateRows)
+            $ui.TxtDuplicateStatus.Text = ("{0} grupo(s); {1:N1} MB desperdiçados." -f $report.Groups, ([double]$report.WastedBytes / 1MB))
         }
 
         if ($null -ne $sync.PendingUpdateInfo) {
@@ -974,6 +1190,7 @@ function Start-OptiKitMain {
 
     $window.Add_Closed({
         $uiTimer.Stop()
+        [void](Resume-OptiKitSuspendedProcesses)
         if ($sync.ActivePowerShell) {
             try { $sync.ActivePowerShell.Dispose() } catch { Write-Verbose $_.Exception.Message }
         }

@@ -8,7 +8,7 @@
 - **46 aplicativos** instaláveis via Winget, com bootstrap automático em instalações novas.
 - **3 perfis de jogos** (VALORANT, Counter-Strike 2 e Unreal Engine 5/AAA) e **3 ferramentas globais** de jogos.
 - **4 presets** prontos: `GamerRecomendado`, `MinimoSeguro`, `PerfilValorant` e `Notebook`.
-- **6 abas** na interface: Instalar apps, Ajustes do Windows, Jogos, Diagnóstico, Inicialização e Manutenção.
+- **9 abas** na interface: Instalar apps, Ajustes do Windows, Jogos, Segundo plano, Desinstalar, Duplicados, Diagnóstico, Inicialização e Manutenção.
 
 ## Interface
 
@@ -74,6 +74,15 @@ A interface WPF é gerada dinamicamente a partir dos catálogos JSON e inclui:
 - **Ferramentas globais:** limpeza de cache DirectX/NVIDIA/AMD, otimização de NIC e de portas USB.
 - Detecção de executável e seleção manual quando o jogo não é encontrado.
 
+## Ferramentas de sistema
+
+- **Segundo plano:** lista apps com janela e permite suspender/retomar processos selecionados explicitamente.
+  A suspensão usa `NtSuspendProcess`; shell, serviços, anti-cheats, `RiotClientServices`, Defender e o próprio OptiKit são bloqueados.
+- **Desinstalar:** inventário de programas Win32 (registro) e pacotes Appx, com busca e execução do desinstalador oficial.
+  O OptiKit não apaga sobras manualmente e protege apps de sistema/frameworks.
+- **Duplicados:** compara tamanho, fingerprint e SHA-256; envia arquivos marcados para a Lixeira e exige manter pelo menos uma cópia por grupo.
+  Pastas de sistema (`Windows`, `Program Files`, `ProgramData`, `AppData`, Lixeira e System Volume Information) são bloqueadas como raiz.
+
 ## Windows Update
 
 - Bloqueio de drivers automáticos do Windows Update.
@@ -123,5 +132,7 @@ A interface WPF é gerada dinamicamente a partir dos catálogos JSON e inclui:
 - **Windows 10:** o alvo principal é Windows 11; Windows 10 22H2 é suportado em melhor esforço.
 - **Anti-cheats:** os guardrails reduzem o risco de conflito, mas não garantem compatibilidade com todos os anti-cheats ou versões futuras.
 - **Distribuição:** o projeto é um script PowerShell sem instalador assinado nem auto-update; o aviso de nova versão é apenas informativo. O Windows pode exibir aviso do SmartScreen/antivírus.
+- **Suspensão:** apps suspensos são retomados ao fechar o OptiKit; se o processo do OptiKit for encerrado à força, eles podem permanecer suspensos até retomada manual ou reinício.
+- **Duplicados:** a exclusão depende da Lixeira do Windows; arquivos em rede ou unidades sem Lixeira não são removidos.
 
 Consulte também as [diretrizes técnicas](guidelines.md) e os [tweaks rejeitados](rejected.md).

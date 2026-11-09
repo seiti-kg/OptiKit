@@ -580,6 +580,15 @@
                 <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="5">
                     <Setter Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="6">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="7">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="8">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
             </Style.Triggers>
         </Style>
 
@@ -716,6 +725,24 @@
                             <TextBlock Text="Jogos" VerticalAlignment="Center" />
                         </StackPanel>
                     </ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="Segundo plano">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE9D2;" />
+                            <TextBlock Text="Segundo plano" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="Desinstalar">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE74D;" />
+                            <TextBlock Text="Desinstalar" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="Duplicados">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE8C8;" />
+                            <TextBlock Text="Duplicados" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
                     <ListBoxItem AutomationProperties.Name="Diagnóstico">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE9D9;" />
@@ -819,7 +846,106 @@
                 </Grid>
             </TabItem>
 
-            <!-- 3. Diagnóstico -->
+            <!-- 3. Segundo plano -->
+            <TabItem Header="Segundo plano">
+                <Grid Margin="32,24,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <DockPanel Grid.Row="0" Margin="0,0,32,16">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Bottom">
+                            <Button x:Name="BtnRefreshProcesses" Style="{StaticResource Button.Subtle}" Content="Atualizar" Margin="0,0,8,0" />
+                            <Button x:Name="BtnResumeAllProcesses" Style="{StaticResource Button.Subtle}" Content="Retomar todos" Margin="0,0,8,0" />
+                            <Button x:Name="BtnResumeProcess" Content="Retomar" Margin="0,0,8,0" />
+                            <Button x:Name="BtnSuspendProcess" Style="{StaticResource Button.Primary}" Content="Suspender" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Segundo plano" Style="{StaticResource Text.Title}" />
+                            <TextBlock Text="Suspenda apps com janela para liberar CPU. Eles ficam congelados até você retomar." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </DockPanel>
+                    <DataGrid x:Name="GridBackgroundProcesses" Grid.Row="1" Style="{StaticResource DataGrid.Clean}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" RowHeaderWidth="0" SelectionMode="Single" Margin="0,0,32,12">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Processo" Binding="{Binding Name}" Width="180" ElementStyle="{StaticResource Cell.Text}" />
+                            <DataGridTextColumn Header="Título" Binding="{Binding Title}" Width="*" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Memória" Binding="{Binding WorkingSetMB, StringFormat={}{0:N0} MB}" Width="110" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Estado" Binding="{Binding IsSuspended}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock x:Name="TxtProcessStatus" Grid.Row="2" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Text="Atualize a lista e selecione um app." Margin="0,0,32,24" />
+                </Grid>
+            </TabItem>
+
+            <!-- 4. Desinstalar -->
+            <TabItem Header="Desinstalar">
+                <Grid Margin="32,24,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <DockPanel Grid.Row="0" Margin="0,0,32,12">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Bottom">
+                            <Button x:Name="BtnRefreshUninstall" Style="{StaticResource Button.Subtle}" Content="Atualizar" Margin="0,0,8,0" />
+                            <Button x:Name="BtnUninstallSelected" Style="{StaticResource Button.Danger}" Content="Desinstalar" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Desinstalar" Style="{StaticResource Text.Title}" />
+                            <TextBlock Text="Programas Win32 e pacotes Appx instalados. A desinstalação usa o comando oficial de cada programa." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </DockPanel>
+                    <TextBox x:Name="TxtUninstallSearch" Grid.Row="1" Margin="0,0,32,12" Style="{StaticResource TextBox.Search}" Tag="Buscar programas instalados" AutomationProperties.Name="Buscar programas instalados" ToolTip="Filtra por nome, editor ou versão" />
+                    <DataGrid x:Name="GridInstalledPrograms" Grid.Row="2" Style="{StaticResource DataGrid.Clean}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" RowHeaderWidth="0" SelectionMode="Single" Margin="0,0,32,12">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Programa" Binding="{Binding DisplayName}" Width="*" ElementStyle="{StaticResource Cell.Text}" />
+                            <DataGridTextColumn Header="Versão" Binding="{Binding DisplayVersion}" Width="110" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Editor" Binding="{Binding Publisher}" Width="220" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Origem" Binding="{Binding Source}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Tamanho" Binding="{Binding EstimatedSizeMB, StringFormat={}{0:N1} MB}" Width="100" ElementStyle="{StaticResource Cell.Meta}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock x:Name="TxtUninstallStatus" Grid.Row="3" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Text="Atualize a lista para carregar os programas instalados." Margin="0,0,32,24" />
+                </Grid>
+            </TabItem>
+
+            <!-- 5. Duplicados -->
+            <TabItem Header="Duplicados">
+                <Grid Margin="32,24,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Margin="0,0,32,12">
+                        <TextBlock Text="Arquivos duplicados" Style="{StaticResource Text.Title}" />
+                        <TextBlock Text="Compara tamanho, fingerprint e SHA-256. A exclusão vai para a Lixeira; mantenha pelo menos uma cópia por grupo." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                    </StackPanel>
+                    <WrapPanel Grid.Row="1" Margin="0,0,32,12">
+                        <TextBox x:Name="TxtDuplicatePath" Width="330" Height="32" Margin="0,0,8,6" Style="{StaticResource TextBox.Search}" Tag="Pasta para escanear" AutomationProperties.Name="Pasta para escanear" />
+                        <Button x:Name="BtnBrowseDuplicates" Style="{StaticResource Button.Subtle}" Content="Escolher" Margin="0,0,8,6" />
+                        <ComboBox x:Name="CmbDuplicateMinSize" Width="110" Height="32" Margin="0,0,8,6" AutomationProperties.Name="Tamanho mínimo" />
+                        <Button x:Name="BtnScanDuplicates" Style="{StaticResource Button.Primary}" Content="Escanear" Margin="0,0,8,6" />
+                        <Button x:Name="BtnCancelDuplicates" Style="{StaticResource Button.Subtle}" Content="Cancelar" IsEnabled="False" Margin="0,0,8,6" />
+                        <Button x:Name="BtnDeleteDuplicates" Style="{StaticResource Button.Danger}" Content="Mover para Lixeira" Margin="0,0,0,6" />
+                    </WrapPanel>
+                    <DataGrid x:Name="GridDuplicateFiles" Grid.Row="2" Style="{StaticResource DataGrid.Clean}" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" RowHeaderWidth="0" SelectionMode="Extended" Margin="0,0,32,12">
+                        <DataGrid.Columns>
+                            <DataGridCheckBoxColumn Header="Excluir" Binding="{Binding Delete, Mode=TwoWay}" Width="70" />
+                            <DataGridTextColumn Header="Grupo" Binding="{Binding GroupId}" Width="90" IsReadOnly="True" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Arquivo" Binding="{Binding File}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource Cell.Text}" />
+                            <DataGridTextColumn Header="Tamanho" Binding="{Binding SizeMB, StringFormat={}{0:N1} MB}" Width="110" IsReadOnly="True" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Modificado" Binding="{Binding Modified}" Width="150" IsReadOnly="True" ElementStyle="{StaticResource Cell.Meta}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock x:Name="TxtDuplicateStatus" Grid.Row="3" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Text="Escolha uma pasta e clique em Escanear." Margin="0,0,32,24" />
+                </Grid>
+            </TabItem>
+
+            <!-- 6. Diagnóstico -->
             <TabItem Header="Diagnóstico">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>
@@ -839,7 +965,7 @@
                 </Grid>
             </TabItem>
 
-            <!-- 4. Inicialização -->
+            <!-- 7. Inicialização -->
             <TabItem Header="Inicialização">
                 <Grid Margin="32,24,32,0">
                     <Grid.RowDefinitions>
@@ -868,7 +994,7 @@
                 </Grid>
             </TabItem>
 
-            <!-- 5. Manutenção -->
+            <!-- 8. Manutenção -->
             <TabItem Header="Manutenção">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>

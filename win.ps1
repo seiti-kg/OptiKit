@@ -3176,6 +3176,15 @@ $script:EmbeddedThemeXaml = @'
                 <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="5">
                     <Setter Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="6">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="7">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="8">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
             </Style.Triggers>
         </Style>
 
@@ -3312,6 +3321,24 @@ $script:EmbeddedThemeXaml = @'
                             <TextBlock Text="Jogos" VerticalAlignment="Center" />
                         </StackPanel>
                     </ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="Segundo plano">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE9D2;" />
+                            <TextBlock Text="Segundo plano" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="Desinstalar">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE74D;" />
+                            <TextBlock Text="Desinstalar" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="Duplicados">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE8C8;" />
+                            <TextBlock Text="Duplicados" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
                     <ListBoxItem AutomationProperties.Name="Diagn&#x00F3;stico">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE9D9;" />
@@ -3415,7 +3442,106 @@ $script:EmbeddedThemeXaml = @'
                 </Grid>
             </TabItem>
 
-            <!-- 3. Diagn&#x00F3;stico -->
+            <!-- 3. Segundo plano -->
+            <TabItem Header="Segundo plano">
+                <Grid Margin="32,24,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <DockPanel Grid.Row="0" Margin="0,0,32,16">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Bottom">
+                            <Button x:Name="BtnRefreshProcesses" Style="{StaticResource Button.Subtle}" Content="Atualizar" Margin="0,0,8,0" />
+                            <Button x:Name="BtnResumeAllProcesses" Style="{StaticResource Button.Subtle}" Content="Retomar todos" Margin="0,0,8,0" />
+                            <Button x:Name="BtnResumeProcess" Content="Retomar" Margin="0,0,8,0" />
+                            <Button x:Name="BtnSuspendProcess" Style="{StaticResource Button.Primary}" Content="Suspender" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Segundo plano" Style="{StaticResource Text.Title}" />
+                            <TextBlock Text="Suspenda apps com janela para liberar CPU. Eles ficam congelados at&#x00E9; voc&#x00EA; retomar." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </DockPanel>
+                    <DataGrid x:Name="GridBackgroundProcesses" Grid.Row="1" Style="{StaticResource DataGrid.Clean}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" RowHeaderWidth="0" SelectionMode="Single" Margin="0,0,32,12">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Processo" Binding="{Binding Name}" Width="180" ElementStyle="{StaticResource Cell.Text}" />
+                            <DataGridTextColumn Header="T&#x00ED;tulo" Binding="{Binding Title}" Width="*" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Mem&#x00F3;ria" Binding="{Binding WorkingSetMB, StringFormat={}{0:N0} MB}" Width="110" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Estado" Binding="{Binding IsSuspended}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock x:Name="TxtProcessStatus" Grid.Row="2" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Text="Atualize a lista e selecione um app." Margin="0,0,32,24" />
+                </Grid>
+            </TabItem>
+
+            <!-- 4. Desinstalar -->
+            <TabItem Header="Desinstalar">
+                <Grid Margin="32,24,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <DockPanel Grid.Row="0" Margin="0,0,32,12">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Bottom">
+                            <Button x:Name="BtnRefreshUninstall" Style="{StaticResource Button.Subtle}" Content="Atualizar" Margin="0,0,8,0" />
+                            <Button x:Name="BtnUninstallSelected" Style="{StaticResource Button.Danger}" Content="Desinstalar" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Desinstalar" Style="{StaticResource Text.Title}" />
+                            <TextBlock Text="Programas Win32 e pacotes Appx instalados. A desinstala&#x00E7;&#x00E3;o usa o comando oficial de cada programa." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </DockPanel>
+                    <TextBox x:Name="TxtUninstallSearch" Grid.Row="1" Margin="0,0,32,12" Style="{StaticResource TextBox.Search}" Tag="Buscar programas instalados" AutomationProperties.Name="Buscar programas instalados" ToolTip="Filtra por nome, editor ou vers&#x00E3;o" />
+                    <DataGrid x:Name="GridInstalledPrograms" Grid.Row="2" Style="{StaticResource DataGrid.Clean}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" RowHeaderWidth="0" SelectionMode="Single" Margin="0,0,32,12">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Programa" Binding="{Binding DisplayName}" Width="*" ElementStyle="{StaticResource Cell.Text}" />
+                            <DataGridTextColumn Header="Vers&#x00E3;o" Binding="{Binding DisplayVersion}" Width="110" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Editor" Binding="{Binding Publisher}" Width="220" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Origem" Binding="{Binding Source}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Tamanho" Binding="{Binding EstimatedSizeMB, StringFormat={}{0:N1} MB}" Width="100" ElementStyle="{StaticResource Cell.Meta}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock x:Name="TxtUninstallStatus" Grid.Row="3" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Text="Atualize a lista para carregar os programas instalados." Margin="0,0,32,24" />
+                </Grid>
+            </TabItem>
+
+            <!-- 5. Duplicados -->
+            <TabItem Header="Duplicados">
+                <Grid Margin="32,24,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Margin="0,0,32,12">
+                        <TextBlock Text="Arquivos duplicados" Style="{StaticResource Text.Title}" />
+                        <TextBlock Text="Compara tamanho, fingerprint e SHA-256. A exclus&#x00E3;o vai para a Lixeira; mantenha pelo menos uma c&#x00F3;pia por grupo." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                    </StackPanel>
+                    <WrapPanel Grid.Row="1" Margin="0,0,32,12">
+                        <TextBox x:Name="TxtDuplicatePath" Width="330" Height="32" Margin="0,0,8,6" Style="{StaticResource TextBox.Search}" Tag="Pasta para escanear" AutomationProperties.Name="Pasta para escanear" />
+                        <Button x:Name="BtnBrowseDuplicates" Style="{StaticResource Button.Subtle}" Content="Escolher" Margin="0,0,8,6" />
+                        <ComboBox x:Name="CmbDuplicateMinSize" Width="110" Height="32" Margin="0,0,8,6" AutomationProperties.Name="Tamanho m&#x00ED;nimo" />
+                        <Button x:Name="BtnScanDuplicates" Style="{StaticResource Button.Primary}" Content="Escanear" Margin="0,0,8,6" />
+                        <Button x:Name="BtnCancelDuplicates" Style="{StaticResource Button.Subtle}" Content="Cancelar" IsEnabled="False" Margin="0,0,8,6" />
+                        <Button x:Name="BtnDeleteDuplicates" Style="{StaticResource Button.Danger}" Content="Mover para Lixeira" Margin="0,0,0,6" />
+                    </WrapPanel>
+                    <DataGrid x:Name="GridDuplicateFiles" Grid.Row="2" Style="{StaticResource DataGrid.Clean}" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" RowHeaderWidth="0" SelectionMode="Extended" Margin="0,0,32,12">
+                        <DataGrid.Columns>
+                            <DataGridCheckBoxColumn Header="Excluir" Binding="{Binding Delete, Mode=TwoWay}" Width="70" />
+                            <DataGridTextColumn Header="Grupo" Binding="{Binding GroupId}" Width="90" IsReadOnly="True" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Arquivo" Binding="{Binding File}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource Cell.Text}" />
+                            <DataGridTextColumn Header="Tamanho" Binding="{Binding SizeMB, StringFormat={}{0:N1} MB}" Width="110" IsReadOnly="True" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Modificado" Binding="{Binding Modified}" Width="150" IsReadOnly="True" ElementStyle="{StaticResource Cell.Meta}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock x:Name="TxtDuplicateStatus" Grid.Row="3" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Text="Escolha uma pasta e clique em Escanear." Margin="0,0,32,24" />
+                </Grid>
+            </TabItem>
+
+            <!-- 6. Diagn&#x00F3;stico -->
             <TabItem Header="Diagn&#x00F3;stico">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>
@@ -3435,7 +3561,7 @@ $script:EmbeddedThemeXaml = @'
                 </Grid>
             </TabItem>
 
-            <!-- 4. Inicializa&#x00E7;&#x00E3;o -->
+            <!-- 7. Inicializa&#x00E7;&#x00E3;o -->
             <TabItem Header="Inicializa&#x00E7;&#x00E3;o">
                 <Grid Margin="32,24,32,0">
                     <Grid.RowDefinitions>
@@ -3464,7 +3590,7 @@ $script:EmbeddedThemeXaml = @'
                 </Grid>
             </TabItem>
 
-            <!-- 5. Manuten&#x00E7;&#x00E3;o -->
+            <!-- 8. Manuten&#x00E7;&#x00E3;o -->
             <TabItem Header="Manuten&#x00E7;&#x00E3;o">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>
@@ -8358,6 +8484,535 @@ function Get-OptiKitHardwareDiagnostics {
 }
 
 # ============================================================================
+# Module: src/windows/modules/process-tools.ps1
+# ============================================================================
+# Ferramentas de processos: lista de apps com janela, suspensao e retomada
+
+$script:OptiKitSuspendedProcesses = @{}
+
+function Test-OptiKitProtectedProcess {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Name
+    )
+
+    return ($Name -match '(?i)^(System|Idle|csrss|wininit|winlogon|services|lsass|smss|svchost|dwm|explorer|SearchHost|StartMenuExperienceHost|ShellExperienceHost|ApplicationFrameHost|RuntimeBroker|TextInputHost|SecurityHealthService|MsMpEng|NisSrv|vgc|vgk|RiotClientServices|EasyAntiCheat|BEService|BattlEye|OptiKit|powershell|pwsh)$')
+}
+
+function Initialize-OptiKitProcessControl {
+    [CmdletBinding()]
+    param()
+
+    if ('OptiKit.ProcessControl' -as [type]) { return }
+
+    Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+
+namespace OptiKit {
+    public static class ProcessControl {
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern IntPtr OpenProcess(uint access, bool inherit, int pid);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool CloseHandle(IntPtr handle);
+
+        [DllImport("ntdll.dll")]
+        public static extern uint NtSuspendProcess(IntPtr handle);
+
+        [DllImport("ntdll.dll")]
+        public static extern uint NtResumeProcess(IntPtr handle);
+    }
+}
+'@
+}
+
+function Get-OptiKitBackgroundProcesses {
+    [CmdletBinding()]
+    param()
+
+    $currentSession = [System.Diagnostics.Process]::GetCurrentProcess().SessionId
+    $items = New-Object 'System.Collections.Generic.List[object]'
+    foreach ($process in @(Get-Process -ErrorAction SilentlyContinue)) {
+        if ($process.Id -eq $PID) { continue }
+        if ($process.MainWindowHandle -eq 0) { continue }
+        if ($process.SessionId -ne $currentSession) { continue }
+        if (Test-OptiKitProtectedProcess -Name $process.ProcessName) { continue }
+
+        [void]$items.Add([pscustomobject]@{
+            Id             = [int]$process.Id
+            Name           = [string]$process.ProcessName
+            Title          = [string]$process.MainWindowTitle
+            WorkingSetMB   = [math]::Round($process.WorkingSet64 / 1MB, 0)
+            IsSuspended    = $script:OptiKitSuspendedProcesses.ContainsKey([int]$process.Id)
+        })
+    }
+    return @($items | Sort-Object -Property WorkingSetMB -Descending)
+}
+
+function Suspend-OptiKitProcess {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][int]$Id
+    )
+
+    $process = Get-Process -Id $Id -ErrorAction Stop
+    if ($process.Id -eq $PID) { throw "N$([char]0x00E3)o $([char]0x00E9) poss$([char]0x00ED)vel suspender o pr$([char]0x00F3)prio OptiKit." }
+    if (Test-OptiKitProtectedProcess -Name $process.ProcessName) {
+        throw ("O processo '{0}' $([char]0x00E9) protegido e n$([char]0x00E3)o pode ser suspenso." -f $process.ProcessName)
+    }
+    if ($process.MainWindowHandle -eq 0) {
+        throw ("O processo '{0}' n$([char]0x00E3)o possui janela e n$([char]0x00E3)o pode ser suspenso." -f $process.ProcessName)
+    }
+
+    Initialize-OptiKitProcessControl
+    $handle = [OptiKit.ProcessControl]::OpenProcess(0x0800 -bor 0x1000, $false, $Id)
+    if ($handle -eq [IntPtr]::Zero) {
+        $code = [Runtime.InteropServices.Marshal]::GetLastWin32Error()
+        throw ("Falha ao abrir '{0}' para suspens$([char]0x00E3)o (Win32 {1})." -f $process.ProcessName, $code)
+    }
+
+    try {
+        $status = [OptiKit.ProcessControl]::NtSuspendProcess($handle)
+        if ($status -ne 0) {
+            throw ("NtSuspendProcess falhou para '{0}' (NTSTATUS {1})." -f $process.ProcessName, $status)
+        }
+        $script:OptiKitSuspendedProcesses[$Id] = [string]$process.ProcessName
+    }
+    finally {
+        [void][OptiKit.ProcessControl]::CloseHandle($handle)
+    }
+}
+
+function Resume-OptiKitProcess {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][int]$Id
+    )
+
+    $process = Get-Process -Id $Id -ErrorAction SilentlyContinue
+    if (-not $process) {
+        $script:OptiKitSuspendedProcesses.Remove($Id)
+        return
+    }
+
+    Initialize-OptiKitProcessControl
+    $handle = [OptiKit.ProcessControl]::OpenProcess(0x0800 -bor 0x1000, $false, $Id)
+    if ($handle -eq [IntPtr]::Zero) {
+        $code = [Runtime.InteropServices.Marshal]::GetLastWin32Error()
+        throw ("Falha ao abrir '{0}' para retomada (Win32 {1})." -f $process.ProcessName, $code)
+    }
+
+    try {
+        $status = [OptiKit.ProcessControl]::NtResumeProcess($handle)
+        if ($status -ne 0) {
+            throw ("NtResumeProcess falhou para '{0}' (NTSTATUS {1})." -f $process.ProcessName, $status)
+        }
+        $script:OptiKitSuspendedProcesses.Remove($Id)
+    }
+    finally {
+        [void][OptiKit.ProcessControl]::CloseHandle($handle)
+    }
+}
+
+function Resume-OptiKitSuspendedProcesses {
+    [CmdletBinding()]
+    param()
+
+    $ok = $true
+    foreach ($id in @($script:OptiKitSuspendedProcesses.Keys)) {
+        try {
+            Resume-OptiKitProcess -Id ([int]$id)
+        }
+        catch {
+            $ok = $false
+            Write-Verbose ("Falha ao retomar PID {0}: {1}" -f $id, $_.Exception.Message)
+            $script:OptiKitSuspendedProcesses.Remove([int]$id)
+        }
+    }
+    return $ok
+}
+
+# ============================================================================
+# Module: src/windows/modules/uninstall-engine.ps1
+# ============================================================================
+# Desinstalador: inventario de programas Win32/Appx e execucao do comando oficial
+
+function Test-OptiKitProtectedUninstallName {
+    [CmdletBinding()]
+    param([string]$Name)
+
+    return ($Name -match '(?i)^(Microsoft Store|Windows Store|Settings|Calculadora|Calculator|Captura de Tela|Snipping Tool|Xbox|Microsoft\.WindowsStore|Microsoft\.StorePurchaseApp|Microsoft\.WindowsCalculator|Microsoft\.ScreenSketch|Microsoft\.Xbox.*|Microsoft\.GamingServices|Microsoft\.DesktopAppInstaller|Microsoft\.VCLibs.*|Microsoft\.UI\.Xaml.*|Microsoft\.WindowsAppRuntime.*|windows\.immersivecontrolpanel|Microsoft\.Windows\.Settings|ShellExperienceHost|StartMenuExperienceHost|SearchHost)$')
+}
+
+function ConvertFrom-OptiKitRegistryEntry {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]$Entry,
+        [string]$Key
+    )
+
+    $displayName = [string]$Entry.DisplayName
+    if ([string]::IsNullOrWhiteSpace($displayName)) { return $null }
+    if ([int]$Entry.SystemComponent -eq 1) { return $null }
+    if (-not [string]::IsNullOrWhiteSpace([string]$Entry.ParentKeyName)) { return $null }
+    if ([string]$Entry.ReleaseType -in @('Update', 'Hotfix', 'Security Update', 'Update Rollup')) { return $null }
+    if ($displayName -match '(?i)^(KB\d+|Security Update|Update for\s|Hotfix)') { return $null }
+    if (Test-OptiKitProtectedUninstallName -Name $displayName) { return $null }
+
+    $estimatedMb = 0
+    if ($Entry.EstimatedSize) {
+        $estimatedMb = [math]::Round(([double]$Entry.EstimatedSize / 1024), 1)
+    }
+
+    return [pscustomobject]@{
+        Id                  = if ($Key) { $Key } else { $displayName }
+        DisplayName         = $displayName
+        DisplayVersion      = [string]$Entry.DisplayVersion
+        Publisher           = [string]$Entry.Publisher
+        InstallLocation     = [string]$Entry.InstallLocation
+        EstimatedSizeMB     = $estimatedMb
+        UninstallString     = [string]$Entry.UninstallString
+        QuietUninstallString = [string]$Entry.QuietUninstallString
+        Source              = 'Registry'
+    }
+}
+
+function ConvertFrom-OptiKitAppxPackage {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]$Package
+    )
+
+    if ($Package.IsFramework) { return $null }
+    if ([string]::IsNullOrWhiteSpace([string]$Package.Name)) { return $null }
+    if ([string]$Package.SignatureKind -eq 'System') { return $null }
+    if (Test-OptiKitProtectedUninstallName -Name ([string]$Package.Name)) { return $null }
+
+    return [pscustomobject]@{
+        Id                  = [string]$Package.PackageFullName
+        DisplayName         = [string]$Package.Name
+        DisplayVersion      = [string]$Package.Version
+        Publisher           = [string]$Package.Publisher
+        InstallLocation     = [string]$Package.InstallLocation
+        EstimatedSizeMB     = 0
+        UninstallString     = ''
+        QuietUninstallString = ''
+        Source              = 'Appx'
+    }
+}
+
+function Get-OptiKitInstalledPrograms {
+    [CmdletBinding()]
+    param()
+
+    $items = New-Object 'System.Collections.Generic.List[object]'
+    $roots = @(
+        'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
+        'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*',
+        'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*'
+    )
+    foreach ($root in $roots) {
+        try {
+            foreach ($entry in @(Get-ItemProperty -Path $root -ErrorAction SilentlyContinue)) {
+                $item = ConvertFrom-OptiKitRegistryEntry -Entry $entry -Key $entry.PSChildName
+                if ($item) { [void]$items.Add($item) }
+            }
+        }
+        catch {
+            Write-Verbose ("Falha ao ler a raiz de desinstala$([char]0x00E7)$([char]0x00E3)o {0}: {1}" -f $root, $_.Exception.Message)
+        }
+    }
+
+    try {
+        foreach ($package in @(Get-AppxPackage -ErrorAction SilentlyContinue)) {
+            $item = ConvertFrom-OptiKitAppxPackage -Package $package
+            if ($item) { [void]$items.Add($item) }
+        }
+    }
+    catch {
+        Write-Verbose ("Falha ao ler pacotes Appx: {0}" -f $_.Exception.Message)
+    }
+
+    $seen = New-Object 'System.Collections.Generic.HashSet[string]'
+    $deduped = New-Object 'System.Collections.Generic.List[object]'
+    foreach ($item in $items) {
+        $key = ('{0}|{1}|{2}' -f $item.DisplayName, $item.Publisher, $item.DisplayVersion).ToLowerInvariant()
+        if ($seen.Add($key)) { [void]$deduped.Add($item) }
+    }
+    return @($deduped | Sort-Object -Property DisplayName)
+}
+
+function Get-OptiKitUninstallCommand {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][pscustomobject]$Program
+    )
+
+    if ($Program.Source -eq 'Appx') {
+        return [pscustomobject]@{ File = 'Remove-AppxPackage'; Arguments = @('-Package', $Program.Id) }
+    }
+
+    $command = if (-not [string]::IsNullOrWhiteSpace($Program.UninstallString)) {
+        [string]$Program.UninstallString
+    }
+    else {
+        [string]$Program.QuietUninstallString
+    }
+    if ([string]::IsNullOrWhiteSpace($command)) {
+        throw ("Comando de desinstala$([char]0x00E7)$([char]0x00E3)o ausente para '{0}'." -f $Program.DisplayName)
+    }
+
+    if ($command -match '(?i)msiexec(?:\.exe)?.*(?:\/I|\/X)\s*(\{[0-9A-F-]{36}\})') {
+        return [pscustomobject]@{ File = 'msiexec.exe'; Arguments = @('/x', $matches[1], '/qb', '/norestart') }
+    }
+
+    if ($command.TrimStart().StartsWith('"')) {
+        if ($command -match '^"([^"]+)"\s*(.*)$') {
+            return [pscustomobject]@{ File = $matches[1]; Arguments = @($matches[2]) }
+        }
+    }
+
+    $parts = $command.Trim() -split '\s+', 2
+    return [pscustomobject]@{ File = $parts[0]; Arguments = if ($parts.Count -gt 1) { @($parts[1]) } else { @() } }
+}
+
+function Uninstall-OptiKitProgram {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][pscustomobject]$Program
+    )
+
+    if ($Program.Source -eq 'Appx') {
+        Remove-AppxPackage -Package $Program.Id -ErrorAction Stop
+        return
+    }
+
+    $command = Get-OptiKitUninstallCommand -Program $Program
+    $process = Start-Process -FilePath $command.File -ArgumentList $command.Arguments -Wait -PassThru -ErrorAction Stop
+    $exitCode = [int]$process.ExitCode
+    if ($exitCode -ne 0 -and $exitCode -ne 3010) {
+        throw ("Desinstala$([char]0x00E7)$([char]0x00E3)o de '{0}' retornou c$([char]0x00F3)digo {1}." -f $Program.DisplayName, $exitCode)
+    }
+}
+
+# ============================================================================
+# Module: src/windows/modules/duplicate-engine.ps1
+# ============================================================================
+# Localizador de arquivos duplicados por tamanho + fingerprint + SHA-256 completo
+
+function Test-OptiKitSystemPath {
+    [CmdletBinding()]
+    param([string]$Path)
+
+    if ([string]::IsNullOrWhiteSpace($Path)) { return $false }
+    $full = [IO.Path]::GetFullPath($Path).TrimEnd('\')
+    $blocked = @(
+        $env:SystemRoot,
+        $env:ProgramFiles,
+        ${env:ProgramFiles(x86)},
+        $env:ProgramData,
+        $env:LOCALAPPDATA,
+        $env:APPDATA,
+        (Join-Path $env:SystemDrive '$Recycle.Bin'),
+        (Join-Path $env:SystemDrive 'System Volume Information')
+    ) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+
+    foreach ($item in $blocked) {
+        $root = ([IO.Path]::GetFullPath($item)).TrimEnd('\')
+        if ($full -ieq $root -or $full.StartsWith($root + '\', [StringComparison]::OrdinalIgnoreCase)) {
+            return $true
+        }
+    }
+    return ($full -match '^[A-Za-z]:$')
+}
+
+function Get-OptiKitFileSha256 {
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $hasher = [Security.Cryptography.SHA256]::Create()
+    try {
+        $stream = [IO.File]::OpenRead($Path)
+        try {
+            $hash = $hasher.ComputeHash($stream)
+            return ([BitConverter]::ToString($hash) -replace '-', '')
+        }
+        finally {
+            $stream.Dispose()
+        }
+    }
+    finally {
+        $hasher.Dispose()
+    }
+}
+
+function Get-OptiKitFileFingerprint {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][int64]$Length
+    )
+
+    $hasher = [Security.Cryptography.SHA256]::Create()
+    try {
+        $stream = [IO.File]::OpenRead($Path)
+        try {
+            [void]$hasher.TransformBlock([Text.Encoding]::UTF8.GetBytes("$Length|"), 0, [Text.Encoding]::UTF8.GetByteCount("$Length|"), $null, 0)
+            $buffer = New-Object byte[] 65536
+            if ($Length -le 131072) {
+                while (($read = $stream.Read($buffer, 0, $buffer.Length)) -gt 0) {
+                    [void]$hasher.TransformBlock($buffer, 0, $read, $null, 0)
+                }
+            }
+            else {
+                $first = $stream.Read($buffer, 0, $buffer.Length)
+                if ($first -gt 0) { [void]$hasher.TransformBlock($buffer, 0, $first, $null, 0) }
+                [void]$stream.Seek(-$buffer.Length, [IO.SeekOrigin]::End)
+                $last = $stream.Read($buffer, 0, $buffer.Length)
+                if ($last -gt 0) { [void]$hasher.TransformBlock($buffer, 0, $last, $null, 0) }
+            }
+            [void]$hasher.TransformFinalBlock([byte[]]@(), 0, 0)
+            return ([BitConverter]::ToString($hasher.Hash) -replace '-', '')
+        }
+        finally {
+            $stream.Dispose()
+        }
+    }
+    finally {
+        $hasher.Dispose()
+    }
+}
+
+function Find-OptiKitDuplicateFiles {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [int64]$MinimumSizeBytes = 1MB
+    )
+
+    if (Test-OptiKitSystemPath -Path $Path) {
+        throw "Escolha uma pasta de dados, n$([char]0x00E3)o uma pasta de sistema."
+    }
+    if (-not (Test-Path -LiteralPath $Path -PathType Container)) {
+        throw ("Pasta n$([char]0x00E3)o encontrada: {0}" -f $Path)
+    }
+
+    $files = New-Object 'System.Collections.Generic.List[object]'
+    $stack = New-Object 'System.Collections.Generic.Stack[string]'
+    $stack.Push($Path)
+    $checked = 0
+    while ($stack.Count -gt 0) {
+        if ($script:OptiKit -and $script:OptiKit.SyncHash -and $script:OptiKit.SyncHash.CancelRequest) {
+            throw 'Escaneamento cancelado.'
+        }
+
+        $dir = $stack.Pop()
+        try {
+            foreach ($entry in @(Get-ChildItem -LiteralPath $dir -Force -ErrorAction SilentlyContinue)) {
+                if (($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { continue }
+                if ($entry.PSIsContainer) {
+                    if (-not (Test-OptiKitSystemPath -Path $entry.FullName)) {
+                        $stack.Push($entry.FullName)
+                    }
+                    continue
+                }
+                if ($entry.Length -lt $MinimumSizeBytes) { continue }
+                [void]$files.Add([pscustomobject]@{
+                    Path          = $entry.FullName
+                    Length        = [int64]$entry.Length
+                    LastWriteTime = $entry.LastWriteTime
+                })
+                $checked++
+                if (($checked % 100) -eq 0 -and $script:OptiKit -and $script:OptiKit.SyncHash) {
+                    $script:OptiKit.SyncHash.StatusText = ("Escaneando duplicados: {0} arquivos..." -f $checked)
+                }
+            }
+        }
+        catch {
+            Write-Verbose ("Falha ao enumerar {0}: {1}" -f $dir, $_.Exception.Message)
+        }
+    }
+
+    $groups = New-Object 'System.Collections.Generic.List[object]'
+    foreach ($bySize in @($files | Group-Object -Property Length | Where-Object Count -gt 1)) {
+        $fingerprints = New-Object 'System.Collections.Generic.List[object]'
+        foreach ($file in @($bySize.Group)) {
+            try {
+                [void]$fingerprints.Add([pscustomobject]@{
+                    File        = $file
+                    Fingerprint = (Get-OptiKitFileFingerprint -Path $file.Path -Length $file.Length)
+                })
+            }
+            catch {
+                Write-Verbose ("Arquivo inacess$([char]0x00ED)vel ignorado: {0}" -f $file.Path)
+            }
+        }
+
+        foreach ($candidate in @($fingerprints | Group-Object -Property Fingerprint | Where-Object Count -gt 1)) {
+            $fullHashes = New-Object 'System.Collections.Generic.List[object]'
+            foreach ($item in @($candidate.Group)) {
+                try {
+                    $hash = Get-OptiKitFileSha256 -Path $item.File.Path
+                    [void]$fullHashes.Add([pscustomobject]@{ File = $item.File; Hash = $hash })
+                }
+                catch {
+                    Write-Verbose ("Arquivo inacess$([char]0x00ED)vel ignorado: {0}" -f $item.File.Path)
+                }
+            }
+
+            foreach ($hashGroup in @($fullHashes | Group-Object -Property Hash | Where-Object Count -gt 1)) {
+                $same = @($hashGroup.Group | ForEach-Object { $_.File })
+                if ($same.Count -lt 2) { continue }
+                [void]$groups.Add([pscustomobject]@{
+                    GroupId = [string]$hashGroup.Name
+                    Hash    = [string]$hashGroup.Name
+                    Length  = [int64]$same[0].Length
+                    Files   = @($same | ForEach-Object {
+                        [pscustomobject]@{
+                            Path          = $_.Path
+                            Length        = $_.Length
+                            LastWriteTime = $_.LastWriteTime
+                        }
+                    })
+                })
+            }
+        }
+    }
+
+    return @($groups | Sort-Object -Property @{ Expression = { $_.Length * ($_.Files.Count - 1) }; Descending = $true })
+}
+
+function Test-OptiKitDuplicateSelection {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][object[]]$Rows
+    )
+
+    foreach ($group in @($Rows | Group-Object -Property GroupId)) {
+        $selected = @($group.Group | Where-Object { [bool]$_.Delete })
+        if ($selected.Count -eq $group.Count) {
+            throw 'Mantenha pelo menos um arquivo de cada grupo.'
+        }
+    }
+    return $true
+}
+
+function Remove-OptiKitDuplicateFile {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    Add-Type -AssemblyName Microsoft.VisualBasic
+    [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile(
+        $Path,
+        [Microsoft.VisualBasic.FileIO.UIOption]::OnlyErrorDialogs,
+        [Microsoft.VisualBasic.FileIO.RecycleOption]::SendToRecycleBin
+    )
+}
+
+# ============================================================================
 # Module: src/windows/ui/ui-builder.ps1
 # ============================================================================
 # Construtor din-mico de controles WPF a partir dos cat-logos JSON (Data-Driven UI Builder)
@@ -9613,6 +10268,9 @@ function Initialize-OptiKitUi {
         'TweaksCategoriesHost', 'BtnRefreshState', 'BtnUncheckAllTweaks',
         'CmbTweakSort', 'CmbTweakImpact', 'CmbTweakRisk', 'CmbTweakStatus', 'BtnClearTweakFilters', 'TxtTweakCount',
         'GameProfilesHost',
+        'GridBackgroundProcesses', 'BtnRefreshProcesses', 'BtnSuspendProcess', 'BtnResumeProcess', 'BtnResumeAllProcesses', 'TxtProcessStatus',
+        'GridInstalledPrograms', 'TxtUninstallSearch', 'BtnRefreshUninstall', 'BtnUninstallSelected', 'TxtUninstallStatus',
+        'TxtDuplicatePath', 'BtnBrowseDuplicates', 'CmbDuplicateMinSize', 'BtnScanDuplicates', 'BtnCancelDuplicates', 'BtnDeleteDuplicates', 'GridDuplicateFiles', 'TxtDuplicateStatus',
         'BtnRefreshDiagnostics', 'TxtDiagnosticsSummary', 'DiagnosticsHost',
         'BtnResetNetwork', 'BtnRunSfcDism', 'BtnRepairSettings', 'BtnCancelMaintenance', 'BtnRebootUefi', 'BtnClearTemp', 'BtnOpenBackupsDir',
         'BtnExportProfile', 'BtnImportProfile', 'BtnExportReport',
@@ -10182,6 +10840,8 @@ function Start-OptiKitWorkerTask {
         'Optimize-NetworkAdapterGaming', 'Disable-RiotClientStartup', 'Clear-ShaderCache',
         'Invoke-GameOptimization', 'Test-GameOptimizationApplied',
         'Invoke-NetworkReset', 'Invoke-NativeStep', 'Invoke-CancelableProcess', 'Invoke-SystemIntegrityRepair', 'Repair-OptiKitSettingsApp', 'Clear-TemporaryFiles',
+        'ConvertFrom-OptiKitRegistryEntry', 'ConvertFrom-OptiKitAppxPackage', 'Get-OptiKitInstalledPrograms', 'Get-OptiKitUninstallCommand', 'Uninstall-OptiKitProgram',
+        'Get-OptiKitFileFingerprint', 'Find-OptiKitDuplicateFiles',
         'Restart-OptiKitToUefi',
         'Clear-OptiKitDirectory', 'Invoke-AdvancedCleanup',
         'Get-OptiKitDohProviders', 'Get-OptiKitDnsAdapters', 'Test-OptiKitDohSupported',
@@ -10400,6 +11060,8 @@ function Start-OptiKitMain {
         CancelRequest        = $false
         PendingStateReport   = $null
         PendingDiagnosticsReport = $null
+        PendingInstalledPrograms = $null
+        PendingDuplicateReport = $null
         PendingDiagnosticsStart  = $false
         PendingUpdateInfo    = $null
         PendingStartupItems  = $null
@@ -10677,6 +11339,193 @@ function Start-OptiKitMain {
 
     $ui.BtnRefreshDiagnostics.Add_Click($triggerDiagnostics)
 
+    # Segundo plano
+    $refreshProcesses = {
+        try {
+            $items = @(Get-OptiKitBackgroundProcesses)
+            $ui.GridBackgroundProcesses.ItemsSource = $items
+            $suspended = @($items | Where-Object { $_.IsSuspended }).Count
+            $ui.TxtProcessStatus.Text = ("{0} app(s) com janela; {1} suspenso(s)." -f $items.Count, $suspended)
+        }
+        catch {
+            $ui.TxtProcessStatus.Text = ("Falha ao listar processos: {0}" -f $_.Exception.Message)
+            Write-OptimizerLog -Level WARN -Message ("Falha ao listar processos: {0}" -f $_.Exception.Message)
+        }
+    }.GetNewClosure()
+    $ui.BtnRefreshProcesses.Add_Click($refreshProcesses)
+    $ui.BtnSuspendProcess.Add_Click({
+        $selected = $ui.GridBackgroundProcesses.SelectedItem
+        if (-not $selected) {
+            $ui.TxtProcessStatus.Text = 'Selecione um app na lista.'
+            return
+        }
+        $confirm = [System.Windows.MessageBox]::Show($window, ("Suspender '{0}'?`r`n`r`nApps suspensos podem congelar downloads e conex$([char]0x00F5)es. Use Retomar para liberar." -f $selected.Name), 'Suspender app', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
+        try {
+            Suspend-OptiKitProcess -Id ([int]$selected.Id)
+            & $refreshProcesses
+            $ui.TxtProcessStatus.Text = ("'{0}' suspenso." -f $selected.Name)
+        }
+        catch {
+            $ui.TxtProcessStatus.Text = ("Falha ao suspender: {0}" -f $_.Exception.Message)
+        }
+    }.GetNewClosure())
+    $ui.BtnResumeProcess.Add_Click({
+        $selected = $ui.GridBackgroundProcesses.SelectedItem
+        if (-not $selected) {
+            $ui.TxtProcessStatus.Text = 'Selecione um app na lista.'
+            return
+        }
+        try {
+            Resume-OptiKitProcess -Id ([int]$selected.Id)
+            & $refreshProcesses
+            $ui.TxtProcessStatus.Text = ("'{0}' retomado." -f $selected.Name)
+        }
+        catch {
+            $ui.TxtProcessStatus.Text = ("Falha ao retomar: {0}" -f $_.Exception.Message)
+        }
+    }.GetNewClosure())
+    $ui.BtnResumeAllProcesses.Add_Click({
+        [void](Resume-OptiKitSuspendedProcesses)
+        & $refreshProcesses
+    }.GetNewClosure())
+
+    # Desinstalar
+    $toolState = [hashtable]::Synchronized(@{
+        InstalledPrograms = @()
+        DuplicateRows     = @()
+    })
+    $applyInstalledFilter = {
+        $query = [string]$ui.TxtUninstallSearch.Text
+        if ([string]::IsNullOrWhiteSpace($query)) {
+            $ui.GridInstalledPrograms.ItemsSource = @($toolState.InstalledPrograms)
+            return
+        }
+        $filtered = @($toolState.InstalledPrograms | Where-Object {
+            ([string]$_.DisplayName) -match [regex]::Escape($query) -or
+            ([string]$_.Publisher) -match [regex]::Escape($query) -or
+            ([string]$_.DisplayVersion) -match [regex]::Escape($query)
+        })
+        $ui.GridInstalledPrograms.ItemsSource = $filtered
+    }.GetNewClosure()
+    $ui.TxtUninstallSearch.Add_TextChanged({ & $applyInstalledFilter }.GetNewClosure())
+    $ui.BtnRefreshUninstall.Add_Click({
+        if ($sync.IsBusy) { return }
+        $ui.TxtUninstallStatus.Text = 'Carregando programas instalados...'
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
+            $SyncHash.PendingInstalledPrograms = @(Get-OptiKitInstalledPrograms)
+        }
+    }.GetNewClosure())
+    $ui.BtnUninstallSelected.Add_Click({
+        if ($sync.IsBusy) { return }
+        $selected = $ui.GridInstalledPrograms.SelectedItem
+        if (-not $selected) {
+            $ui.TxtUninstallStatus.Text = 'Selecione um programa na lista.'
+            return
+        }
+        $confirm = [System.Windows.MessageBox]::Show($window, ("Desinstalar '{0}'?`r`n`r`nO programa ser$([char]0x00E1) removido pelo desinstalador oficial. N$([char]0x00E3)o h$([char]0x00E1) desfazer." -f $selected.DisplayName), 'Desinstalar programa', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
+        Start-OptiKitWorkerTask -SyncHash $sync -Arguments @{ Program = $selected } -WorkerScript {
+            Uninstall-OptiKitProgram -Program $WorkerArgs.Program
+            $SyncHash.PendingInstalledPrograms = @(Get-OptiKitInstalledPrograms)
+        }
+    }.GetNewClosure())
+
+    # Duplicados
+    $ui.CmbDuplicateMinSize.Items.Clear()
+    foreach ($option in @(
+        @{ Text = '1 MB'; Value = [int64]1MB },
+        @{ Text = '10 MB'; Value = [int64]10MB },
+        @{ Text = '100 MB'; Value = [int64]100MB }
+    )) {
+        $item = New-Object System.Windows.Controls.ComboBoxItem
+        $item.Content = $option.Text
+        $item.Tag = $option.Value
+        [void]$ui.CmbDuplicateMinSize.Items.Add($item)
+    }
+    $ui.CmbDuplicateMinSize.SelectedIndex = 0
+    $ui.BtnBrowseDuplicates.Add_Click({
+        $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
+        $dialog.Description = 'Escolha uma pasta de dados para procurar duplicados.'
+        if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+            $ui.TxtDuplicatePath.Text = $dialog.SelectedPath
+        }
+    }.GetNewClosure())
+    $ui.BtnScanDuplicates.Add_Click({
+        if ($sync.IsBusy) { return }
+        $path = [string]$ui.TxtDuplicatePath.Text
+        if ([string]::IsNullOrWhiteSpace($path)) {
+            $ui.TxtDuplicateStatus.Text = 'Escolha uma pasta primeiro.'
+            return
+        }
+        $minItem = $ui.CmbDuplicateMinSize.SelectedItem
+        $minBytes = if ($minItem) { [int64]$minItem.Tag } else { [int64]1MB }
+        $ui.TxtDuplicateStatus.Text = 'Escaneando...'
+        Start-OptiKitWorkerTask -SyncHash $sync -Arguments @{ Path = $path; MinimumSizeBytes = $minBytes } -WorkerScript {
+            $groups = @(Find-OptiKitDuplicateFiles -Path $WorkerArgs.Path -MinimumSizeBytes $WorkerArgs.MinimumSizeBytes)
+            $rows = New-Object 'System.Collections.Generic.List[object]'
+            $wasted = [int64]0
+            foreach ($group in $groups) {
+                $wasted += $group.Length * ($group.Files.Count - 1)
+                foreach ($file in @($group.Files)) {
+                    [void]$rows.Add([pscustomobject]@{
+                        Delete   = $false
+                        GroupId  = [string]$group.GroupId
+                        File     = [string]$file.Path
+                        SizeMB   = [math]::Round($file.Length / 1MB, 1)
+                        Modified = $file.LastWriteTime.ToString('yyyy-MM-dd HH:mm')
+                    })
+                }
+            }
+            $SyncHash.PendingDuplicateReport = [pscustomobject]@{
+                Rows        = $rows.ToArray()
+                Groups      = $groups.Count
+                WastedBytes = $wasted
+            }
+        }
+    }.GetNewClosure())
+    $ui.BtnCancelDuplicates.Add_Click({
+        $sync.CancelRequest = $true
+        $ui.TxtDuplicateStatus.Text = 'Cancelamento solicitado...'
+    }.GetNewClosure())
+    $ui.BtnDeleteDuplicates.Add_Click({
+        if ($sync.IsBusy) { return }
+        $rows = @($toolState.DuplicateRows)
+        if ($rows.Count -eq 0) {
+            $ui.TxtDuplicateStatus.Text = 'Nenhum resultado para excluir.'
+            return
+        }
+        $selected = @($rows | Where-Object { [bool]$_.Delete })
+        if ($selected.Count -eq 0) {
+            $ui.TxtDuplicateStatus.Text = 'Marque pelo menos um arquivo.'
+            return
+        }
+        try {
+            [void](Test-OptiKitDuplicateSelection -Rows $rows)
+        }
+        catch {
+            $ui.TxtDuplicateStatus.Text = $_.Exception.Message
+            return
+        }
+        $confirm = [System.Windows.MessageBox]::Show($window, ("Mover {0} arquivo(s) para a Lixeira?" -f $selected.Count), 'Mover duplicados', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
+        $failed = 0
+        foreach ($row in $selected) {
+            try {
+                Remove-OptiKitDuplicateFile -Path ([string]$row.File)
+                $toolState.DuplicateRows = @($toolState.DuplicateRows | Where-Object { $_.File -ne $row.File })
+            }
+            catch {
+                $failed++
+                Write-OptimizerLog -Level WARN -Message ("Falha ao mover para a Lixeira: {0}" -f $row.File)
+            }
+        }
+        $ui.GridDuplicateFiles.ItemsSource = @($toolState.DuplicateRows)
+        $ui.TxtDuplicateStatus.Text = ("{0} arquivo(s) movido(s) para a Lixeira; {1} falha(s)." -f ($selected.Count - $failed), $failed)
+    }.GetNewClosure())
+
+    & $refreshProcesses
+
     $ui.BtnViewApplied.Add_Click({
         Show-AppliedChangesDialog -Ui $ui
     }.GetNewClosure())
@@ -10877,6 +11726,16 @@ function Start-OptiKitMain {
         $ui.BtnWingetUpgrade.IsEnabled = (-not $busy)
         $ui.BtnAdvancedCleanup.IsEnabled = (-not $busy)
         $ui.BtnCancelMaintenance.IsEnabled = $busy
+        $ui.BtnRefreshProcesses.IsEnabled = (-not $busy)
+        $ui.BtnSuspendProcess.IsEnabled = (-not $busy)
+        $ui.BtnResumeProcess.IsEnabled = (-not $busy)
+        $ui.BtnResumeAllProcesses.IsEnabled = (-not $busy)
+        $ui.BtnRefreshUninstall.IsEnabled = (-not $busy)
+        $ui.BtnUninstallSelected.IsEnabled = (-not $busy)
+        $ui.BtnBrowseDuplicates.IsEnabled = (-not $busy)
+        $ui.BtnScanDuplicates.IsEnabled = (-not $busy)
+        $ui.BtnCancelDuplicates.IsEnabled = $busy
+        $ui.BtnDeleteDuplicates.IsEnabled = (-not $busy)
 
         if (-not $busy -and $sync.PendingDiagnosticsStart) {
             $sync.PendingDiagnosticsStart = $false
@@ -10893,6 +11752,21 @@ function Start-OptiKitMain {
             $diag = $sync.PendingDiagnosticsReport
             $sync.PendingDiagnosticsReport = $null
             Update-OptiKitDiagnosticsUi -Ui $ui -Items @($diag)
+        }
+
+        if ($null -ne $sync.PendingInstalledPrograms) {
+            $toolState.InstalledPrograms = @($sync.PendingInstalledPrograms)
+            $sync.PendingInstalledPrograms = $null
+            & $applyInstalledFilter
+            $ui.TxtUninstallStatus.Text = ("{0} programa(s) instalado(s)." -f $toolState.InstalledPrograms.Count)
+        }
+
+        if ($null -ne $sync.PendingDuplicateReport) {
+            $report = $sync.PendingDuplicateReport
+            $sync.PendingDuplicateReport = $null
+            $toolState.DuplicateRows = @($report.Rows)
+            $ui.GridDuplicateFiles.ItemsSource = @($toolState.DuplicateRows)
+            $ui.TxtDuplicateStatus.Text = ("{0} grupo(s); {1:N1} MB desperdi$([char]0x00E7)ados." -f $report.Groups, ([double]$report.WastedBytes / 1MB))
         }
 
         if ($null -ne $sync.PendingUpdateInfo) {
@@ -10950,6 +11824,7 @@ function Start-OptiKitMain {
 
     $window.Add_Closed({
         $uiTimer.Stop()
+        [void](Resume-OptiKitSuspendedProcesses)
         if ($sync.ActivePowerShell) {
             try { $sync.ActivePowerShell.Dispose() } catch { Write-Verbose $_.Exception.Message }
         }
