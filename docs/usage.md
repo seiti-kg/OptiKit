@@ -34,7 +34,7 @@ powershell -ExecutionPolicy Bypass -File .\win.ps1
 
 ## Interface
 
-A janela tem nove abas:
+A janela tem dez abas:
 
 1. **Instalar apps** — catálogo Winget com seleção e instalação silenciosa.
 2. **Ajustes do Windows** — busca, filtros, estado atual e aplicação/reversão por seleção.
@@ -42,9 +42,10 @@ A janela tem nove abas:
 4. **Segundo plano** — apps com janela; suspender e retomar processos selecionados.
 5. **Desinstalar** — programas Win32 e pacotes Appx instalados.
 6. **Duplicados** — localizador por tamanho, fingerprint e SHA-256 com envio para a Lixeira.
-7. **Diagnóstico** — leitura de hardware, BIOS, discos, estabilidade, Defender e recomendações para GPU híbrida/RAM/HAGS.
-8. **Inicialização** — programas de startup compatíveis com o Gerenciador de Tarefas.
-9. **Manutenção** — reset de rede/DNS, SFC/DISM, reparo do app de Configurações, limpeza, reboot para UEFI e atualização via Winget.
+7. **Drivers** — inventário, links oficiais e backup via `pnputil`.
+8. **Diagnóstico** — leitura de hardware, BIOS, discos, estabilidade, Defender e recomendações para GPU híbrida/RAM/HAGS.
+9. **Inicialização** — programas de startup compatíveis com o Gerenciador de Tarefas.
+10. **Manutenção** — reset de rede/DNS, SFC/DISM, reparo do app de Configurações, limpeza, reboot para UEFI e atualização via Winget.
 
 Ações globais:
 
@@ -65,6 +66,10 @@ A aba lista programas Win32 e pacotes Appx instalados. Use a busca, selecione um
 ### Duplicados
 
 Escolha uma pasta de dados, o tamanho mínimo e clique em **Escanear**. Marque os arquivos que deseja remover e clique em **Mover para Lixeira**. É obrigatório manter pelo menos uma cópia de cada grupo; pastas de sistema são bloqueadas.
+
+### Drivers
+
+A aba **Drivers** lista dispositivos relevantes com versão, data, fabricante e estado. Selecione um item e use **Abrir site** para ir ao site oficial (AMD, NVIDIA, Intel ou Windows Update). **Backup** exporta os drivers via `pnputil /export-driver` para uma pasta escolhida. O OptiKit não baixa nem instala drivers automaticamente.
 
 ### Reparar as Configurações do Windows
 

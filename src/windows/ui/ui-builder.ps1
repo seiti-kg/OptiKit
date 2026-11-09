@@ -1269,6 +1269,7 @@ function Initialize-OptiKitUi {
         'GridBackgroundProcesses', 'BtnRefreshProcesses', 'BtnSuspendProcess', 'BtnResumeProcess', 'BtnResumeAllProcesses', 'TxtProcessStatus',
         'GridInstalledPrograms', 'TxtUninstallSearch', 'BtnRefreshUninstall', 'BtnUninstallSelected', 'TxtUninstallStatus',
         'TxtDuplicatePath', 'BtnBrowseDuplicates', 'CmbDuplicateMinSize', 'BtnScanDuplicates', 'BtnCancelDuplicates', 'BtnDeleteDuplicates', 'GridDuplicateFiles', 'TxtDuplicateStatus',
+        'GridDrivers', 'TxtDriverSearch', 'BtnRefreshDrivers', 'BtnExportDrivers', 'BtnWindowsUpdate', 'BtnOpenDriverLink', 'TxtDriverStatus',
         'BtnRefreshDiagnostics', 'TxtDiagnosticsSummary', 'DiagnosticsHost',
         'BtnResetNetwork', 'BtnRunSfcDism', 'BtnRepairSettings', 'BtnCancelMaintenance', 'BtnRebootUefi', 'BtnClearTemp', 'BtnOpenBackupsDir',
         'BtnExportProfile', 'BtnImportProfile', 'BtnExportReport',

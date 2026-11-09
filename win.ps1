@@ -3185,6 +3185,9 @@ $script:EmbeddedThemeXaml = @'
                 <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="8">
                     <Setter Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="9">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
             </Style.Triggers>
         </Style>
 
@@ -3337,6 +3340,12 @@ $script:EmbeddedThemeXaml = @'
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE8C8;" />
                             <TextBlock Text="Duplicados" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="Drivers">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE950;" />
+                            <TextBlock Text="Drivers" VerticalAlignment="Center" />
                         </StackPanel>
                     </ListBoxItem>
                     <ListBoxItem AutomationProperties.Name="Diagn&#x00F3;stico">
@@ -3541,7 +3550,43 @@ $script:EmbeddedThemeXaml = @'
                 </Grid>
             </TabItem>
 
-            <!-- 6. Diagn&#x00F3;stico -->
+            <!-- 6. Drivers -->
+            <TabItem Header="Drivers">
+                <Grid Margin="32,24,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <DockPanel Grid.Row="0" Margin="0,0,32,12">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Bottom">
+                            <Button x:Name="BtnRefreshDrivers" Style="{StaticResource Button.Subtle}" Content="Atualizar" Margin="0,0,8,0" />
+                            <Button x:Name="BtnExportDrivers" Style="{StaticResource Button.Subtle}" Content="Backup" Margin="0,0,8,0" />
+                            <Button x:Name="BtnWindowsUpdate" Style="{StaticResource Button.Subtle}" Content="Windows Update" Margin="0,0,8,0" />
+                            <Button x:Name="BtnOpenDriverLink" Style="{StaticResource Button.Primary}" Content="Abrir site" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Drivers" Style="{StaticResource Text.Title}" />
+                            <TextBlock Text="Invent&#x00E1;rio de drivers e links oficiais. O OptiKit n&#x00E3;o instala drivers automaticamente." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </DockPanel>
+                    <TextBox x:Name="TxtDriverSearch" Grid.Row="1" Margin="0,0,32,12" Style="{StaticResource TextBox.Search}" Tag="Buscar dispositivo, classe ou fabricante" AutomationProperties.Name="Buscar drivers" ToolTip="Filtra por dispositivo, classe, vers&#x00E3;o ou fabricante" />
+                    <DataGrid x:Name="GridDrivers" Grid.Row="2" Style="{StaticResource DataGrid.Clean}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" RowHeaderWidth="0" SelectionMode="Single" Margin="0,0,32,12">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Dispositivo" Binding="{Binding DeviceName}" Width="*" ElementStyle="{StaticResource Cell.Text}" />
+                            <DataGridTextColumn Header="Classe" Binding="{Binding DeviceClass}" Width="110" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Vers&#x00E3;o" Binding="{Binding DriverVersion}" Width="140" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Data" Binding="{Binding DriverDate, StringFormat={}{0:yyyy-MM-dd}}" Width="100" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Fabricante" Binding="{Binding Manufacturer}" Width="160" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock x:Name="TxtDriverStatus" Grid.Row="3" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Text="Atualize para carregar o invent&#x00E1;rio de drivers." Margin="0,0,32,24" />
+                </Grid>
+            </TabItem>
+
+            <!-- 7. Diagn&#x00F3;stico -->
             <TabItem Header="Diagn&#x00F3;stico">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>
@@ -3561,7 +3606,7 @@ $script:EmbeddedThemeXaml = @'
                 </Grid>
             </TabItem>
 
-            <!-- 7. Inicializa&#x00E7;&#x00E3;o -->
+            <!-- 8. Inicializa&#x00E7;&#x00E3;o -->
             <TabItem Header="Inicializa&#x00E7;&#x00E3;o">
                 <Grid Margin="32,24,32,0">
                     <Grid.RowDefinitions>
@@ -3590,7 +3635,7 @@ $script:EmbeddedThemeXaml = @'
                 </Grid>
             </TabItem>
 
-            <!-- 8. Manuten&#x00E7;&#x00E3;o -->
+            <!-- 9. Manuten&#x00E7;&#x00E3;o -->
             <TabItem Header="Manuten&#x00E7;&#x00E3;o">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>
@@ -9013,6 +9058,115 @@ function Remove-OptiKitDuplicateFile {
 }
 
 # ============================================================================
+# Module: src/windows/modules/driver-engine.ps1
+# ============================================================================
+# Inventario de drivers, links oficiais e backup via pnputil
+
+$script:OptiKitDriverLinks = @{
+    NVIDIA        = 'https://www.nvidia.com/Download/index.aspx'
+    AMD           = 'https://www.amd.com/en/support/download/drivers.html'
+    Intel         = 'https://www.intel.com/content/www/us/en/download-center/home.html'
+    WindowsUpdate = 'ms-settings:windowsupdate'
+}
+
+function Get-OptiKitDriverVendorLink {
+    [CmdletBinding()]
+    param(
+        [string]$Manufacturer,
+        [string]$DeviceName
+    )
+
+    $text = ("{0} {1}" -f $Manufacturer, $DeviceName)
+    if ($text -match '(?i)NVIDIA|GeForce|RTX|GTX') { return $script:OptiKitDriverLinks.NVIDIA }
+    if ($text -match '(?i)AMD|Radeon|Ryzen') { return $script:OptiKitDriverLinks.AMD }
+    if ($text -match '(?i)Intel|Arc|Iris|UHD') { return $script:OptiKitDriverLinks.Intel }
+    return $script:OptiKitDriverLinks.WindowsUpdate
+}
+
+function Get-OptiKitDriverInventory {
+    [CmdletBinding()]
+    param()
+
+    try {
+        $classes = @('Display', 'Net', 'Media', 'System', 'HDC', 'SCSIAdapter', 'USB', 'Bluetooth', 'HIDClass', 'Keyboard', 'Mouse', 'DiskDrive')
+        $drivers = @(Get-CimInstance -ClassName Win32_PnPSignedDriver -ErrorAction Stop | Where-Object {
+            -not [string]::IsNullOrWhiteSpace([string]$_.DeviceName) -and
+            ([string]$_.DeviceClass -in $classes)
+        })
+
+        $seen = New-Object 'System.Collections.Generic.HashSet[string]'
+        $items = New-Object 'System.Collections.Generic.List[object]'
+        foreach ($driver in $drivers) {
+            $key = if (-not [string]::IsNullOrWhiteSpace([string]$driver.DeviceID)) { [string]$driver.DeviceID } else { ('{0}|{1}' -f $driver.DeviceName, $driver.DriverVersion) }
+            if (-not $seen.Add($key)) { continue }
+
+            $date = $null
+            try {
+                if ($driver.DriverDate) { $date = [datetime]$driver.DriverDate }
+            }
+            catch {
+                $date = $null
+            }
+
+            [void]$items.Add([pscustomobject]@{
+                DeviceName    = [string]$driver.DeviceName
+                DeviceClass   = [string]$driver.DeviceClass
+                DriverVersion = [string]$driver.DriverVersion
+                DriverDate    = $date
+                Manufacturer  = [string]$driver.Manufacturer
+                Status        = 'OK'
+                Link          = Get-OptiKitDriverVendorLink -Manufacturer ([string]$driver.Manufacturer) -DeviceName ([string]$driver.DeviceName)
+            })
+        }
+
+        $problems = @(Get-CimInstance -ClassName Win32_PnPEntity -ErrorAction SilentlyContinue | Where-Object {
+            $null -ne $_.ConfigManagerErrorCode -and [int]$_.ConfigManagerErrorCode -ne 0
+        })
+        foreach ($problem in $problems) {
+            $name = if ($problem.Name) { [string]$problem.Name } else { [string]$problem.DeviceID }
+            if ([string]::IsNullOrWhiteSpace($name)) { continue }
+            [void]$items.Add([pscustomobject]@{
+                DeviceName    = $name
+                DeviceClass   = [string]$problem.DeviceClass
+                DriverVersion = ''
+                DriverDate    = $null
+                Manufacturer  = [string]$problem.Manufacturer
+                Status        = 'Problema'
+                Link          = $script:OptiKitDriverLinks.WindowsUpdate
+            })
+        }
+
+        $unique = New-Object 'System.Collections.Generic.List[object]'
+        $finalKeys = New-Object 'System.Collections.Generic.HashSet[string]'
+        foreach ($item in $items) {
+            $key = ('{0}|{1}|{2}' -f $item.DeviceName, $item.DeviceClass, $item.DriverVersion).ToLowerInvariant()
+            if ($finalKeys.Add($key)) { [void]$unique.Add($item) }
+        }
+        return @($unique | Sort-Object -Property DeviceClass, DeviceName)
+    }
+    catch {
+        throw ("Falha ao ler drivers do sistema: {0}" -f $_.Exception.Message)
+    }
+}
+
+function Export-OptiKitDrivers {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Destination
+    )
+
+    if (-not (Test-Path -LiteralPath $Destination)) {
+        New-Item -Path $Destination -ItemType Directory -Force | Out-Null
+    }
+    $pnputil = Join-Path $env:SystemRoot 'System32\pnputil.exe'
+    $process = Start-Process -FilePath $pnputil -ArgumentList @('/export-driver', '*', ('"{0}"' -f $Destination)) -Wait -PassThru -ErrorAction Stop
+    if ([int]$process.ExitCode -ne 0) {
+        throw ("pnputil falhou ao exportar drivers (c$([char]0x00F3)digo {0})." -f $process.ExitCode)
+    }
+    return $Destination
+}
+
+# ============================================================================
 # Module: src/windows/ui/ui-builder.ps1
 # ============================================================================
 # Construtor din-mico de controles WPF a partir dos cat-logos JSON (Data-Driven UI Builder)
@@ -10271,6 +10425,7 @@ function Initialize-OptiKitUi {
         'GridBackgroundProcesses', 'BtnRefreshProcesses', 'BtnSuspendProcess', 'BtnResumeProcess', 'BtnResumeAllProcesses', 'TxtProcessStatus',
         'GridInstalledPrograms', 'TxtUninstallSearch', 'BtnRefreshUninstall', 'BtnUninstallSelected', 'TxtUninstallStatus',
         'TxtDuplicatePath', 'BtnBrowseDuplicates', 'CmbDuplicateMinSize', 'BtnScanDuplicates', 'BtnCancelDuplicates', 'BtnDeleteDuplicates', 'GridDuplicateFiles', 'TxtDuplicateStatus',
+        'GridDrivers', 'TxtDriverSearch', 'BtnRefreshDrivers', 'BtnExportDrivers', 'BtnWindowsUpdate', 'BtnOpenDriverLink', 'TxtDriverStatus',
         'BtnRefreshDiagnostics', 'TxtDiagnosticsSummary', 'DiagnosticsHost',
         'BtnResetNetwork', 'BtnRunSfcDism', 'BtnRepairSettings', 'BtnCancelMaintenance', 'BtnRebootUefi', 'BtnClearTemp', 'BtnOpenBackupsDir',
         'BtnExportProfile', 'BtnImportProfile', 'BtnExportReport',
@@ -10842,6 +10997,7 @@ function Start-OptiKitWorkerTask {
         'Invoke-NetworkReset', 'Invoke-NativeStep', 'Invoke-CancelableProcess', 'Invoke-SystemIntegrityRepair', 'Repair-OptiKitSettingsApp', 'Clear-TemporaryFiles',
         'ConvertFrom-OptiKitRegistryEntry', 'ConvertFrom-OptiKitAppxPackage', 'Get-OptiKitInstalledPrograms', 'Get-OptiKitUninstallCommand', 'Uninstall-OptiKitProgram',
         'Get-OptiKitFileFingerprint', 'Find-OptiKitDuplicateFiles',
+        'Get-OptiKitDriverVendorLink', 'Get-OptiKitDriverInventory', 'Export-OptiKitDrivers',
         'Restart-OptiKitToUefi',
         'Clear-OptiKitDirectory', 'Invoke-AdvancedCleanup',
         'Get-OptiKitDohProviders', 'Get-OptiKitDnsAdapters', 'Test-OptiKitDohSupported',
@@ -11062,6 +11218,8 @@ function Start-OptiKitMain {
         PendingDiagnosticsReport = $null
         PendingInstalledPrograms = $null
         PendingDuplicateReport = $null
+        PendingDriverReport = $null
+        PendingDriverExport = $null
         PendingDiagnosticsStart  = $false
         PendingUpdateInfo    = $null
         PendingStartupItems  = $null
@@ -11394,6 +11552,7 @@ function Start-OptiKitMain {
     $toolState = [hashtable]::Synchronized(@{
         InstalledPrograms = @()
         DuplicateRows     = @()
+        Drivers           = @()
     })
     $applyInstalledFilter = {
         $query = [string]$ui.TxtUninstallSearch.Text
@@ -11522,6 +11681,56 @@ function Start-OptiKitMain {
         }
         $ui.GridDuplicateFiles.ItemsSource = @($toolState.DuplicateRows)
         $ui.TxtDuplicateStatus.Text = ("{0} arquivo(s) movido(s) para a Lixeira; {1} falha(s)." -f ($selected.Count - $failed), $failed)
+    }.GetNewClosure())
+
+    # Drivers
+    $applyDriverFilter = {
+        $query = [string]$ui.TxtDriverSearch.Text
+        if ([string]::IsNullOrWhiteSpace($query)) {
+            $ui.GridDrivers.ItemsSource = @($toolState.Drivers)
+            return
+        }
+        $filtered = @($toolState.Drivers | Where-Object {
+            ([string]$_.DeviceName) -match [regex]::Escape($query) -or
+            ([string]$_.DeviceClass) -match [regex]::Escape($query) -or
+            ([string]$_.Manufacturer) -match [regex]::Escape($query) -or
+            ([string]$_.DriverVersion) -match [regex]::Escape($query)
+        })
+        $ui.GridDrivers.ItemsSource = $filtered
+    }.GetNewClosure()
+    $ui.TxtDriverSearch.Add_TextChanged({ & $applyDriverFilter }.GetNewClosure())
+    $ui.BtnRefreshDrivers.Add_Click({
+        if ($sync.IsBusy) { return }
+        $ui.TxtDriverStatus.Text = 'Carregando drivers...'
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
+            $SyncHash.PendingDriverReport = @(Get-OptiKitDriverInventory)
+        }
+    }.GetNewClosure())
+    $ui.BtnOpenDriverLink.Add_Click({
+        $selected = $ui.GridDrivers.SelectedItem
+        if (-not $selected) {
+            $ui.TxtDriverStatus.Text = 'Selecione um driver na lista.'
+            return
+        }
+        $link = if (-not [string]::IsNullOrWhiteSpace([string]$selected.Link)) { [string]$selected.Link } else { 'ms-settings:windowsupdate' }
+        try { Start-Process $link }
+        catch { $ui.TxtDriverStatus.Text = ("Falha ao abrir o site: {0}" -f $_.Exception.Message) }
+    }.GetNewClosure())
+    $ui.BtnWindowsUpdate.Add_Click({
+        try { Start-Process 'ms-settings:windowsupdate' }
+        catch { $ui.TxtDriverStatus.Text = ("Falha ao abrir o Windows Update: {0}" -f $_.Exception.Message) }
+    }.GetNewClosure())
+    $ui.BtnExportDrivers.Add_Click({
+        if ($sync.IsBusy) { return }
+        $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
+        $dialog.Description = 'Escolha a pasta para exportar os drivers.'
+        if ($dialog.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) { return }
+        $destination = $dialog.SelectedPath
+        $ui.TxtDriverStatus.Text = 'Exportando drivers...'
+        Start-OptiKitWorkerTask -SyncHash $sync -Arguments @{ Destination = $destination } -WorkerScript {
+            $result = Export-OptiKitDrivers -Destination $WorkerArgs.Destination
+            $SyncHash.PendingDriverExport = ("Drivers exportados para {0}." -f $result)
+        }
     }.GetNewClosure())
 
     & $refreshProcesses
@@ -11736,6 +11945,10 @@ function Start-OptiKitMain {
         $ui.BtnScanDuplicates.IsEnabled = (-not $busy)
         $ui.BtnCancelDuplicates.IsEnabled = $busy
         $ui.BtnDeleteDuplicates.IsEnabled = (-not $busy)
+        $ui.BtnRefreshDrivers.IsEnabled = (-not $busy)
+        $ui.BtnExportDrivers.IsEnabled = (-not $busy)
+        $ui.BtnOpenDriverLink.IsEnabled = (-not $busy)
+        $ui.BtnWindowsUpdate.IsEnabled = (-not $busy)
 
         if (-not $busy -and $sync.PendingDiagnosticsStart) {
             $sync.PendingDiagnosticsStart = $false
@@ -11767,6 +11980,20 @@ function Start-OptiKitMain {
             $toolState.DuplicateRows = @($report.Rows)
             $ui.GridDuplicateFiles.ItemsSource = @($toolState.DuplicateRows)
             $ui.TxtDuplicateStatus.Text = ("{0} grupo(s); {1:N1} MB desperdi$([char]0x00E7)ados." -f $report.Groups, ([double]$report.WastedBytes / 1MB))
+        }
+
+        if ($null -ne $sync.PendingDriverReport) {
+            $toolState.Drivers = @($sync.PendingDriverReport)
+            $sync.PendingDriverReport = $null
+            & $applyDriverFilter
+            $problems = @($toolState.Drivers | Where-Object { $_.Status -eq 'Problema' }).Count
+            $ui.TxtDriverStatus.Text = ("{0} driver(s) inventariado(s); {1} com problema." -f $toolState.Drivers.Count, $problems)
+        }
+
+        if ($null -ne $sync.PendingDriverExport) {
+            $message = [string]$sync.PendingDriverExport
+            $sync.PendingDriverExport = $null
+            $ui.TxtDriverStatus.Text = $message
         }
 
         if ($null -ne $sync.PendingUpdateInfo) {

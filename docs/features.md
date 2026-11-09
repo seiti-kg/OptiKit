@@ -8,7 +8,7 @@
 - **46 aplicativos** instaláveis via Winget, com bootstrap automático em instalações novas.
 - **3 perfis de jogos** (VALORANT, Counter-Strike 2 e Unreal Engine 5/AAA) e **3 ferramentas globais** de jogos.
 - **4 presets** prontos: `GamerRecomendado`, `MinimoSeguro`, `PerfilValorant` e `Notebook`.
-- **9 abas** na interface: Instalar apps, Ajustes do Windows, Jogos, Segundo plano, Desinstalar, Duplicados, Diagnóstico, Inicialização e Manutenção.
+- **10 abas** na interface: Instalar apps, Ajustes do Windows, Jogos, Segundo plano, Desinstalar, Duplicados, Drivers, Diagnóstico, Inicialização e Manutenção.
 
 ## Interface
 
@@ -82,6 +82,7 @@ A interface WPF é gerada dinamicamente a partir dos catálogos JSON e inclui:
   O OptiKit não apaga sobras manualmente e protege apps de sistema/frameworks.
 - **Duplicados:** compara tamanho, fingerprint e SHA-256; envia arquivos marcados para a Lixeira e exige manter pelo menos uma cópia por grupo.
   Pastas de sistema (`Windows`, `Program Files`, `ProgramData`, `AppData`, Lixeira e System Volume Information) são bloqueadas como raiz.
+- **Drivers:** inventário de dispositivos com classe, versão, data, fabricante, problemas e links oficiais; backup via `pnputil`. O OptiKit não instala drivers automaticamente.
 
 ## Windows Update
 

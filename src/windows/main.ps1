@@ -208,6 +208,7 @@ function Start-OptiKitWorkerTask {
         'Invoke-NetworkReset', 'Invoke-NativeStep', 'Invoke-CancelableProcess', 'Invoke-SystemIntegrityRepair', 'Repair-OptiKitSettingsApp', 'Clear-TemporaryFiles',
         'ConvertFrom-OptiKitRegistryEntry', 'ConvertFrom-OptiKitAppxPackage', 'Get-OptiKitInstalledPrograms', 'Get-OptiKitUninstallCommand', 'Uninstall-OptiKitProgram',
         'Get-OptiKitFileFingerprint', 'Find-OptiKitDuplicateFiles',
+        'Get-OptiKitDriverVendorLink', 'Get-OptiKitDriverInventory', 'Export-OptiKitDrivers',
         'Restart-OptiKitToUefi',
         'Clear-OptiKitDirectory', 'Invoke-AdvancedCleanup',
         'Get-OptiKitDohProviders', 'Get-OptiKitDnsAdapters', 'Test-OptiKitDohSupported',
@@ -428,6 +429,8 @@ function Start-OptiKitMain {
         PendingDiagnosticsReport = $null
         PendingInstalledPrograms = $null
         PendingDuplicateReport = $null
+        PendingDriverReport = $null
+        PendingDriverExport = $null
         PendingDiagnosticsStart  = $false
         PendingUpdateInfo    = $null
         PendingStartupItems  = $null
@@ -760,6 +763,7 @@ function Start-OptiKitMain {
     $toolState = [hashtable]::Synchronized(@{
         InstalledPrograms = @()
         DuplicateRows     = @()
+        Drivers           = @()
     })
     $applyInstalledFilter = {
         $query = [string]$ui.TxtUninstallSearch.Text
@@ -888,6 +892,56 @@ function Start-OptiKitMain {
         }
         $ui.GridDuplicateFiles.ItemsSource = @($toolState.DuplicateRows)
         $ui.TxtDuplicateStatus.Text = ("{0} arquivo(s) movido(s) para a Lixeira; {1} falha(s)." -f ($selected.Count - $failed), $failed)
+    }.GetNewClosure())
+
+    # Drivers
+    $applyDriverFilter = {
+        $query = [string]$ui.TxtDriverSearch.Text
+        if ([string]::IsNullOrWhiteSpace($query)) {
+            $ui.GridDrivers.ItemsSource = @($toolState.Drivers)
+            return
+        }
+        $filtered = @($toolState.Drivers | Where-Object {
+            ([string]$_.DeviceName) -match [regex]::Escape($query) -or
+            ([string]$_.DeviceClass) -match [regex]::Escape($query) -or
+            ([string]$_.Manufacturer) -match [regex]::Escape($query) -or
+            ([string]$_.DriverVersion) -match [regex]::Escape($query)
+        })
+        $ui.GridDrivers.ItemsSource = $filtered
+    }.GetNewClosure()
+    $ui.TxtDriverSearch.Add_TextChanged({ & $applyDriverFilter }.GetNewClosure())
+    $ui.BtnRefreshDrivers.Add_Click({
+        if ($sync.IsBusy) { return }
+        $ui.TxtDriverStatus.Text = 'Carregando drivers...'
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
+            $SyncHash.PendingDriverReport = @(Get-OptiKitDriverInventory)
+        }
+    }.GetNewClosure())
+    $ui.BtnOpenDriverLink.Add_Click({
+        $selected = $ui.GridDrivers.SelectedItem
+        if (-not $selected) {
+            $ui.TxtDriverStatus.Text = 'Selecione um driver na lista.'
+            return
+        }
+        $link = if (-not [string]::IsNullOrWhiteSpace([string]$selected.Link)) { [string]$selected.Link } else { 'ms-settings:windowsupdate' }
+        try { Start-Process $link }
+        catch { $ui.TxtDriverStatus.Text = ("Falha ao abrir o site: {0}" -f $_.Exception.Message) }
+    }.GetNewClosure())
+    $ui.BtnWindowsUpdate.Add_Click({
+        try { Start-Process 'ms-settings:windowsupdate' }
+        catch { $ui.TxtDriverStatus.Text = ("Falha ao abrir o Windows Update: {0}" -f $_.Exception.Message) }
+    }.GetNewClosure())
+    $ui.BtnExportDrivers.Add_Click({
+        if ($sync.IsBusy) { return }
+        $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
+        $dialog.Description = 'Escolha a pasta para exportar os drivers.'
+        if ($dialog.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) { return }
+        $destination = $dialog.SelectedPath
+        $ui.TxtDriverStatus.Text = 'Exportando drivers...'
+        Start-OptiKitWorkerTask -SyncHash $sync -Arguments @{ Destination = $destination } -WorkerScript {
+            $result = Export-OptiKitDrivers -Destination $WorkerArgs.Destination
+            $SyncHash.PendingDriverExport = ("Drivers exportados para {0}." -f $result)
+        }
     }.GetNewClosure())
 
     & $refreshProcesses
@@ -1102,6 +1156,10 @@ function Start-OptiKitMain {
         $ui.BtnScanDuplicates.IsEnabled = (-not $busy)
         $ui.BtnCancelDuplicates.IsEnabled = $busy
         $ui.BtnDeleteDuplicates.IsEnabled = (-not $busy)
+        $ui.BtnRefreshDrivers.IsEnabled = (-not $busy)
+        $ui.BtnExportDrivers.IsEnabled = (-not $busy)
+        $ui.BtnOpenDriverLink.IsEnabled = (-not $busy)
+        $ui.BtnWindowsUpdate.IsEnabled = (-not $busy)
 
         if (-not $busy -and $sync.PendingDiagnosticsStart) {
             $sync.PendingDiagnosticsStart = $false
@@ -1133,6 +1191,20 @@ function Start-OptiKitMain {
             $toolState.DuplicateRows = @($report.Rows)
             $ui.GridDuplicateFiles.ItemsSource = @($toolState.DuplicateRows)
             $ui.TxtDuplicateStatus.Text = ("{0} grupo(s); {1:N1} MB desperdiçados." -f $report.Groups, ([double]$report.WastedBytes / 1MB))
+        }
+
+        if ($null -ne $sync.PendingDriverReport) {
+            $toolState.Drivers = @($sync.PendingDriverReport)
+            $sync.PendingDriverReport = $null
+            & $applyDriverFilter
+            $problems = @($toolState.Drivers | Where-Object { $_.Status -eq 'Problema' }).Count
+            $ui.TxtDriverStatus.Text = ("{0} driver(s) inventariado(s); {1} com problema." -f $toolState.Drivers.Count, $problems)
+        }
+
+        if ($null -ne $sync.PendingDriverExport) {
+            $message = [string]$sync.PendingDriverExport
+            $sync.PendingDriverExport = $null
+            $ui.TxtDriverStatus.Text = $message
         }
 
         if ($null -ne $sync.PendingUpdateInfo) {
