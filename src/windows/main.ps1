@@ -187,6 +187,7 @@ function Start-OptiKitWorkerTask {
         'Disable-OptiKitReservedStorage', 'Enable-OptiKitReservedStorage', 'Test-OptiKitReservedStorage',
         'Get-OptiKitHardwareDiagnostics', 'New-OptiKitDiagnosticItem',
         'Get-OptiKitDiagnosticBios', 'Get-OptiKitDiagnosticDisk', 'Get-OptiKitDiagnosticStability',
+        'ConvertTo-OptiKitStorageHealthRow', 'Get-OptiKitStorageHealth',
         'Test-OptiKitPendingReboot', 'Get-OptiKitDiagnosticPendingReboot', 'Get-OptiKitDiagnosticDefender',
         'Format-OptiKitDiagnosticSize',
         'Get-OptiKitDiagnosticRam', 'Get-OptiKitDisplayModes', 'Get-OptiKitDiagnosticMonitor',
@@ -209,6 +210,7 @@ function Start-OptiKitWorkerTask {
         'ConvertFrom-OptiKitRegistryEntry', 'ConvertFrom-OptiKitAppxPackage', 'Get-OptiKitInstalledPrograms', 'Get-OptiKitUninstallCommand', 'Uninstall-OptiKitProgram',
         'Get-OptiKitFileFingerprint', 'Find-OptiKitDuplicateFiles',
         'Get-OptiKitDriverVendorLink', 'Get-OptiKitDriverInventory', 'Export-OptiKitDrivers',
+        'ConvertTo-OptiKitDriverUpdateRow', 'Get-OptiKitDriverUpdates',
         'Restart-OptiKitToUefi',
         'Clear-OptiKitDirectory', 'Invoke-AdvancedCleanup',
         'Get-OptiKitDohProviders', 'Get-OptiKitDnsAdapters', 'Test-OptiKitDohSupported',
@@ -427,9 +429,13 @@ function Start-OptiKitMain {
         CancelRequest        = $false
         PendingStateReport   = $null
         PendingDiagnosticsReport = $null
+        PendingStorageReport = $null
+        PendingStorageError = $null
         PendingInstalledPrograms = $null
         PendingDuplicateReport = $null
         PendingDriverReport = $null
+        PendingDriverUpdateReport = $null
+        PendingDriverUpdateError = $null
         PendingDriverExport = $null
         PendingDiagnosticsStart  = $false
         PendingUpdateInfo    = $null
@@ -698,15 +704,51 @@ function Start-OptiKitMain {
 
     $ui.BtnRefreshState.Add_Click($triggerStateCheck)
 
+    $showStorageDetail = {
+        $row = $ui.GridStorage.SelectedItem
+        if ($row) { $ui.TxtStorageDetail.Text = [string]$row.Detail }
+        else { $ui.TxtStorageDetail.Text = 'Selecione um disco para ver os detalhes.' }
+    }.GetNewClosure()
+    $ui.GridStorage.Add_SelectionChanged({ & $showStorageDetail }.GetNewClosure())
+
     $triggerDiagnostics = {
         Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
             Write-OptimizerLog -Level INFO -Message 'Executando diagnóstico de hardware (somente leitura)...'
             $SyncHash.PendingDiagnosticsReport = Get-OptiKitHardwareDiagnostics
+            $SyncHash.PendingStorageError = $null
+            try {
+                $SyncHash.PendingStorageReport = @(Get-OptiKitStorageHealth)
+            }
+            catch {
+                $SyncHash.PendingStorageReport = $null
+                $SyncHash.PendingStorageError = $_.Exception.Message
+                Write-OptimizerLog -Level WARN -Message ("Falha ao consultar armazenamento: {0}" -f $_.Exception.Message)
+            }
             Write-OptimizerLog -Level OK -Message 'Diagnóstico de hardware concluído.'
         }
     }.GetNewClosure()
 
     $ui.BtnRefreshDiagnostics.Add_Click($triggerDiagnostics)
+
+    $triggerStorage = {
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
+            $SyncHash.PendingStorageError = $null
+            try {
+                $SyncHash.PendingStorageReport = @(Get-OptiKitStorageHealth)
+            }
+            catch {
+                $SyncHash.PendingStorageReport = $null
+                $SyncHash.PendingStorageError = $_.Exception.Message
+                Write-OptimizerLog -Level WARN -Message ("Falha ao consultar armazenamento: {0}" -f $_.Exception.Message)
+            }
+        }
+    }.GetNewClosure()
+    $ui.BtnRefreshStorage.Add_Click({
+        if ($sync.IsBusy) { return }
+        $ui.TxtStorageStatus.Text = 'Consultando discos...'
+        $ui.TxtStorageDetail.Text = 'Selecione um disco para ver os detalhes.'
+        & $triggerStorage
+    }.GetNewClosure())
 
     # Segundo plano
     $refreshProcesses = {
@@ -764,6 +806,7 @@ function Start-OptiKitMain {
         InstalledPrograms = @()
         DuplicateRows     = @()
         Drivers           = @()
+        Storage           = @()
     })
     $applyInstalledFilter = {
         $query = [string]$ui.TxtUninstallSearch.Text
@@ -910,8 +953,26 @@ function Start-OptiKitMain {
         $ui.GridDrivers.ItemsSource = $filtered
     }.GetNewClosure()
     $ui.TxtDriverSearch.Add_TextChanged({ & $applyDriverFilter }.GetNewClosure())
+    $showDriverInventory = {
+        $ui.GridDrivers.Visibility = 'Visible'
+        $ui.GridDriverUpdates.Visibility = 'Collapsed'
+        $ui.TxtDriverStatus.Visibility = 'Visible'
+        $ui.TxtDriverUpdateStatus.Visibility = 'Collapsed'
+        $ui.BtnShowDriverInventory.Visibility = 'Collapsed'
+        $ui.TxtDriverSearch.IsEnabled = $true
+    }.GetNewClosure()
+    $showDriverUpdates = {
+        $ui.GridDrivers.Visibility = 'Collapsed'
+        $ui.GridDriverUpdates.Visibility = 'Visible'
+        $ui.TxtDriverStatus.Visibility = 'Collapsed'
+        $ui.TxtDriverUpdateStatus.Visibility = 'Visible'
+        $ui.BtnShowDriverInventory.Visibility = 'Visible'
+        $ui.TxtDriverSearch.IsEnabled = $false
+    }.GetNewClosure()
+    $ui.BtnShowDriverInventory.Add_Click({ & $showDriverInventory }.GetNewClosure())
     $ui.BtnRefreshDrivers.Add_Click({
         if ($sync.IsBusy) { return }
+        & $showDriverInventory
         $ui.TxtDriverStatus.Text = 'Carregando drivers...'
         Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
             $SyncHash.PendingDriverReport = @(Get-OptiKitDriverInventory)
@@ -923,9 +984,30 @@ function Start-OptiKitMain {
             $ui.TxtDriverStatus.Text = 'Selecione um driver na lista.'
             return
         }
-        $link = if (-not [string]::IsNullOrWhiteSpace([string]$selected.Link)) { [string]$selected.Link } else { 'ms-settings:windowsupdate' }
-        try { Start-Process $link }
+        if ([string]::IsNullOrWhiteSpace([string]$selected.Link)) {
+            $ui.TxtDriverStatus.Text = 'Sem site específico para este dispositivo. Use Windows Update ou Atualizações opcionais.'
+            return
+        }
+        try { Start-Process ([string]$selected.Link) }
         catch { $ui.TxtDriverStatus.Text = ("Falha ao abrir o site: {0}" -f $_.Exception.Message) }
+    }.GetNewClosure())
+    $ui.BtnCheckDriverUpdates.Add_Click({
+        if ($sync.IsBusy) { return }
+        & $showDriverUpdates
+        $ui.TxtDriverUpdateStatus.Text = 'Consultando atualizações de drivers no Windows Update...'
+        Start-OptiKitWorkerTask -SyncHash $sync -Arguments @{ Drivers = @($toolState.Drivers) } -WorkerScript {
+            try {
+                $SyncHash.PendingDriverUpdateReport = @(Get-OptiKitDriverUpdates -Drivers $WorkerArgs.Drivers)
+            }
+            catch {
+                $SyncHash.PendingDriverUpdateError = $_.Exception.Message
+                Write-OptimizerLog -Level WARN -Message $_.Exception.Message
+            }
+        }
+    }.GetNewClosure())
+    $ui.BtnOpenOptionalUpdates.Add_Click({
+        try { Start-Process 'ms-settings:windowsupdate-optionalupdates' }
+        catch { $ui.TxtDriverUpdateStatus.Text = ("Falha ao abrir as atualizações opcionais: {0}" -f $_.Exception.Message) }
     }.GetNewClosure())
     $ui.BtnWindowsUpdate.Add_Click({
         try { Start-Process 'ms-settings:windowsupdate' }
@@ -1139,6 +1221,7 @@ function Start-OptiKitMain {
         $ui.BtnRebootUefi.IsEnabled = (-not $busy)
         $ui.BtnClearTemp.IsEnabled = (-not $busy)
         $ui.BtnRefreshDiagnostics.IsEnabled = (-not $busy)
+        $ui.BtnRefreshStorage.IsEnabled = (-not $busy)
         $ui.BtnExportReport.IsEnabled = (-not $busy)
         $ui.CmbDohProvider.IsEnabled = ((-not $busy) -and $ui.DohSupported)
         $ui.BtnApplyDoh.IsEnabled = ((-not $busy) -and $ui.DohSupported)
@@ -1160,6 +1243,8 @@ function Start-OptiKitMain {
         $ui.BtnExportDrivers.IsEnabled = (-not $busy)
         $ui.BtnOpenDriverLink.IsEnabled = (-not $busy)
         $ui.BtnWindowsUpdate.IsEnabled = (-not $busy)
+        $ui.BtnCheckDriverUpdates.IsEnabled = (-not $busy)
+        $ui.BtnOpenOptionalUpdates.IsEnabled = (-not $busy)
 
         if (-not $busy -and $sync.PendingDiagnosticsStart) {
             $sync.PendingDiagnosticsStart = $false
@@ -1176,6 +1261,31 @@ function Start-OptiKitMain {
             $diag = $sync.PendingDiagnosticsReport
             $sync.PendingDiagnosticsReport = $null
             Update-OptiKitDiagnosticsUi -Ui $ui -Items @($diag)
+        }
+
+        if ($null -ne $sync.PendingStorageError) {
+            $message = [string]$sync.PendingStorageError
+            $sync.PendingStorageError = $null
+            $ui.GridStorage.ItemsSource = @()
+            $ui.TxtStorageStatus.Text = ("Falha ao consultar o armazenamento: {0}" -f $message)
+            $ui.TxtStorageDetail.Text = 'Não foi possível ler os discos.'
+        }
+
+        if ($null -ne $sync.PendingStorageReport) {
+            $storage = @($sync.PendingStorageReport)
+            $sync.PendingStorageReport = $null
+            $toolState.Storage = $storage
+            $ui.GridStorage.ItemsSource = $storage
+            if ($storage.Count -eq 0) {
+                $ui.TxtStorageStatus.Text = 'Nenhum disco físico reportado.'
+                $ui.TxtStorageDetail.Text = 'Nenhum disco para selecionar.'
+            }
+            else {
+                $alerts = @($storage | Where-Object { $_.Severity -ne 'OK' }).Count
+                $ui.TxtStorageStatus.Text = ("{0} disco(s); {1} alerta(s)." -f $storage.Count, $alerts)
+                $ui.GridStorage.SelectedIndex = 0
+                & $showStorageDetail
+            }
         }
 
         if ($null -ne $sync.PendingInstalledPrograms) {
@@ -1205,6 +1315,27 @@ function Start-OptiKitMain {
             $message = [string]$sync.PendingDriverExport
             $sync.PendingDriverExport = $null
             $ui.TxtDriverStatus.Text = $message
+        }
+
+        if ($null -ne $sync.PendingDriverUpdateError) {
+            $message = [string]$sync.PendingDriverUpdateError
+            $sync.PendingDriverUpdateError = $null
+            $ui.GridDriverUpdates.ItemsSource = @()
+            $ui.TxtDriverUpdateStatus.Text = $message
+        }
+
+        if ($null -ne $sync.PendingDriverUpdateReport) {
+            $updates = @($sync.PendingDriverUpdateReport)
+            $sync.PendingDriverUpdateReport = $null
+            $ui.GridDriverUpdates.ItemsSource = $updates
+            if ($updates.Count -eq 0) {
+                $ui.TxtDriverUpdateStatus.Text = 'Nenhuma atualização de driver pendente no Windows Update.'
+            }
+            else {
+                $reboot = @($updates | Where-Object { $_.RebootRequired }).Count
+                $optional = @($updates | Where-Object { $_.IsOptional }).Count
+                $ui.TxtDriverUpdateStatus.Text = ("{0} atualização(ões) de driver; {1} exigem reinício; {2} opcional(is). Nada foi instalado." -f $updates.Count, $reboot, $optional)
+            }
         }
 
         if ($null -ne $sync.PendingUpdateInfo) {

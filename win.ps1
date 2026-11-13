@@ -3101,7 +3101,7 @@ $script:EmbeddedThemeXaml = @'
         <Style x:Key="Nav.Item" TargetType="ListBoxItem">
             <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
             <Setter Property="Padding" Value="12,0" />
-            <Setter Property="Height" Value="36" />
+            <Setter Property="Height" Value="32" />
             <Setter Property="Margin" Value="0,0,0,2" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual.Accent}" />
@@ -3137,7 +3137,9 @@ $script:EmbeddedThemeXaml = @'
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBox">
-                        <ItemsPresenter />
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+                            <ItemsPresenter />
+                        </ScrollViewer>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -3186,6 +3188,9 @@ $script:EmbeddedThemeXaml = @'
                     <Setter Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="9">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="10">
                     <Setter Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
             </Style.Triggers>
@@ -3346,6 +3351,12 @@ $script:EmbeddedThemeXaml = @'
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE950;" />
                             <TextBlock Text="Drivers" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="Discos">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xEDA2;" />
+                            <TextBlock Text="Discos" VerticalAlignment="Center" />
                         </StackPanel>
                     </ListBoxItem>
                     <ListBoxItem AutomationProperties.Name="Diagn&#x00F3;stico">
@@ -3571,22 +3582,78 @@ $script:EmbeddedThemeXaml = @'
                             <TextBlock Text="Invent&#x00E1;rio de drivers e links oficiais. O OptiKit n&#x00E3;o instala drivers automaticamente." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
                         </StackPanel>
                     </DockPanel>
-                    <TextBox x:Name="TxtDriverSearch" Grid.Row="1" Margin="0,0,32,12" Style="{StaticResource TextBox.Search}" Tag="Buscar dispositivo, classe ou fabricante" AutomationProperties.Name="Buscar drivers" ToolTip="Filtra por dispositivo, classe, vers&#x00E3;o ou fabricante" />
-                    <DataGrid x:Name="GridDrivers" Grid.Row="2" Style="{StaticResource DataGrid.Clean}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" RowHeaderWidth="0" SelectionMode="Single" Margin="0,0,32,12">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Dispositivo" Binding="{Binding DeviceName}" Width="*" ElementStyle="{StaticResource Cell.Text}" />
-                            <DataGridTextColumn Header="Classe" Binding="{Binding DeviceClass}" Width="110" ElementStyle="{StaticResource Cell.Meta}" />
-                            <DataGridTextColumn Header="Vers&#x00E3;o" Binding="{Binding DriverVersion}" Width="140" ElementStyle="{StaticResource Cell.Meta}" />
-                            <DataGridTextColumn Header="Data" Binding="{Binding DriverDate, StringFormat={}{0:yyyy-MM-dd}}" Width="100" ElementStyle="{StaticResource Cell.Meta}" />
-                            <DataGridTextColumn Header="Fabricante" Binding="{Binding Manufacturer}" Width="160" ElementStyle="{StaticResource Cell.Meta}" />
-                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    <DockPanel Grid.Row="1" Margin="0,0,32,12">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,0,0">
+                            <Button x:Name="BtnShowDriverInventory" Visibility="Collapsed" Style="{StaticResource Button.Subtle}" Content="Invent&#x00E1;rio" Margin="0,0,8,0" ToolTip="Voltar ao invent&#x00E1;rio de drivers" />
+                            <Button x:Name="BtnCheckDriverUpdates" Style="{StaticResource Button.Subtle}" Content="Ver atualiza&#x00E7;&#x00F5;es" Margin="0,0,8,0" ToolTip="Consultar atualiza&#x00E7;&#x00F5;es de driver no Windows Update" />
+                            <Button x:Name="BtnOpenOptionalUpdates" Style="{StaticResource Button.Subtle}" Content="Atualiza&#x00E7;&#x00F5;es opcionais" ToolTip="Abrir a p&#x00E1;gina de atualiza&#x00E7;&#x00F5;es opcionais do Windows" />
+                        </StackPanel>
+                        <TextBox x:Name="TxtDriverSearch" Style="{StaticResource TextBox.Search}" Tag="Buscar driver" AutomationProperties.Name="Buscar drivers" ToolTip="Filtra por dispositivo, classe, vers&#x00E3;o ou fabricante" />
+                    </DockPanel>
+                    <Grid Grid.Row="2" Margin="0,0,32,12">
+                        <DataGrid x:Name="GridDrivers" Style="{StaticResource DataGrid.Clean}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" RowHeaderWidth="0" SelectionMode="Single">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Dispositivo" Binding="{Binding DeviceName}" Width="*" ElementStyle="{StaticResource Cell.Text}" />
+                                <DataGridTextColumn Header="Classe" Binding="{Binding DeviceClass}" Width="110" ElementStyle="{StaticResource Cell.Meta}" />
+                                <DataGridTextColumn Header="Vers&#x00E3;o" Binding="{Binding DriverVersion}" Width="140" ElementStyle="{StaticResource Cell.Meta}" />
+                                <DataGridTextColumn Header="Data" Binding="{Binding DriverDate, StringFormat={}{0:yyyy-MM-dd}}" Width="100" ElementStyle="{StaticResource Cell.Meta}" />
+                                <DataGridTextColumn Header="Fabricante" Binding="{Binding Manufacturer}" Width="160" ElementStyle="{StaticResource Cell.Meta}" />
+                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <DataGrid x:Name="GridDriverUpdates" Visibility="Collapsed" Style="{StaticResource DataGrid.Clean}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" RowHeaderWidth="0" SelectionMode="Single">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Dispositivo" Binding="{Binding DeviceName}" Width="*" ElementStyle="{StaticResource Cell.Text}" />
+                                <DataGridTextColumn Header="Atual" Binding="{Binding CurrentVersion}" Width="120" ElementStyle="{StaticResource Cell.Meta}" />
+                                <DataGridTextColumn Header="Dispon&#x00ED;vel" Binding="{Binding AvailableVersion}" Width="120" ElementStyle="{StaticResource Cell.Meta}" />
+                                <DataGridTextColumn Header="Fabricante" Binding="{Binding Provider}" Width="140" ElementStyle="{StaticResource Cell.Meta}" />
+                                <DataGridTextColumn Header="Data" Binding="{Binding Date, StringFormat={}{0:yyyy-MM-dd}}" Width="100" ElementStyle="{StaticResource Cell.Meta}" />
+                                <DataGridTextColumn Header="Tamanho" Binding="{Binding SizeText}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
+                                <DataGridTextColumn Header="Rein&#x00ED;cio" Binding="{Binding RebootText}" Width="70" ElementStyle="{StaticResource Cell.Meta}" />
+                                <DataGridTextColumn Header="Opcional" Binding="{Binding OptionalText}" Width="70" ElementStyle="{StaticResource Cell.Meta}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
                     <TextBlock x:Name="TxtDriverStatus" Grid.Row="3" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Text="Atualize para carregar o invent&#x00E1;rio de drivers." Margin="0,0,32,24" />
+                    <TextBlock x:Name="TxtDriverUpdateStatus" Grid.Row="3" Visibility="Collapsed" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Text="Clique em Ver atualiza&#x00E7;&#x00F5;es para consultar o Windows Update." Margin="0,0,32,24" />
                 </Grid>
             </TabItem>
 
-            <!-- 7. Diagn&#x00F3;stico -->
+            <!-- 7. Discos -->
+            <TabItem Header="Discos">
+                <Grid Margin="32,24,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <DockPanel Grid.Row="0" Margin="0,0,32,12">
+                        <Button x:Name="BtnRefreshStorage" DockPanel.Dock="Right" Style="{StaticResource Button.Subtle}" Content="Atualizar" VerticalAlignment="Bottom" />
+                        <StackPanel>
+                            <TextBlock Text="Discos" Style="{StaticResource Text.Title}" />
+                            <TextBlock Text="Sa&#x00FA;de, temperatura, desgaste e horas de uso. A sa&#x00FA;de % &#x00E9; 100% menos o desgaste reportado; tudo &#x00E9; somente leitura." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </DockPanel>
+                    <TextBlock x:Name="TxtStorageStatus" Grid.Row="1" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Text="Somente leitura. Aguardando a verifica&#x00E7;&#x00E3;o." Margin="0,0,32,8" />
+                    <DataGrid x:Name="GridStorage" Grid.Row="2" Style="{StaticResource DataGrid.Clean}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" RowHeaderWidth="0" SelectionMode="Single" Margin="0,0,32,12">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Disco" Binding="{Binding Name}" Width="*" ElementStyle="{StaticResource Cell.Text}" />
+                            <DataGridTextColumn Header="Tipo" Binding="{Binding TypeText}" Width="100" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Capacidade" Binding="{Binding SizeText}" Width="100" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Sa&#x00FA;de" Binding="{Binding HealthText}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Sa&#x00FA;de %" Binding="{Binding HealthPercentText}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Temp." Binding="{Binding TemperatureText}" Width="80" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Desgaste" Binding="{Binding WearText}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Horas" Binding="{Binding PowerOnText}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Ciclos" Binding="{Binding PowerCyclesText}" Width="80" ElementStyle="{StaticResource Cell.Meta}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock x:Name="TxtStorageDetail" Grid.Row="3" Style="{StaticResource Text.Meta}" TextWrapping="Wrap" Text="Selecione um disco para ver os detalhes." Margin="0,0,32,24" />
+                </Grid>
+            </TabItem>
+
+            <!-- 8. Diagn&#x00F3;stico -->
             <TabItem Header="Diagn&#x00F3;stico">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>
@@ -3606,7 +3673,7 @@ $script:EmbeddedThemeXaml = @'
                 </Grid>
             </TabItem>
 
-            <!-- 8. Inicializa&#x00E7;&#x00E3;o -->
+            <!-- 9. Inicializa&#x00E7;&#x00E3;o -->
             <TabItem Header="Inicializa&#x00E7;&#x00E3;o">
                 <Grid Margin="32,24,32,0">
                     <Grid.RowDefinitions>
@@ -3635,7 +3702,7 @@ $script:EmbeddedThemeXaml = @'
                 </Grid>
             </TabItem>
 
-            <!-- 9. Manuten&#x00E7;&#x00E3;o -->
+            <!-- 10. Manuten&#x00E7;&#x00E3;o -->
             <TabItem Header="Manuten&#x00E7;&#x00E3;o">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>
@@ -8295,6 +8362,235 @@ function Get-OptiKitDiagnosticBios {
     }
 }
 
+function ConvertTo-OptiKitStorageHealthRow {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]$Disk,
+        [object]$LogicalDisk,
+        [object]$Counter
+    )
+
+    $name = [string]$Disk.FriendlyName
+    if ([string]::IsNullOrWhiteSpace($name)) { $name = ('Disco {0}' -f $Disk.DeviceId) }
+    $media = [string]$Disk.MediaType
+    $bus = [string]$Disk.BusType
+    if ($media -eq 'Unspecified') {
+        if ($bus -eq 'NVMe') { $media = 'SSD' }
+        elseif ($bus -eq 'USB') { $media = 'USB' }
+        else { $media = 'Desconhecido' }
+    }
+    $typeText = if ($media -in @('SSD', 'HDD')) {
+        if ([string]::IsNullOrWhiteSpace($bus)) { $media } else { ('{0} {1}' -f $media, $bus) }
+    }
+    elseif (-not [string]::IsNullOrWhiteSpace($bus)) { $bus }
+    else { $media }
+
+    $temperature = $null
+    $temperatureMax = $null
+    $wear = $null
+    $powerOnHours = $null
+    $powerCycles = $null
+    $readUncorrected = 0
+    $writeUncorrected = 0
+    $manufactureDate = ''
+    if ($Counter) {
+        try {
+            if ($null -ne $Counter.Temperature -and [int]$Counter.Temperature -gt 0) { $temperature = [int]$Counter.Temperature }
+        }
+        catch { $temperature = $null }
+        try {
+            if ($null -ne $Counter.TemperatureMax -and [int]$Counter.TemperatureMax -gt 0) { $temperatureMax = [int]$Counter.TemperatureMax }
+        }
+        catch { $temperatureMax = $null }
+        try {
+            $wearValue = 0
+            if ($null -ne $Counter.Wear -and [int]::TryParse([string]$Counter.Wear, [ref]$wearValue) -and $wearValue -ge 0 -and $wearValue -le 100) {
+                $wear = $wearValue
+            }
+        }
+        catch { $wear = $null }
+        try {
+            if ($null -ne $Counter.PowerOnHours) { $powerOnHours = [int]$Counter.PowerOnHours }
+        }
+        catch { $powerOnHours = $null }
+        try {
+            if ($null -ne $Counter.StartStopCycleCount) { $powerCycles = [int]$Counter.StartStopCycleCount }
+        }
+        catch { $powerCycles = $null }
+        try {
+            if ($null -ne $Counter.ReadErrorsUncorrected) { $readUncorrected = [int]$Counter.ReadErrorsUncorrected }
+        }
+        catch { $readUncorrected = 0 }
+        try {
+            if ($null -ne $Counter.WriteErrorsUncorrected) { $writeUncorrected = [int]$Counter.WriteErrorsUncorrected }
+        }
+        catch { $writeUncorrected = 0 }
+        try {
+            if (-not [string]::IsNullOrWhiteSpace([string]$Counter.ManufactureDate)) { $manufactureDate = [string]$Counter.ManufactureDate }
+        }
+        catch { $manufactureDate = '' }
+    }
+
+    $healthStatus = [string]$Disk.HealthStatus
+    $operational = @($Disk.OperationalStatus) -join ', '
+    $issues = New-Object 'System.Collections.Generic.List[string]'
+    $severity = 'OK'
+    if ($healthStatus -eq 'Unhealthy') {
+        $severity = 'Error'
+        [void]$issues.Add("sa$([char]0x00FA)de do Windows: Unhealthy")
+    }
+    elseif ($healthStatus -eq 'Warning') {
+        $severity = 'Warn'
+        [void]$issues.Add("sa$([char]0x00FA)de do Windows: Warning")
+    }
+    elseif ($healthStatus -ne 'Healthy') {
+        $severity = 'Unknown'
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($operational) -and $operational -ne 'OK' -and $operational -ne 'Online') {
+        if ($severity -eq 'OK') { $severity = 'Warn' }
+        [void]$issues.Add(("operacional: {0}" -f $operational))
+    }
+    if ($null -ne $temperature -and $temperature -ge 80) {
+        $severity = 'Error'
+        [void]$issues.Add(("temperatura {0} $([char]0x00B0)C" -f $temperature))
+    }
+    elseif ($null -ne $temperature -and $temperature -ge 70) {
+        if ($severity -ne 'Error') { $severity = 'Warn' }
+        [void]$issues.Add(("temperatura {0} $([char]0x00B0)C" -f $temperature))
+    }
+    if ($null -ne $wear -and $wear -ge 95) {
+        $severity = 'Error'
+        [void]$issues.Add(("desgaste {0}%" -f $wear))
+    }
+    elseif ($null -ne $wear -and $wear -ge 80) {
+        if ($severity -ne 'Error') { $severity = 'Warn' }
+        [void]$issues.Add(("desgaste {0}%" -f $wear))
+    }
+    if ($readUncorrected -gt 0 -or $writeUncorrected -gt 0) {
+        if ($severity -ne 'Error') { $severity = 'Warn' }
+        [void]$issues.Add(("erros n$([char]0x00E3)o corrigidos: leitura {0}, grava$([char]0x00E7)$([char]0x00E3)o {1}" -f $readUncorrected, $writeUncorrected))
+    }
+
+    $healthText = switch ($severity) {
+        'Error' { "Cr$([char]0x00ED)tico" }
+        'Warn' { "Aten$([char]0x00E7)$([char]0x00E3)o" }
+        'Unknown' { 'Desconhecido' }
+        default { 'OK' }
+    }
+    $temperatureText = if ($null -ne $temperature) { ("{0} $([char]0x00B0)C" -f $temperature) } else { "$([char]0x2014)" }
+    $temperatureMaxText = if ($null -ne $temperatureMax) { ("{0} $([char]0x00B0)C" -f $temperatureMax) } else { "$([char]0x2014)" }
+    $wearText = if ($null -ne $wear) { ('{0}%' -f $wear) } else { "$([char]0x2014)" }
+    $healthPercentText = if ($null -ne $wear) { ('{0}%' -f (100 - $wear)) } else { "$([char]0x2014)" }
+    $powerOnText = if ($null -ne $powerOnHours) { ('{0:N0} h' -f $powerOnHours) } else { "$([char]0x2014)" }
+    $powerCyclesText = if ($null -ne $powerCycles) { ('{0:N0}' -f $powerCycles) } else { "$([char]0x2014)" }
+    $sizeText = Format-OptiKitDiagnosticSize -Bytes ([double]$Disk.Size)
+    $firmware = if ([string]::IsNullOrWhiteSpace([string]$Disk.FirmwareVersion)) { "$([char]0x2014)" } else { [string]$Disk.FirmwareVersion }
+    $serial = ([string]$Disk.SerialNumber).Trim()
+    if ([string]::IsNullOrWhiteSpace($serial)) { $serial = "$([char]0x2014)" }
+    $physicalLocation = [string]$Disk.PhysicalLocation
+    $isSystem = [bool]($LogicalDisk -and ($LogicalDisk.IsSystem -or $LogicalDisk.IsBoot))
+    $issueText = if ($issues.Count -gt 0) { $issues -join '; ' } else { '' }
+
+    $detailLines = New-Object 'System.Collections.Generic.List[string]'
+    [void]$detailLines.Add(("Modelo: {0}" -f $name))
+    [void]$detailLines.Add(("Firmware: {0} | Serial: {1}" -f $firmware, $serial))
+    [void]$detailLines.Add(("Barramento: {0} | Tipo: {1}" -f $bus, $typeText))
+    [void]$detailLines.Add(("Sa$([char]0x00FA)de: {0} | Sa$([char]0x00FA)de estimada: {1}" -f $healthText, $healthPercentText))
+    if (-not [string]::IsNullOrWhiteSpace($issueText)) {
+        [void]$detailLines.Add(("Problemas: {0}" -f $issueText))
+    }
+    [void]$detailLines.Add(("Temperatura: {0} (m$([char]0x00E1)x. {1})" -f $temperatureText, $temperatureMaxText))
+    [void]$detailLines.Add(("Desgaste: {0}" -f $wearText))
+    [void]$detailLines.Add(("Horas ligado: {0} | Ciclos: {1}" -f $powerOnText, $powerCyclesText))
+    if (-not [string]::IsNullOrWhiteSpace($manufactureDate)) {
+        [void]$detailLines.Add(("Fabrica$([char]0x00E7)$([char]0x00E3)o: {0}" -f $manufactureDate))
+    }
+    [void]$detailLines.Add(("Erros n$([char]0x00E3)o corrigidos: leitura {0}, grava$([char]0x00E7)$([char]0x00E3)o {1}" -f $readUncorrected, $writeUncorrected))
+    [void]$detailLines.Add(("Sistema: {0}" -f $(if ($isSystem) { 'Sim' } else { "N$([char]0x00E3)o" })))
+    if (-not [string]::IsNullOrWhiteSpace($physicalLocation)) {
+        [void]$detailLines.Add(("Localiza$([char]0x00E7)$([char]0x00E3)o: {0}" -f $physicalLocation))
+    }
+
+    [pscustomobject]@{
+        DeviceId              = [string]$Disk.DeviceId
+        Name                  = $name
+        Model                 = $name
+        TypeText              = $typeText
+        MediaType             = $media
+        BusType               = $bus
+        SizeText              = $sizeText
+        HealthText            = $healthText
+        Severity              = $severity
+        HealthPercentText     = $healthPercentText
+        TemperatureText       = $temperatureText
+        TemperatureMaxText    = $temperatureMaxText
+        WearText              = $wearText
+        PowerOnText           = $powerOnText
+        PowerCyclesText       = $powerCyclesText
+        Serial                = $serial
+        Firmware              = $firmware
+        PhysicalLocation      = $physicalLocation
+        IsSystem              = $isSystem
+        Issues                = $issues.ToArray()
+        Detail                = ($detailLines -join "`r`n")
+    }
+}
+
+function Get-OptiKitStorageHealth {
+    [CmdletBinding()]
+    param(
+        [object[]]$PhysicalDisks,
+        [object[]]$LogicalDisks,
+        [hashtable]$ReliabilityCounters
+    )
+
+    if ($null -ne $PhysicalDisks) {
+        $physicalDisks = @($PhysicalDisks)
+    }
+    else {
+        if (-not (Get-Command Get-PhysicalDisk -ErrorAction SilentlyContinue)) {
+            throw "Cmdlets de armazenamento indispon$([char]0x00ED)veis."
+        }
+        try {
+            $physicalDisks = @(Get-PhysicalDisk -ErrorAction Stop)
+        }
+        catch {
+            throw ("Falha ao consultar discos f$([char]0x00ED)sicos: {0}" -f $_.Exception.Message)
+        }
+    }
+
+    if ($null -ne $LogicalDisks) {
+        $logicalDisks = @($LogicalDisks)
+    }
+    else {
+        $logicalDisks = if (Get-Command Get-Disk -ErrorAction SilentlyContinue) { @(Get-Disk -ErrorAction SilentlyContinue) } else { @() }
+    }
+
+    $rows = New-Object 'System.Collections.Generic.List[object]'
+    foreach ($disk in $physicalDisks) {
+        $match = @($logicalDisks | Where-Object { [string]$_.Number -eq [string]$disk.DeviceId } | Select-Object -First 1)
+        $logicalDisk = if ($match.Count -gt 0) { $match[0] } else { $null }
+
+        $counter = $null
+        if ($ReliabilityCounters -and $ReliabilityCounters.ContainsKey([string]$disk.DeviceId)) {
+            $counter = $ReliabilityCounters[[string]$disk.DeviceId]
+        }
+        else {
+            try {
+                $counter = @(Get-StorageReliabilityCounter -PhysicalDisk $disk -ErrorAction Stop) | Select-Object -First 1
+            }
+            catch {
+                Write-Verbose ("Contadores de confiabilidade indispon$([char]0x00ED)veis para {0}: {1}" -f $disk.FriendlyName, $_.Exception.Message)
+            }
+        }
+
+        [void]$rows.Add((ConvertTo-OptiKitStorageHealthRow -Disk $disk -LogicalDisk $logicalDisk -Counter $counter))
+    }
+
+    return @($rows | Sort-Object -Property Name)
+}
+
 function Get-OptiKitDiagnosticDisk {
     [CmdletBinding()]
     param(
@@ -8338,7 +8634,7 @@ function Get-OptiKitDiagnosticDisk {
                     $counter = [pscustomobject]$ReliabilityCounters[$deviceId]
                 }
                 else {
-                    $counter = Get-StorageReliabilityCounter -DeviceNumber ([int]$disk.DeviceId) -ErrorAction Stop
+                    $counter = Get-StorageReliabilityCounter -PhysicalDisk $disk -ErrorAction Stop
                 }
                 if ($null -ne $counter.Wear) { $wear = [int]$counter.Wear }
             }
@@ -9063,10 +9359,9 @@ function Remove-OptiKitDuplicateFile {
 # Inventario de drivers, links oficiais e backup via pnputil
 
 $script:OptiKitDriverLinks = @{
-    NVIDIA        = 'https://www.nvidia.com/Download/index.aspx'
-    AMD           = 'https://www.amd.com/en/support/download/drivers.html'
-    Intel         = 'https://www.intel.com/content/www/us/en/download-center/home.html'
-    WindowsUpdate = 'ms-settings:windowsupdate'
+    NVIDIA = 'https://www.nvidia.com/Download/index.aspx'
+    AMD    = 'https://www.amd.com/en/support/download/drivers.html'
+    Intel  = 'https://www.intel.com/content/www/us/en/download-center/home.html'
 }
 
 function Get-OptiKitDriverVendorLink {
@@ -9080,7 +9375,110 @@ function Get-OptiKitDriverVendorLink {
     if ($text -match '(?i)NVIDIA|GeForce|RTX|GTX') { return $script:OptiKitDriverLinks.NVIDIA }
     if ($text -match '(?i)AMD|Radeon|Ryzen') { return $script:OptiKitDriverLinks.AMD }
     if ($text -match '(?i)Intel|Arc|Iris|UHD') { return $script:OptiKitDriverLinks.Intel }
-    return $script:OptiKitDriverLinks.WindowsUpdate
+    return $null
+}
+
+function ConvertTo-OptiKitDriverUpdateRow {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]$Update,
+        [object[]]$Drivers = @()
+    )
+
+    if ([int]$Update.Type -ne 2 -or [bool]$Update.IsHidden) { return $null }
+
+    $hardware = [string]$Update.DriverHardwareID
+    $matched = $null
+    if (-not [string]::IsNullOrWhiteSpace($hardware)) {
+        $normalizedHardware = $hardware -replace '(?i)^monitor\\', 'display\'
+        $matched = @($Drivers | Where-Object {
+            $deviceId = [string]$_.HardwareID
+            if ([string]::IsNullOrWhiteSpace($deviceId)) { return $false }
+            $devicePrefix = ((@($deviceId -split '\\') | Select-Object -First 2) -join '\')
+            $hardware -eq $deviceId -or
+            $hardware -like ('*' + $deviceId + '*') -or
+            $deviceId -like ('*' + $hardware + '*') -or
+            $normalizedHardware -eq $devicePrefix
+        }) | Select-Object -First 1
+    }
+
+    $date = $null
+    try {
+        if ($Update.DriverVerDate) { $date = [datetime]$Update.DriverVerDate }
+    }
+    catch {
+        $date = $null
+    }
+
+    $sizeBytes = 0.0
+    try {
+        if ($Update.MaxDownloadSize) { $sizeBytes = [double]$Update.MaxDownloadSize }
+    }
+    catch {
+        $sizeBytes = 0.0
+    }
+    $sizeMB = [math]::Round(($sizeBytes / 1MB), 1)
+    $sizeText = if ($sizeBytes -ge 1MB) {
+        ('{0:N1} MB' -f ($sizeBytes / 1MB))
+    }
+    elseif ($sizeBytes -gt 0) {
+        ('{0:N0} KB' -f ($sizeBytes / 1KB))
+    }
+    else {
+        "$([char]0x2014)"
+    }
+
+    $updateId = ''
+    try {
+        if ($Update.Identity) { $updateId = [string]$Update.Identity.UpdateID }
+    }
+    catch {
+        $updateId = ''
+    }
+
+    $currentVersion = if ($matched -and -not [string]::IsNullOrWhiteSpace([string]$matched.DriverVersion)) { [string]$matched.DriverVersion } else { "$([char]0x2014)" }
+    $availableVersion = if (-not [string]::IsNullOrWhiteSpace([string]$Update.DriverVerVersion)) { [string]$Update.DriverVerVersion } else { "$([char]0x2014)" }
+
+    [pscustomobject]@{
+        DeviceName       = if ($matched) { [string]$matched.DeviceName } else { [string]$Update.Title }
+        CurrentVersion   = $currentVersion
+        AvailableVersion = $availableVersion
+        Provider         = [string]$Update.DriverProvider
+        Date             = $date
+        SizeMB           = $sizeMB
+        SizeText         = $sizeText
+        RebootRequired   = [bool]$Update.RebootRequired
+        IsOptional       = [bool]$Update.BrowseOnly
+        RebootText       = if ([bool]$Update.RebootRequired) { 'Sim' } else { "N$([char]0x00E3)o" }
+        OptionalText     = if ([bool]$Update.BrowseOnly) { 'Sim' } else { "N$([char]0x00E3)o" }
+        Title            = [string]$Update.Title
+        Description      = [string]$Update.Description
+        UpdateId         = $updateId
+    }
+}
+
+function Get-OptiKitDriverUpdates {
+    [CmdletBinding()]
+    param(
+        [object[]]$Drivers = @()
+    )
+
+    try {
+        $session = New-Object -ComObject Microsoft.Update.Session
+        $searcher = $session.CreateUpdateSearcher()
+        $result = $searcher.Search('IsInstalled=0')
+        $rows = New-Object 'System.Collections.Generic.List[object]'
+        for ($i = 0; $i -lt $result.Updates.Count; $i++) {
+            $update = $result.Updates.Item($i)
+            if ([int]$update.Type -ne 2 -or [bool]$update.IsHidden) { continue }
+            $row = ConvertTo-OptiKitDriverUpdateRow -Update $update -Drivers $Drivers
+            if ($row) { [void]$rows.Add($row) }
+        }
+        return @($rows | Sort-Object -Property DeviceName, AvailableVersion)
+    }
+    catch {
+        throw ("Falha ao consultar atualiza$([char]0x00E7)$([char]0x00F5)es de drivers do Windows Update: {0}" -f $_.Exception.Message)
+    }
 }
 
 function Get-OptiKitDriverInventory {
@@ -9114,6 +9512,7 @@ function Get-OptiKitDriverInventory {
                 DriverVersion = [string]$driver.DriverVersion
                 DriverDate    = $date
                 Manufacturer  = [string]$driver.Manufacturer
+                HardwareID    = [string]$driver.DeviceID
                 Status        = 'OK'
                 Link          = Get-OptiKitDriverVendorLink -Manufacturer ([string]$driver.Manufacturer) -DeviceName ([string]$driver.DeviceName)
             })
@@ -9131,8 +9530,9 @@ function Get-OptiKitDriverInventory {
                 DriverVersion = ''
                 DriverDate    = $null
                 Manufacturer  = [string]$problem.Manufacturer
+                HardwareID    = [string]$problem.DeviceID
                 Status        = 'Problema'
-                Link          = $script:OptiKitDriverLinks.WindowsUpdate
+                Link          = Get-OptiKitDriverVendorLink -Manufacturer ([string]$problem.Manufacturer) -DeviceName $name
             })
         }
 
@@ -10426,7 +10826,8 @@ function Initialize-OptiKitUi {
         'GridInstalledPrograms', 'TxtUninstallSearch', 'BtnRefreshUninstall', 'BtnUninstallSelected', 'TxtUninstallStatus',
         'TxtDuplicatePath', 'BtnBrowseDuplicates', 'CmbDuplicateMinSize', 'BtnScanDuplicates', 'BtnCancelDuplicates', 'BtnDeleteDuplicates', 'GridDuplicateFiles', 'TxtDuplicateStatus',
         'GridDrivers', 'TxtDriverSearch', 'BtnRefreshDrivers', 'BtnExportDrivers', 'BtnWindowsUpdate', 'BtnOpenDriverLink', 'TxtDriverStatus',
-        'BtnRefreshDiagnostics', 'TxtDiagnosticsSummary', 'DiagnosticsHost',
+        'BtnCheckDriverUpdates', 'BtnOpenOptionalUpdates', 'GridDriverUpdates', 'TxtDriverUpdateStatus', 'BtnShowDriverInventory',
+        'BtnRefreshDiagnostics', 'TxtDiagnosticsSummary', 'DiagnosticsHost', 'GridStorage', 'TxtStorageStatus', 'TxtStorageDetail', 'BtnRefreshStorage',
         'BtnResetNetwork', 'BtnRunSfcDism', 'BtnRepairSettings', 'BtnCancelMaintenance', 'BtnRebootUefi', 'BtnClearTemp', 'BtnOpenBackupsDir',
         'BtnExportProfile', 'BtnImportProfile', 'BtnExportReport',
         'CmbDohProvider', 'BtnApplyDoh', 'BtnUndoDoh', 'BtnWingetUpgrade', 'BtnAdvancedCleanup',
@@ -10976,6 +11377,7 @@ function Start-OptiKitWorkerTask {
         'Disable-OptiKitReservedStorage', 'Enable-OptiKitReservedStorage', 'Test-OptiKitReservedStorage',
         'Get-OptiKitHardwareDiagnostics', 'New-OptiKitDiagnosticItem',
         'Get-OptiKitDiagnosticBios', 'Get-OptiKitDiagnosticDisk', 'Get-OptiKitDiagnosticStability',
+        'ConvertTo-OptiKitStorageHealthRow', 'Get-OptiKitStorageHealth',
         'Test-OptiKitPendingReboot', 'Get-OptiKitDiagnosticPendingReboot', 'Get-OptiKitDiagnosticDefender',
         'Format-OptiKitDiagnosticSize',
         'Get-OptiKitDiagnosticRam', 'Get-OptiKitDisplayModes', 'Get-OptiKitDiagnosticMonitor',
@@ -10998,6 +11400,7 @@ function Start-OptiKitWorkerTask {
         'ConvertFrom-OptiKitRegistryEntry', 'ConvertFrom-OptiKitAppxPackage', 'Get-OptiKitInstalledPrograms', 'Get-OptiKitUninstallCommand', 'Uninstall-OptiKitProgram',
         'Get-OptiKitFileFingerprint', 'Find-OptiKitDuplicateFiles',
         'Get-OptiKitDriverVendorLink', 'Get-OptiKitDriverInventory', 'Export-OptiKitDrivers',
+        'ConvertTo-OptiKitDriverUpdateRow', 'Get-OptiKitDriverUpdates',
         'Restart-OptiKitToUefi',
         'Clear-OptiKitDirectory', 'Invoke-AdvancedCleanup',
         'Get-OptiKitDohProviders', 'Get-OptiKitDnsAdapters', 'Test-OptiKitDohSupported',
@@ -11216,9 +11619,13 @@ function Start-OptiKitMain {
         CancelRequest        = $false
         PendingStateReport   = $null
         PendingDiagnosticsReport = $null
+        PendingStorageReport = $null
+        PendingStorageError = $null
         PendingInstalledPrograms = $null
         PendingDuplicateReport = $null
         PendingDriverReport = $null
+        PendingDriverUpdateReport = $null
+        PendingDriverUpdateError = $null
         PendingDriverExport = $null
         PendingDiagnosticsStart  = $false
         PendingUpdateInfo    = $null
@@ -11487,15 +11894,51 @@ function Start-OptiKitMain {
 
     $ui.BtnRefreshState.Add_Click($triggerStateCheck)
 
+    $showStorageDetail = {
+        $row = $ui.GridStorage.SelectedItem
+        if ($row) { $ui.TxtStorageDetail.Text = [string]$row.Detail }
+        else { $ui.TxtStorageDetail.Text = 'Selecione um disco para ver os detalhes.' }
+    }.GetNewClosure()
+    $ui.GridStorage.Add_SelectionChanged({ & $showStorageDetail }.GetNewClosure())
+
     $triggerDiagnostics = {
         Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
             Write-OptimizerLog -Level INFO -Message "Executando diagn$([char]0x00F3)stico de hardware (somente leitura)..."
             $SyncHash.PendingDiagnosticsReport = Get-OptiKitHardwareDiagnostics
+            $SyncHash.PendingStorageError = $null
+            try {
+                $SyncHash.PendingStorageReport = @(Get-OptiKitStorageHealth)
+            }
+            catch {
+                $SyncHash.PendingStorageReport = $null
+                $SyncHash.PendingStorageError = $_.Exception.Message
+                Write-OptimizerLog -Level WARN -Message ("Falha ao consultar armazenamento: {0}" -f $_.Exception.Message)
+            }
             Write-OptimizerLog -Level OK -Message "Diagn$([char]0x00F3)stico de hardware conclu$([char]0x00ED)do."
         }
     }.GetNewClosure()
 
     $ui.BtnRefreshDiagnostics.Add_Click($triggerDiagnostics)
+
+    $triggerStorage = {
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
+            $SyncHash.PendingStorageError = $null
+            try {
+                $SyncHash.PendingStorageReport = @(Get-OptiKitStorageHealth)
+            }
+            catch {
+                $SyncHash.PendingStorageReport = $null
+                $SyncHash.PendingStorageError = $_.Exception.Message
+                Write-OptimizerLog -Level WARN -Message ("Falha ao consultar armazenamento: {0}" -f $_.Exception.Message)
+            }
+        }
+    }.GetNewClosure()
+    $ui.BtnRefreshStorage.Add_Click({
+        if ($sync.IsBusy) { return }
+        $ui.TxtStorageStatus.Text = 'Consultando discos...'
+        $ui.TxtStorageDetail.Text = 'Selecione um disco para ver os detalhes.'
+        & $triggerStorage
+    }.GetNewClosure())
 
     # Segundo plano
     $refreshProcesses = {
@@ -11553,6 +11996,7 @@ function Start-OptiKitMain {
         InstalledPrograms = @()
         DuplicateRows     = @()
         Drivers           = @()
+        Storage           = @()
     })
     $applyInstalledFilter = {
         $query = [string]$ui.TxtUninstallSearch.Text
@@ -11699,8 +12143,26 @@ function Start-OptiKitMain {
         $ui.GridDrivers.ItemsSource = $filtered
     }.GetNewClosure()
     $ui.TxtDriverSearch.Add_TextChanged({ & $applyDriverFilter }.GetNewClosure())
+    $showDriverInventory = {
+        $ui.GridDrivers.Visibility = 'Visible'
+        $ui.GridDriverUpdates.Visibility = 'Collapsed'
+        $ui.TxtDriverStatus.Visibility = 'Visible'
+        $ui.TxtDriverUpdateStatus.Visibility = 'Collapsed'
+        $ui.BtnShowDriverInventory.Visibility = 'Collapsed'
+        $ui.TxtDriverSearch.IsEnabled = $true
+    }.GetNewClosure()
+    $showDriverUpdates = {
+        $ui.GridDrivers.Visibility = 'Collapsed'
+        $ui.GridDriverUpdates.Visibility = 'Visible'
+        $ui.TxtDriverStatus.Visibility = 'Collapsed'
+        $ui.TxtDriverUpdateStatus.Visibility = 'Visible'
+        $ui.BtnShowDriverInventory.Visibility = 'Visible'
+        $ui.TxtDriverSearch.IsEnabled = $false
+    }.GetNewClosure()
+    $ui.BtnShowDriverInventory.Add_Click({ & $showDriverInventory }.GetNewClosure())
     $ui.BtnRefreshDrivers.Add_Click({
         if ($sync.IsBusy) { return }
+        & $showDriverInventory
         $ui.TxtDriverStatus.Text = 'Carregando drivers...'
         Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
             $SyncHash.PendingDriverReport = @(Get-OptiKitDriverInventory)
@@ -11712,9 +12174,30 @@ function Start-OptiKitMain {
             $ui.TxtDriverStatus.Text = 'Selecione um driver na lista.'
             return
         }
-        $link = if (-not [string]::IsNullOrWhiteSpace([string]$selected.Link)) { [string]$selected.Link } else { 'ms-settings:windowsupdate' }
-        try { Start-Process $link }
+        if ([string]::IsNullOrWhiteSpace([string]$selected.Link)) {
+            $ui.TxtDriverStatus.Text = "Sem site espec$([char]0x00ED)fico para este dispositivo. Use Windows Update ou Atualiza$([char]0x00E7)$([char]0x00F5)es opcionais."
+            return
+        }
+        try { Start-Process ([string]$selected.Link) }
         catch { $ui.TxtDriverStatus.Text = ("Falha ao abrir o site: {0}" -f $_.Exception.Message) }
+    }.GetNewClosure())
+    $ui.BtnCheckDriverUpdates.Add_Click({
+        if ($sync.IsBusy) { return }
+        & $showDriverUpdates
+        $ui.TxtDriverUpdateStatus.Text = "Consultando atualiza$([char]0x00E7)$([char]0x00F5)es de drivers no Windows Update..."
+        Start-OptiKitWorkerTask -SyncHash $sync -Arguments @{ Drivers = @($toolState.Drivers) } -WorkerScript {
+            try {
+                $SyncHash.PendingDriverUpdateReport = @(Get-OptiKitDriverUpdates -Drivers $WorkerArgs.Drivers)
+            }
+            catch {
+                $SyncHash.PendingDriverUpdateError = $_.Exception.Message
+                Write-OptimizerLog -Level WARN -Message $_.Exception.Message
+            }
+        }
+    }.GetNewClosure())
+    $ui.BtnOpenOptionalUpdates.Add_Click({
+        try { Start-Process 'ms-settings:windowsupdate-optionalupdates' }
+        catch { $ui.TxtDriverUpdateStatus.Text = ("Falha ao abrir as atualiza$([char]0x00E7)$([char]0x00F5)es opcionais: {0}" -f $_.Exception.Message) }
     }.GetNewClosure())
     $ui.BtnWindowsUpdate.Add_Click({
         try { Start-Process 'ms-settings:windowsupdate' }
@@ -11928,6 +12411,7 @@ function Start-OptiKitMain {
         $ui.BtnRebootUefi.IsEnabled = (-not $busy)
         $ui.BtnClearTemp.IsEnabled = (-not $busy)
         $ui.BtnRefreshDiagnostics.IsEnabled = (-not $busy)
+        $ui.BtnRefreshStorage.IsEnabled = (-not $busy)
         $ui.BtnExportReport.IsEnabled = (-not $busy)
         $ui.CmbDohProvider.IsEnabled = ((-not $busy) -and $ui.DohSupported)
         $ui.BtnApplyDoh.IsEnabled = ((-not $busy) -and $ui.DohSupported)
@@ -11949,6 +12433,8 @@ function Start-OptiKitMain {
         $ui.BtnExportDrivers.IsEnabled = (-not $busy)
         $ui.BtnOpenDriverLink.IsEnabled = (-not $busy)
         $ui.BtnWindowsUpdate.IsEnabled = (-not $busy)
+        $ui.BtnCheckDriverUpdates.IsEnabled = (-not $busy)
+        $ui.BtnOpenOptionalUpdates.IsEnabled = (-not $busy)
 
         if (-not $busy -and $sync.PendingDiagnosticsStart) {
             $sync.PendingDiagnosticsStart = $false
@@ -11965,6 +12451,31 @@ function Start-OptiKitMain {
             $diag = $sync.PendingDiagnosticsReport
             $sync.PendingDiagnosticsReport = $null
             Update-OptiKitDiagnosticsUi -Ui $ui -Items @($diag)
+        }
+
+        if ($null -ne $sync.PendingStorageError) {
+            $message = [string]$sync.PendingStorageError
+            $sync.PendingStorageError = $null
+            $ui.GridStorage.ItemsSource = @()
+            $ui.TxtStorageStatus.Text = ("Falha ao consultar o armazenamento: {0}" -f $message)
+            $ui.TxtStorageDetail.Text = "N$([char]0x00E3)o foi poss$([char]0x00ED)vel ler os discos."
+        }
+
+        if ($null -ne $sync.PendingStorageReport) {
+            $storage = @($sync.PendingStorageReport)
+            $sync.PendingStorageReport = $null
+            $toolState.Storage = $storage
+            $ui.GridStorage.ItemsSource = $storage
+            if ($storage.Count -eq 0) {
+                $ui.TxtStorageStatus.Text = "Nenhum disco f$([char]0x00ED)sico reportado."
+                $ui.TxtStorageDetail.Text = 'Nenhum disco para selecionar.'
+            }
+            else {
+                $alerts = @($storage | Where-Object { $_.Severity -ne 'OK' }).Count
+                $ui.TxtStorageStatus.Text = ("{0} disco(s); {1} alerta(s)." -f $storage.Count, $alerts)
+                $ui.GridStorage.SelectedIndex = 0
+                & $showStorageDetail
+            }
         }
 
         if ($null -ne $sync.PendingInstalledPrograms) {
@@ -11994,6 +12505,27 @@ function Start-OptiKitMain {
             $message = [string]$sync.PendingDriverExport
             $sync.PendingDriverExport = $null
             $ui.TxtDriverStatus.Text = $message
+        }
+
+        if ($null -ne $sync.PendingDriverUpdateError) {
+            $message = [string]$sync.PendingDriverUpdateError
+            $sync.PendingDriverUpdateError = $null
+            $ui.GridDriverUpdates.ItemsSource = @()
+            $ui.TxtDriverUpdateStatus.Text = $message
+        }
+
+        if ($null -ne $sync.PendingDriverUpdateReport) {
+            $updates = @($sync.PendingDriverUpdateReport)
+            $sync.PendingDriverUpdateReport = $null
+            $ui.GridDriverUpdates.ItemsSource = $updates
+            if ($updates.Count -eq 0) {
+                $ui.TxtDriverUpdateStatus.Text = "Nenhuma atualiza$([char]0x00E7)$([char]0x00E3)o de driver pendente no Windows Update."
+            }
+            else {
+                $reboot = @($updates | Where-Object { $_.RebootRequired }).Count
+                $optional = @($updates | Where-Object { $_.IsOptional }).Count
+                $ui.TxtDriverUpdateStatus.Text = ("{0} atualiza$([char]0x00E7)$([char]0x00E3)o($([char]0x00F5)es) de driver; {1} exigem rein$([char]0x00ED)cio; {2} opcional(is). Nada foi instalado." -f $updates.Count, $reboot, $optional)
+            }
         }
 
         if ($null -ne $sync.PendingUpdateInfo) {

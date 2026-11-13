@@ -81,6 +81,78 @@ Describe 'Diagnósticos estendidos (diagnostics.ps1)' {
         $item.Summary | Should -Match 'desgaste 90%'
     }
 
+    It 'Deve montar os detalhes de saúde de um SSD NVMe' {
+        $disk = [pscustomobject]@{
+            DeviceId          = '2'
+            FriendlyName      = 'KINGSTON SNV2S1000G'
+            MediaType         = 'SSD'
+            BusType           = 'NVMe'
+            Size              = 1000204886016
+            HealthStatus      = 'Healthy'
+            OperationalStatus = @('OK')
+            SerialNumber      = 'SERIAL'
+            FirmwareVersion   = 'SBM02103'
+            PhysicalLocation  = 'Integrated : Bus 1'
+        }
+        $logical = [pscustomobject]@{ Number = 2; IsBoot = $true; IsSystem = $true }
+        $counter = [pscustomobject]@{
+            Temperature            = 39
+            TemperatureMax         = 70
+            Wear                   = 5
+            PowerOnHours           = 8667
+            StartStopCycleCount    = 1386
+            ReadErrorsUncorrected  = 0
+            WriteErrorsUncorrected = 0
+        }
+
+        $row = ConvertTo-OptiKitStorageHealthRow -Disk $disk -LogicalDisk $logical -Counter $counter
+        $row.HealthText | Should -Be 'OK'
+        $row.Severity | Should -Be 'OK'
+        $row.TypeText | Should -Be 'SSD NVMe'
+        $row.TemperatureText | Should -Be '39 °C'
+        $row.WearText | Should -Be '5%'
+        $row.HealthPercentText | Should -Be '95%'
+        $row.PowerOnText | Should -Be ('{0:N0} h' -f 8667)
+        $row.PowerCyclesText | Should -Be ('{0:N0}' -f 1386)
+        $row.Detail | Should -Match 'KINGSTON SNV2S1000G'
+        $row.Detail | Should -Match 'Sistema: Sim'
+
+        $warning = ConvertTo-OptiKitStorageHealthRow -Disk $disk -LogicalDisk $logical -Counter ([pscustomobject]@{ Temperature = 75; TemperatureMax = 80; Wear = 5; ReadErrorsUncorrected = 2; WriteErrorsUncorrected = 0 })
+        $warning.HealthText | Should -Be 'Atenção'
+        $warning.Severity | Should -Be 'Warn'
+
+        $criticalDisk = $disk.PSObject.Copy()
+        $criticalDisk.HealthStatus = 'Unhealthy'
+        $critical = ConvertTo-OptiKitStorageHealthRow -Disk $criticalDisk -LogicalDisk $logical -Counter $counter
+        $critical.HealthText | Should -Be 'Crítico'
+        $critical.Severity | Should -Be 'Error'
+    }
+
+    It 'Deve enumerar discos mesmo quando os contadores não estão disponíveis' {
+        $disk = [pscustomobject]@{
+            DeviceId          = '2'
+            FriendlyName      = 'SSD Teste'
+            MediaType         = 'SSD'
+            BusType           = 'NVMe'
+            Size              = 500GB
+            HealthStatus      = 'Healthy'
+            OperationalStatus = @('OK')
+            SerialNumber      = 'SERIAL'
+            FirmwareVersion   = '1.0'
+        }
+        $logical = @([pscustomobject]@{ Number = 2; IsBoot = $true; IsSystem = $true })
+        $counter = [pscustomobject]@{ Temperature = 39; TemperatureMax = 70; Wear = 5; PowerOnHours = 10; StartStopCycleCount = 2 }
+
+        $rows = @(Get-OptiKitStorageHealth -PhysicalDisks @($disk) -LogicalDisks $logical -ReliabilityCounters @{ '2' = $counter })
+        $rows.Count | Should -Be 1
+        $rows[0].Name | Should -Be 'SSD Teste'
+        $rows[0].TemperatureText | Should -Be '39 °C'
+
+        $withoutCounters = @(Get-OptiKitStorageHealth -PhysicalDisks @($disk) -LogicalDisks $logical -ReliabilityCounters @{ '2' = $null })
+        $withoutCounters.Count | Should -Be 1
+        $withoutCounters[0].TemperatureText | Should -Be '—'
+    }
+
     It 'Deve reportar erros WHEA como problema de estabilidade' {
         Mock Get-WinEvent {
             if ($FilterHashtable.ProviderName -eq 'Microsoft-Windows-WHEA-Logger') {

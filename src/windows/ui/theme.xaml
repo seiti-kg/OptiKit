@@ -505,7 +505,7 @@
         <Style x:Key="Nav.Item" TargetType="ListBoxItem">
             <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
             <Setter Property="Padding" Value="12,0" />
-            <Setter Property="Height" Value="36" />
+            <Setter Property="Height" Value="32" />
             <Setter Property="Margin" Value="0,0,0,2" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual.Accent}" />
@@ -541,7 +541,9 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBox">
-                        <ItemsPresenter />
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+                            <ItemsPresenter />
+                        </ScrollViewer>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -590,6 +592,9 @@
                     <Setter Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="9">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="10">
                     <Setter Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
             </Style.Triggers>
@@ -750,6 +755,12 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE950;" />
                             <TextBlock Text="Drivers" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="Discos">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xEDA2;" />
+                            <TextBlock Text="Discos" VerticalAlignment="Center" />
                         </StackPanel>
                     </ListBoxItem>
                     <ListBoxItem AutomationProperties.Name="Diagnóstico">
@@ -975,22 +986,78 @@
                             <TextBlock Text="Inventário de drivers e links oficiais. O OptiKit não instala drivers automaticamente." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
                         </StackPanel>
                     </DockPanel>
-                    <TextBox x:Name="TxtDriverSearch" Grid.Row="1" Margin="0,0,32,12" Style="{StaticResource TextBox.Search}" Tag="Buscar dispositivo, classe ou fabricante" AutomationProperties.Name="Buscar drivers" ToolTip="Filtra por dispositivo, classe, versão ou fabricante" />
-                    <DataGrid x:Name="GridDrivers" Grid.Row="2" Style="{StaticResource DataGrid.Clean}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" RowHeaderWidth="0" SelectionMode="Single" Margin="0,0,32,12">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Dispositivo" Binding="{Binding DeviceName}" Width="*" ElementStyle="{StaticResource Cell.Text}" />
-                            <DataGridTextColumn Header="Classe" Binding="{Binding DeviceClass}" Width="110" ElementStyle="{StaticResource Cell.Meta}" />
-                            <DataGridTextColumn Header="Versão" Binding="{Binding DriverVersion}" Width="140" ElementStyle="{StaticResource Cell.Meta}" />
-                            <DataGridTextColumn Header="Data" Binding="{Binding DriverDate, StringFormat={}{0:yyyy-MM-dd}}" Width="100" ElementStyle="{StaticResource Cell.Meta}" />
-                            <DataGridTextColumn Header="Fabricante" Binding="{Binding Manufacturer}" Width="160" ElementStyle="{StaticResource Cell.Meta}" />
-                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    <DockPanel Grid.Row="1" Margin="0,0,32,12">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,0,0">
+                            <Button x:Name="BtnShowDriverInventory" Visibility="Collapsed" Style="{StaticResource Button.Subtle}" Content="Inventário" Margin="0,0,8,0" ToolTip="Voltar ao inventário de drivers" />
+                            <Button x:Name="BtnCheckDriverUpdates" Style="{StaticResource Button.Subtle}" Content="Ver atualizações" Margin="0,0,8,0" ToolTip="Consultar atualizações de driver no Windows Update" />
+                            <Button x:Name="BtnOpenOptionalUpdates" Style="{StaticResource Button.Subtle}" Content="Atualizações opcionais" ToolTip="Abrir a página de atualizações opcionais do Windows" />
+                        </StackPanel>
+                        <TextBox x:Name="TxtDriverSearch" Style="{StaticResource TextBox.Search}" Tag="Buscar driver" AutomationProperties.Name="Buscar drivers" ToolTip="Filtra por dispositivo, classe, versão ou fabricante" />
+                    </DockPanel>
+                    <Grid Grid.Row="2" Margin="0,0,32,12">
+                        <DataGrid x:Name="GridDrivers" Style="{StaticResource DataGrid.Clean}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" RowHeaderWidth="0" SelectionMode="Single">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Dispositivo" Binding="{Binding DeviceName}" Width="*" ElementStyle="{StaticResource Cell.Text}" />
+                                <DataGridTextColumn Header="Classe" Binding="{Binding DeviceClass}" Width="110" ElementStyle="{StaticResource Cell.Meta}" />
+                                <DataGridTextColumn Header="Versão" Binding="{Binding DriverVersion}" Width="140" ElementStyle="{StaticResource Cell.Meta}" />
+                                <DataGridTextColumn Header="Data" Binding="{Binding DriverDate, StringFormat={}{0:yyyy-MM-dd}}" Width="100" ElementStyle="{StaticResource Cell.Meta}" />
+                                <DataGridTextColumn Header="Fabricante" Binding="{Binding Manufacturer}" Width="160" ElementStyle="{StaticResource Cell.Meta}" />
+                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <DataGrid x:Name="GridDriverUpdates" Visibility="Collapsed" Style="{StaticResource DataGrid.Clean}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" RowHeaderWidth="0" SelectionMode="Single">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Dispositivo" Binding="{Binding DeviceName}" Width="*" ElementStyle="{StaticResource Cell.Text}" />
+                                <DataGridTextColumn Header="Atual" Binding="{Binding CurrentVersion}" Width="120" ElementStyle="{StaticResource Cell.Meta}" />
+                                <DataGridTextColumn Header="Disponível" Binding="{Binding AvailableVersion}" Width="120" ElementStyle="{StaticResource Cell.Meta}" />
+                                <DataGridTextColumn Header="Fabricante" Binding="{Binding Provider}" Width="140" ElementStyle="{StaticResource Cell.Meta}" />
+                                <DataGridTextColumn Header="Data" Binding="{Binding Date, StringFormat={}{0:yyyy-MM-dd}}" Width="100" ElementStyle="{StaticResource Cell.Meta}" />
+                                <DataGridTextColumn Header="Tamanho" Binding="{Binding SizeText}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
+                                <DataGridTextColumn Header="Reinício" Binding="{Binding RebootText}" Width="70" ElementStyle="{StaticResource Cell.Meta}" />
+                                <DataGridTextColumn Header="Opcional" Binding="{Binding OptionalText}" Width="70" ElementStyle="{StaticResource Cell.Meta}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
                     <TextBlock x:Name="TxtDriverStatus" Grid.Row="3" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Text="Atualize para carregar o inventário de drivers." Margin="0,0,32,24" />
+                    <TextBlock x:Name="TxtDriverUpdateStatus" Grid.Row="3" Visibility="Collapsed" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Text="Clique em Ver atualizações para consultar o Windows Update." Margin="0,0,32,24" />
                 </Grid>
             </TabItem>
 
-            <!-- 7. Diagnóstico -->
+            <!-- 7. Discos -->
+            <TabItem Header="Discos">
+                <Grid Margin="32,24,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <DockPanel Grid.Row="0" Margin="0,0,32,12">
+                        <Button x:Name="BtnRefreshStorage" DockPanel.Dock="Right" Style="{StaticResource Button.Subtle}" Content="Atualizar" VerticalAlignment="Bottom" />
+                        <StackPanel>
+                            <TextBlock Text="Discos" Style="{StaticResource Text.Title}" />
+                            <TextBlock Text="Saúde, temperatura, desgaste e horas de uso. A saúde % é 100% menos o desgaste reportado; tudo é somente leitura." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </DockPanel>
+                    <TextBlock x:Name="TxtStorageStatus" Grid.Row="1" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Text="Somente leitura. Aguardando a verificação." Margin="0,0,32,8" />
+                    <DataGrid x:Name="GridStorage" Grid.Row="2" Style="{StaticResource DataGrid.Clean}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" RowHeaderWidth="0" SelectionMode="Single" Margin="0,0,32,12">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Disco" Binding="{Binding Name}" Width="*" ElementStyle="{StaticResource Cell.Text}" />
+                            <DataGridTextColumn Header="Tipo" Binding="{Binding TypeText}" Width="100" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Capacidade" Binding="{Binding SizeText}" Width="100" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Saúde" Binding="{Binding HealthText}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Saúde %" Binding="{Binding HealthPercentText}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Temp." Binding="{Binding TemperatureText}" Width="80" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Desgaste" Binding="{Binding WearText}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Horas" Binding="{Binding PowerOnText}" Width="90" ElementStyle="{StaticResource Cell.Meta}" />
+                            <DataGridTextColumn Header="Ciclos" Binding="{Binding PowerCyclesText}" Width="80" ElementStyle="{StaticResource Cell.Meta}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock x:Name="TxtStorageDetail" Grid.Row="3" Style="{StaticResource Text.Meta}" TextWrapping="Wrap" Text="Selecione um disco para ver os detalhes." Margin="0,0,32,24" />
+                </Grid>
+            </TabItem>
+
+            <!-- 8. Diagnóstico -->
             <TabItem Header="Diagnóstico">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>
@@ -1010,7 +1077,7 @@
                 </Grid>
             </TabItem>
 
-            <!-- 8. Inicialização -->
+            <!-- 9. Inicialização -->
             <TabItem Header="Inicialização">
                 <Grid Margin="32,24,32,0">
                     <Grid.RowDefinitions>
@@ -1039,7 +1106,7 @@
                 </Grid>
             </TabItem>
 
-            <!-- 9. Manutenção -->
+            <!-- 10. Manutenção -->
             <TabItem Header="Manutenção">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>

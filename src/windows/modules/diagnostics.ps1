@@ -536,6 +536,235 @@ function Get-OptiKitDiagnosticBios {
     }
 }
 
+function ConvertTo-OptiKitStorageHealthRow {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]$Disk,
+        [object]$LogicalDisk,
+        [object]$Counter
+    )
+
+    $name = [string]$Disk.FriendlyName
+    if ([string]::IsNullOrWhiteSpace($name)) { $name = ('Disco {0}' -f $Disk.DeviceId) }
+    $media = [string]$Disk.MediaType
+    $bus = [string]$Disk.BusType
+    if ($media -eq 'Unspecified') {
+        if ($bus -eq 'NVMe') { $media = 'SSD' }
+        elseif ($bus -eq 'USB') { $media = 'USB' }
+        else { $media = 'Desconhecido' }
+    }
+    $typeText = if ($media -in @('SSD', 'HDD')) {
+        if ([string]::IsNullOrWhiteSpace($bus)) { $media } else { ('{0} {1}' -f $media, $bus) }
+    }
+    elseif (-not [string]::IsNullOrWhiteSpace($bus)) { $bus }
+    else { $media }
+
+    $temperature = $null
+    $temperatureMax = $null
+    $wear = $null
+    $powerOnHours = $null
+    $powerCycles = $null
+    $readUncorrected = 0
+    $writeUncorrected = 0
+    $manufactureDate = ''
+    if ($Counter) {
+        try {
+            if ($null -ne $Counter.Temperature -and [int]$Counter.Temperature -gt 0) { $temperature = [int]$Counter.Temperature }
+        }
+        catch { $temperature = $null }
+        try {
+            if ($null -ne $Counter.TemperatureMax -and [int]$Counter.TemperatureMax -gt 0) { $temperatureMax = [int]$Counter.TemperatureMax }
+        }
+        catch { $temperatureMax = $null }
+        try {
+            $wearValue = 0
+            if ($null -ne $Counter.Wear -and [int]::TryParse([string]$Counter.Wear, [ref]$wearValue) -and $wearValue -ge 0 -and $wearValue -le 100) {
+                $wear = $wearValue
+            }
+        }
+        catch { $wear = $null }
+        try {
+            if ($null -ne $Counter.PowerOnHours) { $powerOnHours = [int]$Counter.PowerOnHours }
+        }
+        catch { $powerOnHours = $null }
+        try {
+            if ($null -ne $Counter.StartStopCycleCount) { $powerCycles = [int]$Counter.StartStopCycleCount }
+        }
+        catch { $powerCycles = $null }
+        try {
+            if ($null -ne $Counter.ReadErrorsUncorrected) { $readUncorrected = [int]$Counter.ReadErrorsUncorrected }
+        }
+        catch { $readUncorrected = 0 }
+        try {
+            if ($null -ne $Counter.WriteErrorsUncorrected) { $writeUncorrected = [int]$Counter.WriteErrorsUncorrected }
+        }
+        catch { $writeUncorrected = 0 }
+        try {
+            if (-not [string]::IsNullOrWhiteSpace([string]$Counter.ManufactureDate)) { $manufactureDate = [string]$Counter.ManufactureDate }
+        }
+        catch { $manufactureDate = '' }
+    }
+
+    $healthStatus = [string]$Disk.HealthStatus
+    $operational = @($Disk.OperationalStatus) -join ', '
+    $issues = New-Object 'System.Collections.Generic.List[string]'
+    $severity = 'OK'
+    if ($healthStatus -eq 'Unhealthy') {
+        $severity = 'Error'
+        [void]$issues.Add('saúde do Windows: Unhealthy')
+    }
+    elseif ($healthStatus -eq 'Warning') {
+        $severity = 'Warn'
+        [void]$issues.Add('saúde do Windows: Warning')
+    }
+    elseif ($healthStatus -ne 'Healthy') {
+        $severity = 'Unknown'
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($operational) -and $operational -ne 'OK' -and $operational -ne 'Online') {
+        if ($severity -eq 'OK') { $severity = 'Warn' }
+        [void]$issues.Add(("operacional: {0}" -f $operational))
+    }
+    if ($null -ne $temperature -and $temperature -ge 80) {
+        $severity = 'Error'
+        [void]$issues.Add(("temperatura {0} °C" -f $temperature))
+    }
+    elseif ($null -ne $temperature -and $temperature -ge 70) {
+        if ($severity -ne 'Error') { $severity = 'Warn' }
+        [void]$issues.Add(("temperatura {0} °C" -f $temperature))
+    }
+    if ($null -ne $wear -and $wear -ge 95) {
+        $severity = 'Error'
+        [void]$issues.Add(("desgaste {0}%" -f $wear))
+    }
+    elseif ($null -ne $wear -and $wear -ge 80) {
+        if ($severity -ne 'Error') { $severity = 'Warn' }
+        [void]$issues.Add(("desgaste {0}%" -f $wear))
+    }
+    if ($readUncorrected -gt 0 -or $writeUncorrected -gt 0) {
+        if ($severity -ne 'Error') { $severity = 'Warn' }
+        [void]$issues.Add(("erros não corrigidos: leitura {0}, gravação {1}" -f $readUncorrected, $writeUncorrected))
+    }
+
+    $healthText = switch ($severity) {
+        'Error' { 'Crítico' }
+        'Warn' { 'Atenção' }
+        'Unknown' { 'Desconhecido' }
+        default { 'OK' }
+    }
+    $temperatureText = if ($null -ne $temperature) { ('{0} °C' -f $temperature) } else { '—' }
+    $temperatureMaxText = if ($null -ne $temperatureMax) { ('{0} °C' -f $temperatureMax) } else { '—' }
+    $wearText = if ($null -ne $wear) { ('{0}%' -f $wear) } else { '—' }
+    $healthPercentText = if ($null -ne $wear) { ('{0}%' -f (100 - $wear)) } else { '—' }
+    $powerOnText = if ($null -ne $powerOnHours) { ('{0:N0} h' -f $powerOnHours) } else { '—' }
+    $powerCyclesText = if ($null -ne $powerCycles) { ('{0:N0}' -f $powerCycles) } else { '—' }
+    $sizeText = Format-OptiKitDiagnosticSize -Bytes ([double]$Disk.Size)
+    $firmware = if ([string]::IsNullOrWhiteSpace([string]$Disk.FirmwareVersion)) { '—' } else { [string]$Disk.FirmwareVersion }
+    $serial = ([string]$Disk.SerialNumber).Trim()
+    if ([string]::IsNullOrWhiteSpace($serial)) { $serial = '—' }
+    $physicalLocation = [string]$Disk.PhysicalLocation
+    $isSystem = [bool]($LogicalDisk -and ($LogicalDisk.IsSystem -or $LogicalDisk.IsBoot))
+    $issueText = if ($issues.Count -gt 0) { $issues -join '; ' } else { '' }
+
+    $detailLines = New-Object 'System.Collections.Generic.List[string]'
+    [void]$detailLines.Add(("Modelo: {0}" -f $name))
+    [void]$detailLines.Add(("Firmware: {0} | Serial: {1}" -f $firmware, $serial))
+    [void]$detailLines.Add(("Barramento: {0} | Tipo: {1}" -f $bus, $typeText))
+    [void]$detailLines.Add(("Saúde: {0} | Saúde estimada: {1}" -f $healthText, $healthPercentText))
+    if (-not [string]::IsNullOrWhiteSpace($issueText)) {
+        [void]$detailLines.Add(("Problemas: {0}" -f $issueText))
+    }
+    [void]$detailLines.Add(("Temperatura: {0} (máx. {1})" -f $temperatureText, $temperatureMaxText))
+    [void]$detailLines.Add(("Desgaste: {0}" -f $wearText))
+    [void]$detailLines.Add(("Horas ligado: {0} | Ciclos: {1}" -f $powerOnText, $powerCyclesText))
+    if (-not [string]::IsNullOrWhiteSpace($manufactureDate)) {
+        [void]$detailLines.Add(("Fabricação: {0}" -f $manufactureDate))
+    }
+    [void]$detailLines.Add(("Erros não corrigidos: leitura {0}, gravação {1}" -f $readUncorrected, $writeUncorrected))
+    [void]$detailLines.Add(("Sistema: {0}" -f $(if ($isSystem) { 'Sim' } else { 'Não' })))
+    if (-not [string]::IsNullOrWhiteSpace($physicalLocation)) {
+        [void]$detailLines.Add(("Localização: {0}" -f $physicalLocation))
+    }
+
+    [pscustomobject]@{
+        DeviceId              = [string]$Disk.DeviceId
+        Name                  = $name
+        Model                 = $name
+        TypeText              = $typeText
+        MediaType             = $media
+        BusType               = $bus
+        SizeText              = $sizeText
+        HealthText            = $healthText
+        Severity              = $severity
+        HealthPercentText     = $healthPercentText
+        TemperatureText       = $temperatureText
+        TemperatureMaxText    = $temperatureMaxText
+        WearText              = $wearText
+        PowerOnText           = $powerOnText
+        PowerCyclesText       = $powerCyclesText
+        Serial                = $serial
+        Firmware              = $firmware
+        PhysicalLocation      = $physicalLocation
+        IsSystem              = $isSystem
+        Issues                = $issues.ToArray()
+        Detail                = ($detailLines -join "`r`n")
+    }
+}
+
+function Get-OptiKitStorageHealth {
+    [CmdletBinding()]
+    param(
+        [object[]]$PhysicalDisks,
+        [object[]]$LogicalDisks,
+        [hashtable]$ReliabilityCounters
+    )
+
+    if ($null -ne $PhysicalDisks) {
+        $physicalDisks = @($PhysicalDisks)
+    }
+    else {
+        if (-not (Get-Command Get-PhysicalDisk -ErrorAction SilentlyContinue)) {
+            throw 'Cmdlets de armazenamento indisponíveis.'
+        }
+        try {
+            $physicalDisks = @(Get-PhysicalDisk -ErrorAction Stop)
+        }
+        catch {
+            throw ("Falha ao consultar discos físicos: {0}" -f $_.Exception.Message)
+        }
+    }
+
+    if ($null -ne $LogicalDisks) {
+        $logicalDisks = @($LogicalDisks)
+    }
+    else {
+        $logicalDisks = if (Get-Command Get-Disk -ErrorAction SilentlyContinue) { @(Get-Disk -ErrorAction SilentlyContinue) } else { @() }
+    }
+
+    $rows = New-Object 'System.Collections.Generic.List[object]'
+    foreach ($disk in $physicalDisks) {
+        $match = @($logicalDisks | Where-Object { [string]$_.Number -eq [string]$disk.DeviceId } | Select-Object -First 1)
+        $logicalDisk = if ($match.Count -gt 0) { $match[0] } else { $null }
+
+        $counter = $null
+        if ($ReliabilityCounters -and $ReliabilityCounters.ContainsKey([string]$disk.DeviceId)) {
+            $counter = $ReliabilityCounters[[string]$disk.DeviceId]
+        }
+        else {
+            try {
+                $counter = @(Get-StorageReliabilityCounter -PhysicalDisk $disk -ErrorAction Stop) | Select-Object -First 1
+            }
+            catch {
+                Write-Verbose ("Contadores de confiabilidade indisponíveis para {0}: {1}" -f $disk.FriendlyName, $_.Exception.Message)
+            }
+        }
+
+        [void]$rows.Add((ConvertTo-OptiKitStorageHealthRow -Disk $disk -LogicalDisk $logicalDisk -Counter $counter))
+    }
+
+    return @($rows | Sort-Object -Property Name)
+}
+
 function Get-OptiKitDiagnosticDisk {
     [CmdletBinding()]
     param(
@@ -579,7 +808,7 @@ function Get-OptiKitDiagnosticDisk {
                     $counter = [pscustomobject]$ReliabilityCounters[$deviceId]
                 }
                 else {
-                    $counter = Get-StorageReliabilityCounter -DeviceNumber ([int]$disk.DeviceId) -ErrorAction Stop
+                    $counter = Get-StorageReliabilityCounter -PhysicalDisk $disk -ErrorAction Stop
                 }
                 if ($null -ne $counter.Wear) { $wear = [int]$counter.Wear }
             }

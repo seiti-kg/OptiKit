@@ -8,7 +8,7 @@
 - **46 aplicativos** instaláveis via Winget, com bootstrap automático em instalações novas.
 - **3 perfis de jogos** (VALORANT, Counter-Strike 2 e Unreal Engine 5/AAA) e **3 ferramentas globais** de jogos.
 - **4 presets** prontos: `GamerRecomendado`, `MinimoSeguro`, `PerfilValorant` e `Notebook`.
-- **10 abas** na interface: Instalar apps, Ajustes do Windows, Jogos, Segundo plano, Desinstalar, Duplicados, Drivers, Diagnóstico, Inicialização e Manutenção.
+- **11 abas** na interface: Instalar apps, Ajustes do Windows, Jogos, Segundo plano, Desinstalar, Duplicados, Drivers, Discos, Diagnóstico, Inicialização e Manutenção.
 
 ## Interface
 
@@ -61,10 +61,14 @@ A interface WPF é gerada dinamicamente a partir dos catálogos JSON e inclui:
 - Ausência do driver `amd3dvcache` em Ryzen X3D dual-CCD.
 - Drivers de GPU com mais de 180 dias.
 - BIOS/firmware: Secure Boot, TPM, modelo e versão.
-- Saúde e desgaste dos discos, espaço livre.
 - Erros WHEA/Kernel-Power e reinicialização pendente.
 - Estado do Microsoft Defender.
 - Ação recomendada por card.
+
+## Discos (somente leitura)
+
+- Saúde e desgaste dos discos, espaço livre.
+- Tabela por disco com tipo, capacidade, porcentagem de saúde, temperatura, horas ligado, ciclos, erros não corrigidos e detalhes de firmware/serial.
 
 ## Perfis de jogos
 
@@ -82,7 +86,7 @@ A interface WPF é gerada dinamicamente a partir dos catálogos JSON e inclui:
   O OptiKit não apaga sobras manualmente e protege apps de sistema/frameworks.
 - **Duplicados:** compara tamanho, fingerprint e SHA-256; envia arquivos marcados para a Lixeira e exige manter pelo menos uma cópia por grupo.
   Pastas de sistema (`Windows`, `Program Files`, `ProgramData`, `AppData`, Lixeira e System Volume Information) são bloqueadas como raiz.
-- **Drivers:** inventário de dispositivos com classe, versão, data, fabricante, problemas e links oficiais; backup via `pnputil`. O OptiKit não instala drivers automaticamente.
+- **Drivers:** inventário de dispositivos com classe, versão, data, fabricante, problemas e links oficiais; backup via `pnputil`. A prévia **Ver atualizações** consulta o Windows Update e mostra versão atual/disponível, data, tamanho e reinício; o OptiKit não baixa nem instala drivers automaticamente.
 
 ## Windows Update
 

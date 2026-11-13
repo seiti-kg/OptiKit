@@ -43,9 +43,10 @@ A janela tem dez abas:
 5. **Desinstalar** — programas Win32 e pacotes Appx instalados.
 6. **Duplicados** — localizador por tamanho, fingerprint e SHA-256 com envio para a Lixeira.
 7. **Drivers** — inventário, links oficiais e backup via `pnputil`.
-8. **Diagnóstico** — leitura de hardware, BIOS, discos, estabilidade, Defender e recomendações para GPU híbrida/RAM/HAGS.
-9. **Inicialização** — programas de startup compatíveis com o Gerenciador de Tarefas.
-10. **Manutenção** — reset de rede/DNS, SFC/DISM, reparo do app de Configurações, limpeza, reboot para UEFI e atualização via Winget.
+8. **Discos** — saúde, porcentagem, temperatura, desgaste e detalhes de cada HD/SSD.
+9. **Diagnóstico** — leitura de hardware, BIOS, estabilidade, Defender e recomendações para GPU híbrida/RAM/HAGS.
+10. **Inicialização** — programas de startup compatíveis com o Gerenciador de Tarefas.
+11. **Manutenção** — reset de rede/DNS, SFC/DISM, reparo do app de Configurações, limpeza, reboot para UEFI e atualização via Winget.
 
 Ações globais:
 
@@ -69,7 +70,11 @@ Escolha uma pasta de dados, o tamanho mínimo e clique em **Escanear**. Marque o
 
 ### Drivers
 
-A aba **Drivers** lista dispositivos relevantes com versão, data, fabricante e estado. Selecione um item e use **Abrir site** para ir ao site oficial (AMD, NVIDIA, Intel ou Windows Update). **Backup** exporta os drivers via `pnputil /export-driver` para uma pasta escolhida. O OptiKit não baixa nem instala drivers automaticamente.
+A aba **Drivers** lista dispositivos relevantes com versão, data, fabricante e estado. Selecione um item e use **Abrir site** para ir ao site oficial (AMD, NVIDIA ou Intel). Dispositivos sem fabricante mapeado mostram um aviso para usar o Windows Update. **Ver atualizações** consulta o Windows Update e lista as atualizações de driver pendentes com versão atual/disponível, data, tamanho e necessidade de reinício; nada é instalado automaticamente. **Atualizações opcionais** abre a página correspondente do Windows para seleção manual. **Backup** exporta os drivers via `pnputil /export-driver` para uma pasta escolhida.
+
+### Discos
+
+A aba **Discos** mostra uma tabela com os discos físicos: modelo, tipo, capacidade, saúde, **Saúde %** (`100% - desgaste`), temperatura, desgaste, horas ligado e ciclos. Selecione um disco para ver firmware, serial, barramento, erros não corrigidos e localização. Os dados vêm de `Get-PhysicalDisk` e dos contadores de confiabilidade do Windows; quando o driver não expõe um contador, o campo aparece como `—`. Use **Atualizar** para consultar novamente. A verificação é somente leitura e não altera drivers.
 
 ### Reparar as Configurações do Windows
 
