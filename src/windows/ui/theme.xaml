@@ -594,9 +594,6 @@
                 <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="9">
                     <Setter Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="10">
-                    <Setter Property="Visibility" Value="Collapsed" />
-                </DataTrigger>
             </Style.Triggers>
         </Style>
 
@@ -743,12 +740,6 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE74D;" />
                             <TextBlock Text="Desinstalar" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </ListBoxItem>
-                    <ListBoxItem AutomationProperties.Name="Duplicados">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE8C8;" />
-                            <TextBlock Text="Duplicados" VerticalAlignment="Center" />
                         </StackPanel>
                     </ListBoxItem>
                     <ListBoxItem AutomationProperties.Name="Drivers">
@@ -931,41 +922,7 @@
                 </Grid>
             </TabItem>
 
-            <!-- 5. Duplicados -->
-            <TabItem Header="Duplicados">
-                <Grid Margin="32,24,0,0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <StackPanel Grid.Row="0" Margin="0,0,32,12">
-                        <TextBlock Text="Arquivos duplicados" Style="{StaticResource Text.Title}" />
-                        <TextBlock Text="Compara tamanho, fingerprint e SHA-256. A exclusão vai para a Lixeira; mantenha pelo menos uma cópia por grupo." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
-                    </StackPanel>
-                    <WrapPanel Grid.Row="1" Margin="0,0,32,12">
-                        <TextBox x:Name="TxtDuplicatePath" Width="330" Height="32" Margin="0,0,8,6" Style="{StaticResource TextBox.Search}" Tag="Pasta para escanear" AutomationProperties.Name="Pasta para escanear" />
-                        <Button x:Name="BtnBrowseDuplicates" Style="{StaticResource Button.Subtle}" Content="Escolher" Margin="0,0,8,6" />
-                        <ComboBox x:Name="CmbDuplicateMinSize" Width="110" Height="32" Margin="0,0,8,6" AutomationProperties.Name="Tamanho mínimo" />
-                        <Button x:Name="BtnScanDuplicates" Style="{StaticResource Button.Primary}" Content="Escanear" Margin="0,0,8,6" />
-                        <Button x:Name="BtnCancelDuplicates" Style="{StaticResource Button.Subtle}" Content="Cancelar" IsEnabled="False" Margin="0,0,8,6" />
-                        <Button x:Name="BtnDeleteDuplicates" Style="{StaticResource Button.Danger}" Content="Mover para Lixeira" Margin="0,0,0,6" />
-                    </WrapPanel>
-                    <DataGrid x:Name="GridDuplicateFiles" Grid.Row="2" Style="{StaticResource DataGrid.Clean}" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" RowHeaderWidth="0" SelectionMode="Extended" Margin="0,0,32,12">
-                        <DataGrid.Columns>
-                            <DataGridCheckBoxColumn Header="Excluir" Binding="{Binding Delete, Mode=TwoWay}" Width="70" />
-                            <DataGridTextColumn Header="Grupo" Binding="{Binding GroupId}" Width="90" IsReadOnly="True" ElementStyle="{StaticResource Cell.Meta}" />
-                            <DataGridTextColumn Header="Arquivo" Binding="{Binding File}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource Cell.Text}" />
-                            <DataGridTextColumn Header="Tamanho" Binding="{Binding SizeMB, StringFormat={}{0:N1} MB}" Width="110" IsReadOnly="True" ElementStyle="{StaticResource Cell.Meta}" />
-                            <DataGridTextColumn Header="Modificado" Binding="{Binding Modified}" Width="150" IsReadOnly="True" ElementStyle="{StaticResource Cell.Meta}" />
-                        </DataGrid.Columns>
-                    </DataGrid>
-                    <TextBlock x:Name="TxtDuplicateStatus" Grid.Row="3" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Text="Escolha uma pasta e clique em Escanear." Margin="0,0,32,24" />
-                </Grid>
-            </TabItem>
-
-            <!-- 6. Drivers -->
+            <!-- 5. Drivers -->
             <TabItem Header="Drivers">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>
@@ -1023,7 +980,7 @@
                 </Grid>
             </TabItem>
 
-            <!-- 7. Discos -->
+            <!-- 6. Discos -->
             <TabItem Header="Discos">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>
@@ -1057,7 +1014,7 @@
                 </Grid>
             </TabItem>
 
-            <!-- 8. Diagnóstico -->
+            <!-- 7. Diagnóstico -->
             <TabItem Header="Diagnóstico">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>
@@ -1077,7 +1034,7 @@
                 </Grid>
             </TabItem>
 
-            <!-- 9. Inicialização -->
+            <!-- 8. Inicialização -->
             <TabItem Header="Inicialização">
                 <Grid Margin="32,24,32,0">
                     <Grid.RowDefinitions>
@@ -1106,7 +1063,7 @@
                 </Grid>
             </TabItem>
 
-            <!-- 10. Manutenção -->
+            <!-- 9. Manutenção -->
             <TabItem Header="Manutenção">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>

@@ -3190,9 +3190,6 @@ $script:EmbeddedThemeXaml = @'
                 <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="9">
                     <Setter Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding SelectedIndex, ElementName=MainTabControl}" Value="10">
-                    <Setter Property="Visibility" Value="Collapsed" />
-                </DataTrigger>
             </Style.Triggers>
         </Style>
 
@@ -3339,12 +3336,6 @@ $script:EmbeddedThemeXaml = @'
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE74D;" />
                             <TextBlock Text="Desinstalar" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </ListBoxItem>
-                    <ListBoxItem AutomationProperties.Name="Duplicados">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Style="{StaticResource Nav.Icon}" Text="&#xE8C8;" />
-                            <TextBlock Text="Duplicados" VerticalAlignment="Center" />
                         </StackPanel>
                     </ListBoxItem>
                     <ListBoxItem AutomationProperties.Name="Drivers">
@@ -3527,41 +3518,7 @@ $script:EmbeddedThemeXaml = @'
                 </Grid>
             </TabItem>
 
-            <!-- 5. Duplicados -->
-            <TabItem Header="Duplicados">
-                <Grid Margin="32,24,0,0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <StackPanel Grid.Row="0" Margin="0,0,32,12">
-                        <TextBlock Text="Arquivos duplicados" Style="{StaticResource Text.Title}" />
-                        <TextBlock Text="Compara tamanho, fingerprint e SHA-256. A exclus&#x00E3;o vai para a Lixeira; mantenha pelo menos uma c&#x00F3;pia por grupo." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0" />
-                    </StackPanel>
-                    <WrapPanel Grid.Row="1" Margin="0,0,32,12">
-                        <TextBox x:Name="TxtDuplicatePath" Width="330" Height="32" Margin="0,0,8,6" Style="{StaticResource TextBox.Search}" Tag="Pasta para escanear" AutomationProperties.Name="Pasta para escanear" />
-                        <Button x:Name="BtnBrowseDuplicates" Style="{StaticResource Button.Subtle}" Content="Escolher" Margin="0,0,8,6" />
-                        <ComboBox x:Name="CmbDuplicateMinSize" Width="110" Height="32" Margin="0,0,8,6" AutomationProperties.Name="Tamanho m&#x00ED;nimo" />
-                        <Button x:Name="BtnScanDuplicates" Style="{StaticResource Button.Primary}" Content="Escanear" Margin="0,0,8,6" />
-                        <Button x:Name="BtnCancelDuplicates" Style="{StaticResource Button.Subtle}" Content="Cancelar" IsEnabled="False" Margin="0,0,8,6" />
-                        <Button x:Name="BtnDeleteDuplicates" Style="{StaticResource Button.Danger}" Content="Mover para Lixeira" Margin="0,0,0,6" />
-                    </WrapPanel>
-                    <DataGrid x:Name="GridDuplicateFiles" Grid.Row="2" Style="{StaticResource DataGrid.Clean}" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" RowHeaderWidth="0" SelectionMode="Extended" Margin="0,0,32,12">
-                        <DataGrid.Columns>
-                            <DataGridCheckBoxColumn Header="Excluir" Binding="{Binding Delete, Mode=TwoWay}" Width="70" />
-                            <DataGridTextColumn Header="Grupo" Binding="{Binding GroupId}" Width="90" IsReadOnly="True" ElementStyle="{StaticResource Cell.Meta}" />
-                            <DataGridTextColumn Header="Arquivo" Binding="{Binding File}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource Cell.Text}" />
-                            <DataGridTextColumn Header="Tamanho" Binding="{Binding SizeMB, StringFormat={}{0:N1} MB}" Width="110" IsReadOnly="True" ElementStyle="{StaticResource Cell.Meta}" />
-                            <DataGridTextColumn Header="Modificado" Binding="{Binding Modified}" Width="150" IsReadOnly="True" ElementStyle="{StaticResource Cell.Meta}" />
-                        </DataGrid.Columns>
-                    </DataGrid>
-                    <TextBlock x:Name="TxtDuplicateStatus" Grid.Row="3" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Text="Escolha uma pasta e clique em Escanear." Margin="0,0,32,24" />
-                </Grid>
-            </TabItem>
-
-            <!-- 6. Drivers -->
+            <!-- 5. Drivers -->
             <TabItem Header="Drivers">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>
@@ -3619,7 +3576,7 @@ $script:EmbeddedThemeXaml = @'
                 </Grid>
             </TabItem>
 
-            <!-- 7. Discos -->
+            <!-- 6. Discos -->
             <TabItem Header="Discos">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>
@@ -3653,7 +3610,7 @@ $script:EmbeddedThemeXaml = @'
                 </Grid>
             </TabItem>
 
-            <!-- 8. Diagn&#x00F3;stico -->
+            <!-- 7. Diagn&#x00F3;stico -->
             <TabItem Header="Diagn&#x00F3;stico">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>
@@ -3673,7 +3630,7 @@ $script:EmbeddedThemeXaml = @'
                 </Grid>
             </TabItem>
 
-            <!-- 9. Inicializa&#x00E7;&#x00E3;o -->
+            <!-- 8. Inicializa&#x00E7;&#x00E3;o -->
             <TabItem Header="Inicializa&#x00E7;&#x00E3;o">
                 <Grid Margin="32,24,32,0">
                     <Grid.RowDefinitions>
@@ -3702,7 +3659,7 @@ $script:EmbeddedThemeXaml = @'
                 </Grid>
             </TabItem>
 
-            <!-- 10. Manuten&#x00E7;&#x00E3;o -->
+            <!-- 9. Manuten&#x00E7;&#x00E3;o -->
             <TabItem Header="Manuten&#x00E7;&#x00E3;o">
                 <Grid Margin="32,24,0,0">
                     <Grid.RowDefinitions>
@@ -9341,222 +9298,6 @@ function Uninstall-OptiKitProgram {
 }
 
 # ============================================================================
-# Module: src/windows/modules/duplicate-engine.ps1
-# ============================================================================
-# Localizador de arquivos duplicados por tamanho + fingerprint + SHA-256 completo
-
-function Test-OptiKitSystemPath {
-    [CmdletBinding()]
-    param([string]$Path)
-
-    if ([string]::IsNullOrWhiteSpace($Path)) { return $false }
-    $full = [IO.Path]::GetFullPath($Path).TrimEnd('\')
-    $blocked = @(
-        $env:SystemRoot,
-        $env:ProgramFiles,
-        ${env:ProgramFiles(x86)},
-        $env:ProgramData,
-        $env:LOCALAPPDATA,
-        $env:APPDATA,
-        (Join-Path $env:SystemDrive '$Recycle.Bin'),
-        (Join-Path $env:SystemDrive 'System Volume Information')
-    ) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
-
-    foreach ($item in $blocked) {
-        $root = ([IO.Path]::GetFullPath($item)).TrimEnd('\')
-        if ($full -ieq $root -or $full.StartsWith($root + '\', [StringComparison]::OrdinalIgnoreCase)) {
-            return $true
-        }
-    }
-    return ($full -match '^[A-Za-z]:$')
-}
-
-function Get-OptiKitFileSha256 {
-    [CmdletBinding()]
-    param([Parameter(Mandatory = $true)][string]$Path)
-
-    $hasher = [Security.Cryptography.SHA256]::Create()
-    try {
-        $stream = [IO.File]::OpenRead($Path)
-        try {
-            $hash = $hasher.ComputeHash($stream)
-            return ([BitConverter]::ToString($hash) -replace '-', '')
-        }
-        finally {
-            $stream.Dispose()
-        }
-    }
-    finally {
-        $hasher.Dispose()
-    }
-}
-
-function Get-OptiKitFileFingerprint {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)][string]$Path,
-        [Parameter(Mandatory = $true)][int64]$Length
-    )
-
-    $hasher = [Security.Cryptography.SHA256]::Create()
-    try {
-        $stream = [IO.File]::OpenRead($Path)
-        try {
-            [void]$hasher.TransformBlock([Text.Encoding]::UTF8.GetBytes("$Length|"), 0, [Text.Encoding]::UTF8.GetByteCount("$Length|"), $null, 0)
-            $buffer = New-Object byte[] 65536
-            if ($Length -le 131072) {
-                while (($read = $stream.Read($buffer, 0, $buffer.Length)) -gt 0) {
-                    [void]$hasher.TransformBlock($buffer, 0, $read, $null, 0)
-                }
-            }
-            else {
-                $first = $stream.Read($buffer, 0, $buffer.Length)
-                if ($first -gt 0) { [void]$hasher.TransformBlock($buffer, 0, $first, $null, 0) }
-                [void]$stream.Seek(-$buffer.Length, [IO.SeekOrigin]::End)
-                $last = $stream.Read($buffer, 0, $buffer.Length)
-                if ($last -gt 0) { [void]$hasher.TransformBlock($buffer, 0, $last, $null, 0) }
-            }
-            [void]$hasher.TransformFinalBlock([byte[]]@(), 0, 0)
-            return ([BitConverter]::ToString($hasher.Hash) -replace '-', '')
-        }
-        finally {
-            $stream.Dispose()
-        }
-    }
-    finally {
-        $hasher.Dispose()
-    }
-}
-
-function Find-OptiKitDuplicateFiles {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)][string]$Path,
-        [int64]$MinimumSizeBytes = 1MB
-    )
-
-    if (Test-OptiKitSystemPath -Path $Path) {
-        throw "Escolha uma pasta de dados, n$([char]0x00E3)o uma pasta de sistema."
-    }
-    if (-not (Test-Path -LiteralPath $Path -PathType Container)) {
-        throw ("Pasta n$([char]0x00E3)o encontrada: {0}" -f $Path)
-    }
-
-    $files = New-Object 'System.Collections.Generic.List[object]'
-    $stack = New-Object 'System.Collections.Generic.Stack[string]'
-    $stack.Push($Path)
-    $checked = 0
-    while ($stack.Count -gt 0) {
-        if ($script:OptiKit -and $script:OptiKit.SyncHash -and $script:OptiKit.SyncHash.CancelRequest) {
-            throw 'Escaneamento cancelado.'
-        }
-
-        $dir = $stack.Pop()
-        try {
-            foreach ($entry in @(Get-ChildItem -LiteralPath $dir -Force -ErrorAction SilentlyContinue)) {
-                if (($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { continue }
-                if ($entry.PSIsContainer) {
-                    if (-not (Test-OptiKitSystemPath -Path $entry.FullName)) {
-                        $stack.Push($entry.FullName)
-                    }
-                    continue
-                }
-                if ($entry.Length -lt $MinimumSizeBytes) { continue }
-                [void]$files.Add([pscustomobject]@{
-                    Path          = $entry.FullName
-                    Length        = [int64]$entry.Length
-                    LastWriteTime = $entry.LastWriteTime
-                })
-                $checked++
-                if (($checked % 100) -eq 0 -and $script:OptiKit -and $script:OptiKit.SyncHash) {
-                    $script:OptiKit.SyncHash.StatusText = ("Escaneando duplicados: {0} arquivos..." -f $checked)
-                }
-            }
-        }
-        catch {
-            Write-Verbose ("Falha ao enumerar {0}: {1}" -f $dir, $_.Exception.Message)
-        }
-    }
-
-    $groups = New-Object 'System.Collections.Generic.List[object]'
-    foreach ($bySize in @($files | Group-Object -Property Length | Where-Object Count -gt 1)) {
-        $fingerprints = New-Object 'System.Collections.Generic.List[object]'
-        foreach ($file in @($bySize.Group)) {
-            try {
-                [void]$fingerprints.Add([pscustomobject]@{
-                    File        = $file
-                    Fingerprint = (Get-OptiKitFileFingerprint -Path $file.Path -Length $file.Length)
-                })
-            }
-            catch {
-                Write-Verbose ("Arquivo inacess$([char]0x00ED)vel ignorado: {0}" -f $file.Path)
-            }
-        }
-
-        foreach ($candidate in @($fingerprints | Group-Object -Property Fingerprint | Where-Object Count -gt 1)) {
-            $fullHashes = New-Object 'System.Collections.Generic.List[object]'
-            foreach ($item in @($candidate.Group)) {
-                try {
-                    $hash = Get-OptiKitFileSha256 -Path $item.File.Path
-                    [void]$fullHashes.Add([pscustomobject]@{ File = $item.File; Hash = $hash })
-                }
-                catch {
-                    Write-Verbose ("Arquivo inacess$([char]0x00ED)vel ignorado: {0}" -f $item.File.Path)
-                }
-            }
-
-            foreach ($hashGroup in @($fullHashes | Group-Object -Property Hash | Where-Object Count -gt 1)) {
-                $same = @($hashGroup.Group | ForEach-Object { $_.File })
-                if ($same.Count -lt 2) { continue }
-                [void]$groups.Add([pscustomobject]@{
-                    GroupId = [string]$hashGroup.Name
-                    Hash    = [string]$hashGroup.Name
-                    Length  = [int64]$same[0].Length
-                    Files   = @($same | ForEach-Object {
-                        [pscustomobject]@{
-                            Path          = $_.Path
-                            Length        = $_.Length
-                            LastWriteTime = $_.LastWriteTime
-                        }
-                    })
-                })
-            }
-        }
-    }
-
-    return @($groups | Sort-Object -Property @{ Expression = { $_.Length * ($_.Files.Count - 1) }; Descending = $true })
-}
-
-function Test-OptiKitDuplicateSelection {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)][object[]]$Rows
-    )
-
-    foreach ($group in @($Rows | Group-Object -Property GroupId)) {
-        $selected = @($group.Group | Where-Object { [bool]$_.Delete })
-        if ($selected.Count -eq $group.Count) {
-            throw 'Mantenha pelo menos um arquivo de cada grupo.'
-        }
-    }
-    return $true
-}
-
-function Remove-OptiKitDuplicateFile {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)][string]$Path
-    )
-
-    Add-Type -AssemblyName Microsoft.VisualBasic
-    [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile(
-        $Path,
-        [Microsoft.VisualBasic.FileIO.UIOption]::OnlyErrorDialogs,
-        [Microsoft.VisualBasic.FileIO.RecycleOption]::SendToRecycleBin
-    )
-}
-
-# ============================================================================
 # Module: src/windows/modules/driver-engine.ps1
 # ============================================================================
 # Inventario de drivers, links oficiais e backup via pnputil
@@ -11027,7 +10768,6 @@ function Initialize-OptiKitUi {
         'GameProfilesHost',
         'GridBackgroundProcesses', 'BtnRefreshProcesses', 'BtnSuspendProcess', 'BtnResumeProcess', 'BtnResumeAllProcesses', 'TxtProcessStatus',
         'GridInstalledPrograms', 'TxtUninstallSearch', 'BtnRefreshUninstall', 'BtnUninstallSelected', 'TxtUninstallStatus',
-        'TxtDuplicatePath', 'BtnBrowseDuplicates', 'CmbDuplicateMinSize', 'BtnScanDuplicates', 'BtnCancelDuplicates', 'BtnDeleteDuplicates', 'GridDuplicateFiles', 'TxtDuplicateStatus',
         'GridDrivers', 'TxtDriverSearch', 'BtnRefreshDrivers', 'BtnExportDrivers', 'BtnWindowsUpdate', 'BtnOpenDriverLink', 'TxtDriverStatus',
         'BtnCheckDriverUpdates', 'BtnOpenOptionalUpdates', 'GridDriverUpdates', 'TxtDriverUpdateStatus', 'BtnShowDriverInventory',
         'BtnRefreshDiagnostics', 'TxtDiagnosticsSummary', 'DiagnosticsHost', 'GridStorage', 'TxtStorageStatus', 'TxtStorageDetail', 'BtnRefreshStorage',
@@ -11602,7 +11342,6 @@ function Start-OptiKitWorkerTask {
         'Invoke-GameOptimization', 'Test-GameOptimizationApplied',
         'Invoke-NetworkReset', 'Invoke-NativeStep', 'Invoke-CancelableProcess', 'Invoke-SystemIntegrityRepair', 'Repair-OptiKitSettingsApp', 'Clear-TemporaryFiles',
         'ConvertFrom-OptiKitRegistryEntry', 'ConvertFrom-OptiKitAppxPackage', 'Get-OptiKitInstalledPrograms', 'Get-OptiKitUninstallCommand', 'Uninstall-OptiKitProgram',
-        'Get-OptiKitFileFingerprint', 'Find-OptiKitDuplicateFiles',
         'Get-OptiKitDriverVendorLink', 'Get-OptiKitDriverInventory', 'Export-OptiKitDrivers',
         'ConvertTo-OptiKitDriverUpdateRow', 'Get-OptiKitDriverUpdates',
         'Restart-OptiKitToUefi',
@@ -11826,7 +11565,6 @@ function Start-OptiKitMain {
         PendingStorageReport = $null
         PendingStorageError = $null
         PendingInstalledPrograms = $null
-        PendingDuplicateReport = $null
         PendingDriverReport = $null
         PendingDriverUpdateReport = $null
         PendingDriverUpdateError = $null
@@ -12198,7 +11936,6 @@ function Start-OptiKitMain {
     # Desinstalar
     $toolState = [hashtable]::Synchronized(@{
         InstalledPrograms = @()
-        DuplicateRows     = @()
         Drivers           = @()
         Storage           = @()
     })
@@ -12236,99 +11973,6 @@ function Start-OptiKitMain {
             Uninstall-OptiKitProgram -Program $WorkerArgs.Program
             $SyncHash.PendingInstalledPrograms = @(Get-OptiKitInstalledPrograms)
         }
-    }.GetNewClosure())
-
-    # Duplicados
-    $ui.CmbDuplicateMinSize.Items.Clear()
-    foreach ($option in @(
-        @{ Text = '1 MB'; Value = [int64]1MB },
-        @{ Text = '10 MB'; Value = [int64]10MB },
-        @{ Text = '100 MB'; Value = [int64]100MB }
-    )) {
-        $item = New-Object System.Windows.Controls.ComboBoxItem
-        $item.Content = $option.Text
-        $item.Tag = $option.Value
-        [void]$ui.CmbDuplicateMinSize.Items.Add($item)
-    }
-    $ui.CmbDuplicateMinSize.SelectedIndex = 0
-    $ui.BtnBrowseDuplicates.Add_Click({
-        $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
-        $dialog.Description = 'Escolha uma pasta de dados para procurar duplicados.'
-        if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
-            $ui.TxtDuplicatePath.Text = $dialog.SelectedPath
-        }
-    }.GetNewClosure())
-    $ui.BtnScanDuplicates.Add_Click({
-        if ($sync.IsBusy) { return }
-        $path = [string]$ui.TxtDuplicatePath.Text
-        if ([string]::IsNullOrWhiteSpace($path)) {
-            $ui.TxtDuplicateStatus.Text = 'Escolha uma pasta primeiro.'
-            return
-        }
-        $minItem = $ui.CmbDuplicateMinSize.SelectedItem
-        $minBytes = if ($minItem) { [int64]$minItem.Tag } else { [int64]1MB }
-        $ui.TxtDuplicateStatus.Text = 'Escaneando...'
-        Start-OptiKitWorkerTask -SyncHash $sync -Arguments @{ Path = $path; MinimumSizeBytes = $minBytes } -WorkerScript {
-            $groups = @(Find-OptiKitDuplicateFiles -Path $WorkerArgs.Path -MinimumSizeBytes $WorkerArgs.MinimumSizeBytes)
-            $rows = New-Object 'System.Collections.Generic.List[object]'
-            $wasted = [int64]0
-            foreach ($group in $groups) {
-                $wasted += $group.Length * ($group.Files.Count - 1)
-                foreach ($file in @($group.Files)) {
-                    [void]$rows.Add([pscustomobject]@{
-                        Delete   = $false
-                        GroupId  = [string]$group.GroupId
-                        File     = [string]$file.Path
-                        SizeMB   = [math]::Round($file.Length / 1MB, 1)
-                        Modified = $file.LastWriteTime.ToString('yyyy-MM-dd HH:mm')
-                    })
-                }
-            }
-            $SyncHash.PendingDuplicateReport = [pscustomobject]@{
-                Rows        = $rows.ToArray()
-                Groups      = $groups.Count
-                WastedBytes = $wasted
-            }
-        }
-    }.GetNewClosure())
-    $ui.BtnCancelDuplicates.Add_Click({
-        $sync.CancelRequest = $true
-        $ui.TxtDuplicateStatus.Text = 'Cancelamento solicitado...'
-    }.GetNewClosure())
-    $ui.BtnDeleteDuplicates.Add_Click({
-        if ($sync.IsBusy) { return }
-        $rows = @($toolState.DuplicateRows)
-        if ($rows.Count -eq 0) {
-            $ui.TxtDuplicateStatus.Text = 'Nenhum resultado para excluir.'
-            return
-        }
-        $selected = @($rows | Where-Object { [bool]$_.Delete })
-        if ($selected.Count -eq 0) {
-            $ui.TxtDuplicateStatus.Text = 'Marque pelo menos um arquivo.'
-            return
-        }
-        try {
-            [void](Test-OptiKitDuplicateSelection -Rows $rows)
-        }
-        catch {
-            $ui.TxtDuplicateStatus.Text = $_.Exception.Message
-            return
-        }
-        $confirm = [System.Windows.MessageBox]::Show($window, ("Mover {0} arquivo(s) para a Lixeira?" -f $selected.Count), 'Mover duplicados', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
-        if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
-        $failed = 0
-        foreach ($row in $selected) {
-            try {
-                Remove-OptiKitDuplicateFile -Path ([string]$row.File)
-                $toolState.DuplicateRows = @($toolState.DuplicateRows | Where-Object { $_.File -ne $row.File })
-            }
-            catch {
-                $failed++
-                Write-OptimizerLog -Level WARN -Message ("Falha ao mover para a Lixeira: {0}" -f $row.File)
-            }
-        }
-        $ui.GridDuplicateFiles.ItemsSource = @($toolState.DuplicateRows)
-        $ui.TxtDuplicateStatus.Text = ("{0} arquivo(s) movido(s) para a Lixeira; {1} falha(s)." -f ($selected.Count - $failed), $failed)
     }.GetNewClosure())
 
     # Drivers
@@ -12629,10 +12273,6 @@ function Start-OptiKitMain {
         $ui.BtnResumeAllProcesses.IsEnabled = (-not $busy)
         $ui.BtnRefreshUninstall.IsEnabled = (-not $busy)
         $ui.BtnUninstallSelected.IsEnabled = (-not $busy)
-        $ui.BtnBrowseDuplicates.IsEnabled = (-not $busy)
-        $ui.BtnScanDuplicates.IsEnabled = (-not $busy)
-        $ui.BtnCancelDuplicates.IsEnabled = $busy
-        $ui.BtnDeleteDuplicates.IsEnabled = (-not $busy)
         $ui.BtnRefreshDrivers.IsEnabled = (-not $busy)
         $ui.BtnExportDrivers.IsEnabled = (-not $busy)
         $ui.BtnOpenDriverLink.IsEnabled = (-not $busy)
@@ -12687,14 +12327,6 @@ function Start-OptiKitMain {
             $sync.PendingInstalledPrograms = $null
             & $applyInstalledFilter
             $ui.TxtUninstallStatus.Text = ("{0} programa(s) instalado(s)." -f $toolState.InstalledPrograms.Count)
-        }
-
-        if ($null -ne $sync.PendingDuplicateReport) {
-            $report = $sync.PendingDuplicateReport
-            $sync.PendingDuplicateReport = $null
-            $toolState.DuplicateRows = @($report.Rows)
-            $ui.GridDuplicateFiles.ItemsSource = @($toolState.DuplicateRows)
-            $ui.TxtDuplicateStatus.Text = ("{0} grupo(s); {1:N1} MB desperdi$([char]0x00E7)ados." -f $report.Groups, ([double]$report.WastedBytes / 1MB))
         }
 
         if ($null -ne $sync.PendingDriverReport) {

@@ -1268,7 +1268,6 @@ function Initialize-OptiKitUi {
         'GameProfilesHost',
         'GridBackgroundProcesses', 'BtnRefreshProcesses', 'BtnSuspendProcess', 'BtnResumeProcess', 'BtnResumeAllProcesses', 'TxtProcessStatus',
         'GridInstalledPrograms', 'TxtUninstallSearch', 'BtnRefreshUninstall', 'BtnUninstallSelected', 'TxtUninstallStatus',
-        'TxtDuplicatePath', 'BtnBrowseDuplicates', 'CmbDuplicateMinSize', 'BtnScanDuplicates', 'BtnCancelDuplicates', 'BtnDeleteDuplicates', 'GridDuplicateFiles', 'TxtDuplicateStatus',
         'GridDrivers', 'TxtDriverSearch', 'BtnRefreshDrivers', 'BtnExportDrivers', 'BtnWindowsUpdate', 'BtnOpenDriverLink', 'TxtDriverStatus',
         'BtnCheckDriverUpdates', 'BtnOpenOptionalUpdates', 'GridDriverUpdates', 'TxtDriverUpdateStatus', 'BtnShowDriverInventory',
         'BtnRefreshDiagnostics', 'TxtDiagnosticsSummary', 'DiagnosticsHost', 'GridStorage', 'TxtStorageStatus', 'TxtStorageDetail', 'BtnRefreshStorage',

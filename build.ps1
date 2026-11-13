@@ -190,7 +190,6 @@ $moduleOrder = @(
     'src\windows\modules\diagnostics.ps1',
     'src\windows\modules\process-tools.ps1',
     'src\windows\modules\uninstall-engine.ps1',
-    'src\windows\modules\duplicate-engine.ps1',
     'src\windows\modules\driver-engine.ps1',
     'src\windows\ui\ui-builder.ps1',
     'src\windows\main.ps1'

@@ -41,12 +41,11 @@ A janela tem dez abas:
 3. **Jogos** — perfis por título, detecção de executável e ferramentas globais.
 4. **Segundo plano** — apps com janela; suspender e retomar processos selecionados.
 5. **Desinstalar** — programas Win32 e pacotes Appx instalados.
-6. **Duplicados** — localizador por tamanho, fingerprint e SHA-256 com envio para a Lixeira.
-7. **Drivers** — inventário, links oficiais e backup via `pnputil`.
-8. **Discos** — saúde, porcentagem, temperatura, desgaste e detalhes de cada HD/SSD.
-9. **Diagnóstico** — leitura de hardware, BIOS, estabilidade, Defender e recomendações para GPU híbrida/RAM/HAGS.
-10. **Inicialização** — programas de startup compatíveis com o Gerenciador de Tarefas.
-11. **Manutenção** — reset de rede/DNS, SFC/DISM, reparo do app de Configurações, limpeza, reboot para UEFI e atualização via Winget.
+6. **Drivers** — inventário, links oficiais e backup via `pnputil`.
+7. **Discos** — saúde, porcentagem, temperatura, desgaste e detalhes de cada HD/SSD.
+8. **Diagnóstico** — leitura de hardware, BIOS, estabilidade, Defender e recomendações para GPU híbrida/RAM/HAGS.
+9. **Inicialização** — programas de startup compatíveis com o Gerenciador de Tarefas.
+10. **Manutenção** — reset de rede/DNS, SFC/DISM, reparo do app de Configurações, limpeza, reboot para UEFI e atualização via Winget.
 
 Ações globais:
 
@@ -63,10 +62,6 @@ Selecione um app com janela e use **Suspender**. O processo fica congelado até 
 ### Desinstalar
 
 A aba lista programas Win32 e pacotes Appx instalados. Use a busca, selecione um item e confirme em **Desinstalar**. O comando oficial do programa é executado; o OptiKit não remove sobras manualmente.
-
-### Duplicados
-
-Escolha uma pasta de dados, o tamanho mínimo e clique em **Escanear**. Marque os arquivos que deseja remover e clique em **Mover para Lixeira**. É obrigatório manter pelo menos uma cópia de cada grupo; pastas de sistema são bloqueadas.
 
 ### Drivers
 

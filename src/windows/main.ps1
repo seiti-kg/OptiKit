@@ -209,7 +209,6 @@ function Start-OptiKitWorkerTask {
         'Invoke-GameOptimization', 'Test-GameOptimizationApplied',
         'Invoke-NetworkReset', 'Invoke-NativeStep', 'Invoke-CancelableProcess', 'Invoke-SystemIntegrityRepair', 'Repair-OptiKitSettingsApp', 'Clear-TemporaryFiles',
         'ConvertFrom-OptiKitRegistryEntry', 'ConvertFrom-OptiKitAppxPackage', 'Get-OptiKitInstalledPrograms', 'Get-OptiKitUninstallCommand', 'Uninstall-OptiKitProgram',
-        'Get-OptiKitFileFingerprint', 'Find-OptiKitDuplicateFiles',
         'Get-OptiKitDriverVendorLink', 'Get-OptiKitDriverInventory', 'Export-OptiKitDrivers',
         'ConvertTo-OptiKitDriverUpdateRow', 'Get-OptiKitDriverUpdates',
         'Restart-OptiKitToUefi',
@@ -433,7 +432,6 @@ function Start-OptiKitMain {
         PendingStorageReport = $null
         PendingStorageError = $null
         PendingInstalledPrograms = $null
-        PendingDuplicateReport = $null
         PendingDriverReport = $null
         PendingDriverUpdateReport = $null
         PendingDriverUpdateError = $null
@@ -805,7 +803,6 @@ function Start-OptiKitMain {
     # Desinstalar
     $toolState = [hashtable]::Synchronized(@{
         InstalledPrograms = @()
-        DuplicateRows     = @()
         Drivers           = @()
         Storage           = @()
     })
@@ -843,99 +840,6 @@ function Start-OptiKitMain {
             Uninstall-OptiKitProgram -Program $WorkerArgs.Program
             $SyncHash.PendingInstalledPrograms = @(Get-OptiKitInstalledPrograms)
         }
-    }.GetNewClosure())
-
-    # Duplicados
-    $ui.CmbDuplicateMinSize.Items.Clear()
-    foreach ($option in @(
-        @{ Text = '1 MB'; Value = [int64]1MB },
-        @{ Text = '10 MB'; Value = [int64]10MB },
-        @{ Text = '100 MB'; Value = [int64]100MB }
-    )) {
-        $item = New-Object System.Windows.Controls.ComboBoxItem
-        $item.Content = $option.Text
-        $item.Tag = $option.Value
-        [void]$ui.CmbDuplicateMinSize.Items.Add($item)
-    }
-    $ui.CmbDuplicateMinSize.SelectedIndex = 0
-    $ui.BtnBrowseDuplicates.Add_Click({
-        $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
-        $dialog.Description = 'Escolha uma pasta de dados para procurar duplicados.'
-        if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
-            $ui.TxtDuplicatePath.Text = $dialog.SelectedPath
-        }
-    }.GetNewClosure())
-    $ui.BtnScanDuplicates.Add_Click({
-        if ($sync.IsBusy) { return }
-        $path = [string]$ui.TxtDuplicatePath.Text
-        if ([string]::IsNullOrWhiteSpace($path)) {
-            $ui.TxtDuplicateStatus.Text = 'Escolha uma pasta primeiro.'
-            return
-        }
-        $minItem = $ui.CmbDuplicateMinSize.SelectedItem
-        $minBytes = if ($minItem) { [int64]$minItem.Tag } else { [int64]1MB }
-        $ui.TxtDuplicateStatus.Text = 'Escaneando...'
-        Start-OptiKitWorkerTask -SyncHash $sync -Arguments @{ Path = $path; MinimumSizeBytes = $minBytes } -WorkerScript {
-            $groups = @(Find-OptiKitDuplicateFiles -Path $WorkerArgs.Path -MinimumSizeBytes $WorkerArgs.MinimumSizeBytes)
-            $rows = New-Object 'System.Collections.Generic.List[object]'
-            $wasted = [int64]0
-            foreach ($group in $groups) {
-                $wasted += $group.Length * ($group.Files.Count - 1)
-                foreach ($file in @($group.Files)) {
-                    [void]$rows.Add([pscustomobject]@{
-                        Delete   = $false
-                        GroupId  = [string]$group.GroupId
-                        File     = [string]$file.Path
-                        SizeMB   = [math]::Round($file.Length / 1MB, 1)
-                        Modified = $file.LastWriteTime.ToString('yyyy-MM-dd HH:mm')
-                    })
-                }
-            }
-            $SyncHash.PendingDuplicateReport = [pscustomobject]@{
-                Rows        = $rows.ToArray()
-                Groups      = $groups.Count
-                WastedBytes = $wasted
-            }
-        }
-    }.GetNewClosure())
-    $ui.BtnCancelDuplicates.Add_Click({
-        $sync.CancelRequest = $true
-        $ui.TxtDuplicateStatus.Text = 'Cancelamento solicitado...'
-    }.GetNewClosure())
-    $ui.BtnDeleteDuplicates.Add_Click({
-        if ($sync.IsBusy) { return }
-        $rows = @($toolState.DuplicateRows)
-        if ($rows.Count -eq 0) {
-            $ui.TxtDuplicateStatus.Text = 'Nenhum resultado para excluir.'
-            return
-        }
-        $selected = @($rows | Where-Object { [bool]$_.Delete })
-        if ($selected.Count -eq 0) {
-            $ui.TxtDuplicateStatus.Text = 'Marque pelo menos um arquivo.'
-            return
-        }
-        try {
-            [void](Test-OptiKitDuplicateSelection -Rows $rows)
-        }
-        catch {
-            $ui.TxtDuplicateStatus.Text = $_.Exception.Message
-            return
-        }
-        $confirm = [System.Windows.MessageBox]::Show($window, ("Mover {0} arquivo(s) para a Lixeira?" -f $selected.Count), 'Mover duplicados', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
-        if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
-        $failed = 0
-        foreach ($row in $selected) {
-            try {
-                Remove-OptiKitDuplicateFile -Path ([string]$row.File)
-                $toolState.DuplicateRows = @($toolState.DuplicateRows | Where-Object { $_.File -ne $row.File })
-            }
-            catch {
-                $failed++
-                Write-OptimizerLog -Level WARN -Message ("Falha ao mover para a Lixeira: {0}" -f $row.File)
-            }
-        }
-        $ui.GridDuplicateFiles.ItemsSource = @($toolState.DuplicateRows)
-        $ui.TxtDuplicateStatus.Text = ("{0} arquivo(s) movido(s) para a Lixeira; {1} falha(s)." -f ($selected.Count - $failed), $failed)
     }.GetNewClosure())
 
     # Drivers
@@ -1236,10 +1140,6 @@ function Start-OptiKitMain {
         $ui.BtnResumeAllProcesses.IsEnabled = (-not $busy)
         $ui.BtnRefreshUninstall.IsEnabled = (-not $busy)
         $ui.BtnUninstallSelected.IsEnabled = (-not $busy)
-        $ui.BtnBrowseDuplicates.IsEnabled = (-not $busy)
-        $ui.BtnScanDuplicates.IsEnabled = (-not $busy)
-        $ui.BtnCancelDuplicates.IsEnabled = $busy
-        $ui.BtnDeleteDuplicates.IsEnabled = (-not $busy)
         $ui.BtnRefreshDrivers.IsEnabled = (-not $busy)
         $ui.BtnExportDrivers.IsEnabled = (-not $busy)
         $ui.BtnOpenDriverLink.IsEnabled = (-not $busy)
@@ -1294,14 +1194,6 @@ function Start-OptiKitMain {
             $sync.PendingInstalledPrograms = $null
             & $applyInstalledFilter
             $ui.TxtUninstallStatus.Text = ("{0} programa(s) instalado(s)." -f $toolState.InstalledPrograms.Count)
-        }
-
-        if ($null -ne $sync.PendingDuplicateReport) {
-            $report = $sync.PendingDuplicateReport
-            $sync.PendingDuplicateReport = $null
-            $toolState.DuplicateRows = @($report.Rows)
-            $ui.GridDuplicateFiles.ItemsSource = @($toolState.DuplicateRows)
-            $ui.TxtDuplicateStatus.Text = ("{0} grupo(s); {1:N1} MB desperdiçados." -f $report.Groups, ([double]$report.WastedBytes / 1MB))
         }
 
         if ($null -ne $sync.PendingDriverReport) {
