@@ -536,12 +536,152 @@ function Get-OptiKitDiagnosticBios {
     }
 }
 
+function Get-OptiKitNvmeHealth {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][int]$DeviceNumber
+    )
+
+    if (-not ('OptiKit.NvmeSmart' -as [type])) {
+        Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+
+namespace OptiKit {
+    public static class NvmeSmart {
+        private const uint FILE_SHARE_READ = 0x00000001;
+        private const uint FILE_SHARE_WRITE = 0x00000002;
+        private const uint OPEN_EXISTING = 3;
+        private const uint IOCTL_STORAGE_QUERY_PROPERTY = 0x002D1400;
+        private const int STORAGE_DEVICE_PROTOCOL_SPECIFIC_PROPERTY = 50;
+        private const int PROPERTY_STANDARD_QUERY = 0;
+        private const int PROTOCOL_TYPE_NVME = 3;
+        private const int NVME_DATA_TYPE_LOG_PAGE = 2;
+        private const int NVME_LOG_PAGE_HEALTH_INFO = 0x02;
+        private const int PROTOCOL_DATA_SIZE = 40;
+        private const int HEALTH_DATA_SIZE = 512;
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern IntPtr CreateFile(string fileName, uint desiredAccess, uint shareMode, IntPtr securityAttributes, uint creationDisposition, uint flagsAndAttributes, IntPtr templateFile);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool DeviceIoControl(IntPtr device, uint ioControlCode, IntPtr inBuffer, int inBufferSize, IntPtr outBuffer, int outBufferSize, out int bytesReturned, IntPtr overlapped);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool CloseHandle(IntPtr handle);
+
+        public static string LastError = "";
+
+        public class NvmeHealthInfo {
+            public byte CriticalWarning;
+            public int PercentageUsed;
+            public int HealthPercent;
+            public int AvailableSpare;
+            public int AvailableSpareThreshold;
+            public int TemperatureC;
+            public ulong PowerOnHours;
+            public ulong PowerCycles;
+            public ulong UnsafeShutdowns;
+            public ulong MediaErrors;
+            public ulong HostReadCommands;
+            public ulong HostWrittenCommands;
+            public ulong DataUnitsRead;
+            public ulong DataUnitsWritten;
+        }
+
+        public static NvmeHealthInfo Read(int deviceNumber) {
+            LastError = "";
+            IntPtr handle = CreateFile(@"\\.\PHYSICALDRIVE" + deviceNumber, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, IntPtr.Zero, OPEN_EXISTING, 0, IntPtr.Zero);
+            if (handle == new IntPtr(-1)) {
+                LastError = "CreateFile: " + Marshal.GetLastWin32Error();
+                return null;
+            }
+
+            IntPtr buffer = IntPtr.Zero;
+            try {
+                int queryOffset = 8;
+                int totalSize = queryOffset + PROTOCOL_DATA_SIZE + HEALTH_DATA_SIZE;
+                buffer = Marshal.AllocHGlobal(totalSize);
+                for (int i = 0; i < totalSize; i++) Marshal.WriteByte(buffer, i, 0);
+
+                Marshal.WriteInt32(buffer, 0, STORAGE_DEVICE_PROTOCOL_SPECIFIC_PROPERTY);
+                Marshal.WriteInt32(buffer, 4, PROPERTY_STANDARD_QUERY);
+                int p = queryOffset;
+                Marshal.WriteInt32(buffer, p + 0, PROTOCOL_TYPE_NVME);
+                Marshal.WriteInt32(buffer, p + 4, NVME_DATA_TYPE_LOG_PAGE);
+                Marshal.WriteInt32(buffer, p + 8, NVME_LOG_PAGE_HEALTH_INFO);
+                Marshal.WriteInt32(buffer, p + 12, 0);
+                Marshal.WriteInt32(buffer, p + 16, PROTOCOL_DATA_SIZE);
+                Marshal.WriteInt32(buffer, p + 20, HEALTH_DATA_SIZE);
+
+                int returned = 0;
+                bool ok = DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, buffer, totalSize, buffer, totalSize, out returned, IntPtr.Zero);
+                if (!ok) {
+                    LastError = "DeviceIoControl: " + Marshal.GetLastWin32Error() + " returned=" + returned;
+                    return null;
+                }
+
+                int descriptorSize = Marshal.ReadInt32(buffer, 4);
+                int dataOffset = Marshal.ReadInt32(buffer, queryOffset + 16);
+                int dataLength = Marshal.ReadInt32(buffer, queryOffset + 20);
+                if (descriptorSize < queryOffset + PROTOCOL_DATA_SIZE || dataLength < HEALTH_DATA_SIZE || dataOffset < PROTOCOL_DATA_SIZE) {
+                    LastError = "Invalid descriptor: size=" + descriptorSize + " offset=" + dataOffset + " length=" + dataLength;
+                    return null;
+                }
+
+                byte[] health = new byte[HEALTH_DATA_SIZE];
+                Marshal.Copy(new IntPtr(buffer.ToInt64() + queryOffset + dataOffset), health, 0, HEALTH_DATA_SIZE);
+                int percentage = health[5];
+                int kelvin = health[1] | (health[2] << 8);
+                return new NvmeHealthInfo {
+                    CriticalWarning = health[0],
+                    PercentageUsed = percentage,
+                    HealthPercent = Math.Max(0, 100 - percentage),
+                    AvailableSpare = health[3],
+                    AvailableSpareThreshold = health[4],
+                    TemperatureC = kelvin - 273,
+                    PowerOnHours = ReadUInt64(health, 128),
+                    PowerCycles = ReadUInt64(health, 112),
+                    UnsafeShutdowns = ReadUInt64(health, 144),
+                    MediaErrors = ReadUInt64(health, 160),
+                    HostReadCommands = ReadUInt64(health, 64),
+                    HostWrittenCommands = ReadUInt64(health, 80),
+                    DataUnitsRead = ReadUInt64(health, 32),
+                    DataUnitsWritten = ReadUInt64(health, 48)
+                };
+            }
+            finally {
+                if (buffer != IntPtr.Zero) Marshal.FreeHGlobal(buffer);
+                CloseHandle(handle);
+            }
+        }
+
+        private static ulong ReadUInt64(byte[] data, int offset) {
+            ulong value = 0;
+            for (int i = 0; i < 8; i++) value |= (ulong)data[offset + i] << (8 * i);
+            return value;
+        }
+    }
+}
+'@
+    }
+
+    try {
+        return [OptiKit.NvmeSmart]::Read($DeviceNumber)
+    }
+    catch {
+        Write-Verbose ("Falha ao ler NVMe SMART do disco {0}: {1}" -f $DeviceNumber, $_.Exception.Message)
+        return $null
+    }
+}
+
 function ConvertTo-OptiKitStorageHealthRow {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]$Disk,
         [object]$LogicalDisk,
-        [object]$Counter
+        [object]$Counter,
+        [object]$NvmeHealth
     )
 
     $name = [string]$Disk.FriendlyName
@@ -567,6 +707,14 @@ function ConvertTo-OptiKitStorageHealthRow {
     $readUncorrected = 0
     $writeUncorrected = 0
     $manufactureDate = ''
+    $nvmePercentage = $null
+    $nvmeHealthPercent = $null
+    $nvmeUnsafeShutdowns = $null
+    $nvmeMediaErrors = $null
+    $nvmeAvailableSpare = $null
+    $nvmeAvailableSpareThreshold = $null
+    $nvmeHostReads = $null
+    $nvmeHostWrites = $null
     if ($Counter) {
         try {
             if ($null -ne $Counter.Temperature -and [int]$Counter.Temperature -gt 0) { $temperature = [int]$Counter.Temperature }
@@ -603,6 +751,26 @@ function ConvertTo-OptiKitStorageHealthRow {
             if (-not [string]::IsNullOrWhiteSpace([string]$Counter.ManufactureDate)) { $manufactureDate = [string]$Counter.ManufactureDate }
         }
         catch { $manufactureDate = '' }
+    }
+
+    if ($NvmeHealth) {
+        try {
+            $nvmePercentage = [int]$NvmeHealth.PercentageUsed
+            $nvmeHealthPercent = [math]::Max(0, [math]::Min(100, 100 - $nvmePercentage))
+            $wear = [math]::Min(100, [math]::Max(0, $nvmePercentage))
+            if ([int]$NvmeHealth.TemperatureC -gt 0) { $temperature = [int]$NvmeHealth.TemperatureC }
+            $powerOnHours = [uint64]$NvmeHealth.PowerOnHours
+            $powerCycles = [uint64]$NvmeHealth.PowerCycles
+            $nvmeUnsafeShutdowns = [uint64]$NvmeHealth.UnsafeShutdowns
+            $nvmeMediaErrors = [uint64]$NvmeHealth.MediaErrors
+            $nvmeAvailableSpare = [int]$NvmeHealth.AvailableSpare
+            $nvmeAvailableSpareThreshold = [int]$NvmeHealth.AvailableSpareThreshold
+            $nvmeHostReads = [uint64]$NvmeHealth.HostReadCommands
+            $nvmeHostWrites = [uint64]$NvmeHealth.HostWrittenCommands
+        }
+        catch {
+            Write-Verbose ("Falha ao aplicar dados NVMe de {0}: {1}" -f $name, $_.Exception.Message)
+        }
     }
 
     $healthStatus = [string]$Disk.HealthStatus
@@ -645,6 +813,20 @@ function ConvertTo-OptiKitStorageHealthRow {
         if ($severity -ne 'Error') { $severity = 'Warn' }
         [void]$issues.Add(("erros não corrigidos: leitura {0}, gravação {1}" -f $readUncorrected, $writeUncorrected))
     }
+    if ($NvmeHealth) {
+        if ($null -ne $nvmeMediaErrors -and $nvmeMediaErrors -gt 0) {
+            if ($severity -ne 'Error') { $severity = 'Warn' }
+            [void]$issues.Add(("erros de mídia NVMe: {0}" -f $nvmeMediaErrors))
+        }
+        if ([int]$NvmeHealth.CriticalWarning -ne 0) {
+            $severity = 'Error'
+            [void]$issues.Add(("critical warning NVMe: 0x{0:X2}" -f [int]$NvmeHealth.CriticalWarning))
+        }
+        if ($null -ne $nvmeAvailableSpare -and $null -ne $nvmeAvailableSpareThreshold -and $nvmeAvailableSpare -lt $nvmeAvailableSpareThreshold) {
+            if ($severity -ne 'Error') { $severity = 'Warn' }
+            [void]$issues.Add(("spare NVMe {0}% abaixo do limiar {1}%" -f $nvmeAvailableSpare, $nvmeAvailableSpareThreshold))
+        }
+    }
 
     $healthText = switch ($severity) {
         'Error' { 'Crítico' }
@@ -655,7 +837,8 @@ function ConvertTo-OptiKitStorageHealthRow {
     $temperatureText = if ($null -ne $temperature) { ('{0} °C' -f $temperature) } else { '—' }
     $temperatureMaxText = if ($null -ne $temperatureMax) { ('{0} °C' -f $temperatureMax) } else { '—' }
     $wearText = if ($null -ne $wear) { ('{0}%' -f $wear) } else { '—' }
-    $healthPercentText = if ($null -ne $wear) { ('{0}%' -f (100 - $wear)) } else { '—' }
+    $healthPercent = if ($null -ne $nvmeHealthPercent) { $nvmeHealthPercent } elseif ($null -ne $wear) { 100 - $wear } else { $null }
+    $healthPercentText = if ($null -ne $healthPercent) { ('{0}%' -f $healthPercent) } else { '—' }
     $powerOnText = if ($null -ne $powerOnHours) { ('{0:N0} h' -f $powerOnHours) } else { '—' }
     $powerCyclesText = if ($null -ne $powerCycles) { ('{0:N0}' -f $powerCycles) } else { '—' }
     $sizeText = Format-OptiKitDiagnosticSize -Bytes ([double]$Disk.Size)
@@ -677,6 +860,10 @@ function ConvertTo-OptiKitStorageHealthRow {
     [void]$detailLines.Add(("Temperatura: {0} (máx. {1})" -f $temperatureText, $temperatureMaxText))
     [void]$detailLines.Add(("Desgaste: {0}" -f $wearText))
     [void]$detailLines.Add(("Horas ligado: {0} | Ciclos: {1}" -f $powerOnText, $powerCyclesText))
+    if ($NvmeHealth) {
+        [void]$detailLines.Add(("NVMe usado: {0}% | spare: {1}% (limiar {2}%) | unsafe shutdowns: {3} | erros de mídia: {4}" -f $nvmePercentage, $nvmeAvailableSpare, $nvmeAvailableSpareThreshold, $nvmeUnsafeShutdowns, $nvmeMediaErrors))
+        [void]$detailLines.Add(("NVMe host: leituras {0:N0} | gravações {1:N0}" -f $nvmeHostReads, $nvmeHostWrites))
+    }
     if (-not [string]::IsNullOrWhiteSpace($manufactureDate)) {
         [void]$detailLines.Add(("Fabricação: {0}" -f $manufactureDate))
     }
@@ -697,6 +884,11 @@ function ConvertTo-OptiKitStorageHealthRow {
         HealthText            = $healthText
         Severity              = $severity
         HealthPercentText     = $healthPercentText
+        NvmePercentageUsed    = $nvmePercentage
+        NvmeHealthPercent     = $nvmeHealthPercent
+        NvmeAvailableSpare    = $nvmeAvailableSpare
+        NvmeUnsafeShutdowns   = $nvmeUnsafeShutdowns
+        NvmeMediaErrors       = $nvmeMediaErrors
         TemperatureText       = $temperatureText
         TemperatureMaxText    = $temperatureMaxText
         WearText              = $wearText
@@ -716,7 +908,8 @@ function Get-OptiKitStorageHealth {
     param(
         [object[]]$PhysicalDisks,
         [object[]]$LogicalDisks,
-        [hashtable]$ReliabilityCounters
+        [hashtable]$ReliabilityCounters,
+        [hashtable]$NvmeHealth
     )
 
     if ($null -ne $PhysicalDisks) {
@@ -759,7 +952,17 @@ function Get-OptiKitStorageHealth {
             }
         }
 
-        [void]$rows.Add((ConvertTo-OptiKitStorageHealthRow -Disk $disk -LogicalDisk $logicalDisk -Counter $counter))
+        $nvme = $null
+        if ($disk.BusType -eq 'NVMe') {
+            if ($NvmeHealth -and $NvmeHealth.ContainsKey([string]$disk.DeviceId)) {
+                $nvme = $NvmeHealth[[string]$disk.DeviceId]
+            }
+            else {
+                $nvme = Get-OptiKitNvmeHealth -DeviceNumber ([int]$disk.DeviceId)
+            }
+        }
+
+        [void]$rows.Add((ConvertTo-OptiKitStorageHealthRow -Disk $disk -LogicalDisk $logicalDisk -Counter $counter -NvmeHealth $nvme))
     }
 
     return @($rows | Sort-Object -Property Name)

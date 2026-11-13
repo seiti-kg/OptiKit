@@ -188,6 +188,7 @@ function Start-OptiKitWorkerTask {
         'Get-OptiKitHardwareDiagnostics', 'New-OptiKitDiagnosticItem',
         'Get-OptiKitDiagnosticBios', 'Get-OptiKitDiagnosticDisk', 'Get-OptiKitDiagnosticStability',
         'ConvertTo-OptiKitStorageHealthRow', 'Get-OptiKitStorageHealth',
+        'Get-OptiKitNvmeHealth',
         'Test-OptiKitPendingReboot', 'Get-OptiKitDiagnosticPendingReboot', 'Get-OptiKitDiagnosticDefender',
         'Format-OptiKitDiagnosticSize',
         'Get-OptiKitDiagnosticRam', 'Get-OptiKitDisplayModes', 'Get-OptiKitDiagnosticMonitor',

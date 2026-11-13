@@ -69,6 +69,7 @@ A interface WPF é gerada dinamicamente a partir dos catálogos JSON e inclui:
 
 - Saúde e desgaste dos discos, espaço livre.
 - Tabela por disco com tipo, capacidade, porcentagem de saúde, temperatura, horas ligado, ciclos, erros não corrigidos e detalhes de firmware/serial.
+- Em NVMe, a porcentagem de saúde vem do SMART/Health Information Log nativo (`Percentage Used`).
 
 ## Perfis de jogos
 

@@ -126,6 +126,26 @@ Describe 'Diagnósticos estendidos (diagnostics.ps1)' {
         $critical = ConvertTo-OptiKitStorageHealthRow -Disk $criticalDisk -LogicalDisk $logical -Counter $counter
         $critical.HealthText | Should -Be 'Crítico'
         $critical.Severity | Should -Be 'Error'
+
+        $nvme = [pscustomobject]@{
+            PercentageUsed          = 3
+            HealthPercent           = 97
+            TemperatureC            = 41
+            PowerOnHours            = 8873
+            PowerCycles             = 1387
+            UnsafeShutdowns         = 425
+            MediaErrors             = 0
+            AvailableSpare          = 100
+            AvailableSpareThreshold = 10
+            HostReadCommands        = 1880179683
+            HostWrittenCommands     = 1255866976
+        }
+        $nvmeRow = ConvertTo-OptiKitStorageHealthRow -Disk $disk -LogicalDisk $logical -Counter $counter -NvmeHealth $nvme
+        $nvmeRow.HealthPercentText | Should -Be '97%'
+        $nvmeRow.WearText | Should -Be '3%'
+        $nvmeRow.TemperatureText | Should -Be '41 °C'
+        $nvmeRow.Detail | Should -Match 'NVMe usado: 3%'
+        $nvmeRow.NvmeUnsafeShutdowns | Should -Be 425
     }
 
     It 'Deve enumerar discos mesmo quando os contadores não estão disponíveis' {
@@ -143,12 +163,12 @@ Describe 'Diagnósticos estendidos (diagnostics.ps1)' {
         $logical = @([pscustomobject]@{ Number = 2; IsBoot = $true; IsSystem = $true })
         $counter = [pscustomobject]@{ Temperature = 39; TemperatureMax = 70; Wear = 5; PowerOnHours = 10; StartStopCycleCount = 2 }
 
-        $rows = @(Get-OptiKitStorageHealth -PhysicalDisks @($disk) -LogicalDisks $logical -ReliabilityCounters @{ '2' = $counter })
+        $rows = @(Get-OptiKitStorageHealth -PhysicalDisks @($disk) -LogicalDisks $logical -ReliabilityCounters @{ '2' = $counter } -NvmeHealth @{ '2' = $null })
         $rows.Count | Should -Be 1
         $rows[0].Name | Should -Be 'SSD Teste'
         $rows[0].TemperatureText | Should -Be '39 °C'
 
-        $withoutCounters = @(Get-OptiKitStorageHealth -PhysicalDisks @($disk) -LogicalDisks $logical -ReliabilityCounters @{ '2' = $null })
+        $withoutCounters = @(Get-OptiKitStorageHealth -PhysicalDisks @($disk) -LogicalDisks $logical -ReliabilityCounters @{ '2' = $null } -NvmeHealth @{ '2' = $null })
         $withoutCounters.Count | Should -Be 1
         $withoutCounters[0].TemperatureText | Should -Be '—'
     }

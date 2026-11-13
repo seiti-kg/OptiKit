@@ -74,7 +74,7 @@ A aba **Drivers** lista dispositivos relevantes com versão, data, fabricante e 
 
 ### Discos
 
-A aba **Discos** mostra uma tabela com os discos físicos: modelo, tipo, capacidade, saúde, **Saúde %** (`100% - desgaste`), temperatura, desgaste, horas ligado e ciclos. Selecione um disco para ver firmware, serial, barramento, erros não corrigidos e localização. Os dados vêm de `Get-PhysicalDisk` e dos contadores de confiabilidade do Windows; quando o driver não expõe um contador, o campo aparece como `—`. Use **Atualizar** para consultar novamente. A verificação é somente leitura e não altera drivers.
+A aba **Discos** mostra uma tabela com os discos físicos: modelo, tipo, capacidade, saúde, **Saúde %** (`100% - desgaste`), temperatura, desgaste, horas ligado e ciclos. Selecione um disco para ver firmware, serial, barramento, erros não corrigidos e localização. Os dados vêm de `Get-PhysicalDisk` e dos contadores de confiabilidade do Windows; em NVMe, a porcentagem é lida do SMART/Health Information Log nativo (`Percentage Used`), que é mais confiável que o `Wear` do WMI. Quando o driver não expõe um contador, o campo aparece como `—`. Use **Atualizar** para consultar novamente. A verificação é somente leitura e não altera drivers.
 
 ### Reparar as Configurações do Windows
 
