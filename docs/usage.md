@@ -71,6 +71,15 @@ A aba **Drivers** lista dispositivos relevantes com versão, data, fabricante e 
 
 A aba **Discos** mostra uma tabela com os discos físicos: modelo, tipo, capacidade, saúde, **Saúde %** (`100% - desgaste`), temperatura, desgaste, horas ligado e ciclos. Selecione um disco para ver firmware, serial, barramento, erros não corrigidos e localização. Os dados vêm de `Get-PhysicalDisk` e dos contadores de confiabilidade do Windows; em NVMe, a porcentagem é lida do SMART/Health Information Log nativo (`Percentage Used`), que é mais confiável que o `Wear` do WMI. Quando o driver não expõe um contador, o campo aparece como `—`. Use **Atualizar** para consultar novamente. A verificação é somente leitura e não altera drivers.
 
+### Reparos
+
+Em **Manutenção > Reparo do sistema**:
+
+- **Windows Update > Redefinir** para os serviços `wuauserv`, `bits` e `cryptsvc`, renomeia `SoftwareDistribution` e `catroot2` para backup com timestamp e reinicia os serviços. Use quando downloads ou instalações do Windows Update falharem.
+- **Winget > Reparar** reutiliza o bootstrap oficial do Microsoft App Installer; requer internet.
+
+As duas ações pedem confirmação, respeitam `-DryRun` e não alteram drivers nem ajustes de jogo.
+
 ### Reparar as Configurações do Windows
 
 Se `Win+I` não abrir o app de Configurações, use **Manutenção > Configurações do Windows > Reparar**. A ação re-registra `Microsoft.UI.Xaml.CBS` e `windows.immersivecontrolpanel` para o usuário atual. Se o manifesto do app não existir, execute primeiro o reparo SFC/DISM.

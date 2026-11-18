@@ -1100,6 +1100,26 @@
                             <Border Style="{StaticResource Divider}" />
                             <DockPanel Style="{StaticResource Action.Row}">
                                 <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
+                                    <Button x:Name="BtnResetWindowsUpdate" Content="Redefinir" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Action.Text}">
+                                    <TextBlock Text="Windows Update" />
+                                    <TextBlock Text="Para e reinicia serviços e renomeia SoftwareDistribution/catroot2 para backup. Use quando downloads ou instalações falharem." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+                            <Border Style="{StaticResource Divider}" />
+                            <DockPanel Style="{StaticResource Action.Row}">
+                                <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
+                                    <Button x:Name="BtnRepairWinget" Content="Reparar" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Action.Text}">
+                                    <TextBlock Text="Winget" />
+                                    <TextBlock Text="Reinstala/repara o Microsoft App Installer usando o bootstrap oficial. Requer internet." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+                            <Border Style="{StaticResource Divider}" />
+                            <DockPanel Style="{StaticResource Action.Row}">
+                                <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
                                     <Button x:Name="BtnResetNetwork" Content="Redefinir" />
                                 </StackPanel>
                                 <StackPanel Style="{StaticResource Action.Text}">

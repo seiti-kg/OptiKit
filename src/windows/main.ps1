@@ -207,7 +207,7 @@ function Start-OptiKitWorkerTask {
         'Find-GameExecutable', 'Set-AppCompatFlags', 'Set-DirectXGpuPreference',
         'Optimize-NetworkAdapterGaming', 'Disable-RiotClientStartup', 'Clear-ShaderCache',
         'Invoke-GameOptimization', 'Test-GameOptimizationApplied',
-        'Invoke-NetworkReset', 'Invoke-NativeStep', 'Invoke-CancelableProcess', 'Invoke-SystemIntegrityRepair', 'Repair-OptiKitSettingsApp', 'Clear-TemporaryFiles',
+        'Invoke-NetworkReset', 'Invoke-NativeStep', 'Invoke-CancelableProcess', 'Invoke-SystemIntegrityRepair', 'Repair-OptiKitSettingsApp', 'Reset-OptiKitWindowsUpdate', 'Repair-OptiKitWinget', 'Clear-TemporaryFiles',
         'ConvertFrom-OptiKitRegistryEntry', 'ConvertFrom-OptiKitAppxPackage', 'Get-OptiKitInstalledPrograms', 'Get-OptiKitUninstallCommand', 'Uninstall-OptiKitProgram',
         'Get-OptiKitDriverVendorLink', 'Get-OptiKitDriverInventory', 'Export-OptiKitDrivers',
         'ConvertTo-OptiKitDriverUpdateRow', 'Get-OptiKitDriverUpdates',
@@ -622,6 +622,26 @@ function Start-OptiKitMain {
 
         Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
             Repair-OptiKitSettingsApp
+        }
+    }.GetNewClosure())
+
+    $ui.BtnResetWindowsUpdate.Add_Click({
+        if ($sync.IsBusy) { return }
+        $confirm = [System.Windows.MessageBox]::Show($window, "Redefinir os componentes do Windows Update?`r`n`r`nOs serviços serão parados e reiniciados, e SoftwareDistribution/catroot2 serão renomeados para backup. Pode ser necessário reiniciar.", 'Redefinir Windows Update', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
+
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
+            Reset-OptiKitWindowsUpdate
+        }
+    }.GetNewClosure())
+
+    $ui.BtnRepairWinget.Add_Click({
+        if ($sync.IsBusy) { return }
+        $confirm = [System.Windows.MessageBox]::Show($window, 'Reinstalar/reparar o Microsoft App Installer? Requer internet e pode demorar.', 'Reparar Winget', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+        if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
+
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
+            Repair-OptiKitWinget
         }
     }.GetNewClosure())
 
@@ -1123,6 +1143,8 @@ function Start-OptiKitMain {
         $ui.BtnResetNetwork.IsEnabled = (-not $busy)
         $ui.BtnRunSfcDism.IsEnabled = (-not $busy)
         $ui.BtnRepairSettings.IsEnabled = (-not $busy)
+        $ui.BtnResetWindowsUpdate.IsEnabled = (-not $busy)
+        $ui.BtnRepairWinget.IsEnabled = (-not $busy)
         $ui.BtnRebootUefi.IsEnabled = (-not $busy)
         $ui.BtnClearTemp.IsEnabled = (-not $busy)
         $ui.BtnRefreshDiagnostics.IsEnabled = (-not $busy)

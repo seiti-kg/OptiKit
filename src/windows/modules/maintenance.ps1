@@ -44,6 +44,67 @@ function Invoke-NetworkReset {
     } | Out-Null
 }
 
+function Reset-OptiKitWindowsUpdate {
+    [CmdletBinding()]
+    param()
+
+    Invoke-Mutation -Description 'Redefinir componentes do Windows Update' -Action {
+        $serviceNames = @('wuauserv', 'bits', 'cryptsvc')
+        $stoppedServices = New-Object 'System.Collections.Generic.List[string]'
+        try {
+            foreach ($name in $serviceNames) {
+                $service = Get-Service -Name $name -ErrorAction SilentlyContinue
+                if (-not $service) {
+                    Write-OptimizerLog -Level WARN -Message ("Serviço {0} não encontrado; ignorando." -f $name)
+                    continue
+                }
+                Stop-Service -Name $name -Force -ErrorAction Stop
+                [void]$stoppedServices.Add($name)
+                Write-OptimizerLog -Level INFO -Message ("Serviço {0} parado." -f $name)
+            }
+
+            $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+            foreach ($path in @(
+                (Join-Path $env:SystemRoot 'SoftwareDistribution'),
+                (Join-Path $env:SystemRoot 'System32\catroot2')
+            )) {
+                if (-not (Test-Path -LiteralPath $path)) { continue }
+                $backupName = ('{0}.bak-{1}' -f (Split-Path -Leaf $path), $stamp)
+                if (Test-Path -LiteralPath (Join-Path (Split-Path -Parent $path) $backupName)) {
+                    $backupName = ('{0}-{1}' -f $backupName, [Guid]::NewGuid().ToString('N'))
+                }
+                Rename-Item -LiteralPath $path -NewName $backupName -ErrorAction Stop
+                Write-OptimizerLog -Level INFO -Message ("{0} renomeado para {1}." -f $path, $backupName)
+            }
+
+            Write-OptimizerLog -Level OK -Message 'Windows Update redefinido; reinicie se o Windows Update continuar com erro.'
+        }
+        finally {
+            foreach ($name in $stoppedServices) {
+                try {
+                    Start-Service -Name $name -ErrorAction Stop
+                    Write-OptimizerLog -Level INFO -Message ("Serviço {0} reiniciado." -f $name)
+                }
+                catch {
+                    Write-OptimizerLog -Level WARN -Message ("Falha ao reiniciar o serviço {0}: {1}" -f $name, $_.Exception.Message)
+                }
+            }
+        }
+    } | Out-Null
+}
+
+function Repair-OptiKitWinget {
+    [CmdletBinding()]
+    param()
+
+    Invoke-Mutation -Description 'Reparar Winget (Microsoft App Installer)' -Action {
+        if (-not (Install-WingetBootstrap)) {
+            throw 'Não foi possível reparar o Winget.'
+        }
+        Write-OptimizerLog -Level OK -Message 'Winget reparado com sucesso.'
+    } | Out-Null
+}
+
 function Invoke-CancelableProcess {
     [CmdletBinding()]
     param(

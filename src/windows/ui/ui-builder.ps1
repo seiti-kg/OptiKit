@@ -1271,7 +1271,7 @@ function Initialize-OptiKitUi {
         'GridDrivers', 'TxtDriverSearch', 'BtnRefreshDrivers', 'BtnExportDrivers', 'BtnWindowsUpdate', 'BtnOpenDriverLink', 'TxtDriverStatus',
         'BtnCheckDriverUpdates', 'BtnOpenOptionalUpdates', 'GridDriverUpdates', 'TxtDriverUpdateStatus', 'BtnShowDriverInventory',
         'BtnRefreshDiagnostics', 'TxtDiagnosticsSummary', 'DiagnosticsHost', 'GridStorage', 'TxtStorageStatus', 'TxtStorageDetail', 'BtnRefreshStorage',
-        'BtnResetNetwork', 'BtnRunSfcDism', 'BtnRepairSettings', 'BtnCancelMaintenance', 'BtnRebootUefi', 'BtnClearTemp', 'BtnOpenBackupsDir',
+        'BtnResetNetwork', 'BtnRunSfcDism', 'BtnRepairSettings', 'BtnResetWindowsUpdate', 'BtnRepairWinget', 'BtnCancelMaintenance', 'BtnRebootUefi', 'BtnClearTemp', 'BtnOpenBackupsDir',
         'BtnExportProfile', 'BtnImportProfile', 'BtnExportReport',
         'CmbDohProvider', 'BtnApplyDoh', 'BtnUndoDoh', 'BtnWingetUpgrade', 'BtnAdvancedCleanup',
         'GridStartupItems', 'BtnEnableStartup', 'BtnDisableStartup', 'BtnRefreshStartup',

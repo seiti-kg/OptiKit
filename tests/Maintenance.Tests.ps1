@@ -139,4 +139,27 @@ Describe 'Manutenção (maintenance.ps1)' {
         { Repair-OptiKitSettingsApp } | Should -Throw '*Manifesto*'
         Should -Invoke Add-AppxPackage -Times 0 -Exactly
     }
+
+    It 'Reset-OptiKitWindowsUpdate deve parar servicos e renomear os caches' {
+        Mock Get-Service { param($Name) [pscustomobject]@{ Name = $Name } }
+        Mock Stop-Service {}
+        Mock Start-Service {}
+        Mock Test-Path { $true }
+        Mock Rename-Item {}
+
+        Reset-OptiKitWindowsUpdate
+
+        Should -Invoke Stop-Service -Times 3 -Exactly
+        Should -Invoke Start-Service -Times 3 -Exactly
+        Should -Invoke Rename-Item -Times 2 -Exactly -ParameterFilter { $NewName -like '*.bak-*' }
+    }
+
+    It 'Repair-OptiKitWinget deve reparar e falhar quando o bootstrap falha' {
+        Mock Install-WingetBootstrap { $true }
+        Repair-OptiKitWinget
+        Should -Invoke Install-WingetBootstrap -Times 1 -Exactly
+
+        Mock Install-WingetBootstrap { $false }
+        { Repair-OptiKitWinget } | Should -Throw '*Não foi possível reparar o Winget*'
+    }
 }

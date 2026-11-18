@@ -3696,6 +3696,26 @@ $script:EmbeddedThemeXaml = @'
                             <Border Style="{StaticResource Divider}" />
                             <DockPanel Style="{StaticResource Action.Row}">
                                 <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
+                                    <Button x:Name="BtnResetWindowsUpdate" Content="Redefinir" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Action.Text}">
+                                    <TextBlock Text="Windows Update" />
+                                    <TextBlock Text="Para e reinicia servi&#x00E7;os e renomeia SoftwareDistribution/catroot2 para backup. Use quando downloads ou instala&#x00E7;&#x00F5;es falharem." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+                            <Border Style="{StaticResource Divider}" />
+                            <DockPanel Style="{StaticResource Action.Row}">
+                                <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
+                                    <Button x:Name="BtnRepairWinget" Content="Reparar" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Action.Text}">
+                                    <TextBlock Text="Winget" />
+                                    <TextBlock Text="Reinstala/repara o Microsoft App Installer usando o bootstrap oficial. Requer internet." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+                            <Border Style="{StaticResource Divider}" />
+                            <DockPanel Style="{StaticResource Action.Row}">
+                                <StackPanel DockPanel.Dock="Right" Style="{StaticResource Action.Buttons}">
                                     <Button x:Name="BtnResetNetwork" Content="Redefinir" />
                                 </StackPanel>
                                 <StackPanel Style="{StaticResource Action.Text}">
@@ -6617,6 +6637,67 @@ function Invoke-NetworkReset {
         Invoke-NativeStep -FilePath 'netsh.exe' -ArgumentList @('int', 'ip', 'reset') -StepName 'Reset do TCP/IP'
 
         Write-OptimizerLog -Level OK -Message 'Pilha de rede e DNS redefinidos com sucesso. Reinicie o computador para concluir.'
+    } | Out-Null
+}
+
+function Reset-OptiKitWindowsUpdate {
+    [CmdletBinding()]
+    param()
+
+    Invoke-Mutation -Description 'Redefinir componentes do Windows Update' -Action {
+        $serviceNames = @('wuauserv', 'bits', 'cryptsvc')
+        $stoppedServices = New-Object 'System.Collections.Generic.List[string]'
+        try {
+            foreach ($name in $serviceNames) {
+                $service = Get-Service -Name $name -ErrorAction SilentlyContinue
+                if (-not $service) {
+                    Write-OptimizerLog -Level WARN -Message ("Servi$([char]0x00E7)o {0} n$([char]0x00E3)o encontrado; ignorando." -f $name)
+                    continue
+                }
+                Stop-Service -Name $name -Force -ErrorAction Stop
+                [void]$stoppedServices.Add($name)
+                Write-OptimizerLog -Level INFO -Message ("Servi$([char]0x00E7)o {0} parado." -f $name)
+            }
+
+            $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+            foreach ($path in @(
+                (Join-Path $env:SystemRoot 'SoftwareDistribution'),
+                (Join-Path $env:SystemRoot 'System32\catroot2')
+            )) {
+                if (-not (Test-Path -LiteralPath $path)) { continue }
+                $backupName = ('{0}.bak-{1}' -f (Split-Path -Leaf $path), $stamp)
+                if (Test-Path -LiteralPath (Join-Path (Split-Path -Parent $path) $backupName)) {
+                    $backupName = ('{0}-{1}' -f $backupName, [Guid]::NewGuid().ToString('N'))
+                }
+                Rename-Item -LiteralPath $path -NewName $backupName -ErrorAction Stop
+                Write-OptimizerLog -Level INFO -Message ("{0} renomeado para {1}." -f $path, $backupName)
+            }
+
+            Write-OptimizerLog -Level OK -Message 'Windows Update redefinido; reinicie se o Windows Update continuar com erro.'
+        }
+        finally {
+            foreach ($name in $stoppedServices) {
+                try {
+                    Start-Service -Name $name -ErrorAction Stop
+                    Write-OptimizerLog -Level INFO -Message ("Servi$([char]0x00E7)o {0} reiniciado." -f $name)
+                }
+                catch {
+                    Write-OptimizerLog -Level WARN -Message ("Falha ao reiniciar o servi$([char]0x00E7)o {0}: {1}" -f $name, $_.Exception.Message)
+                }
+            }
+        }
+    } | Out-Null
+}
+
+function Repair-OptiKitWinget {
+    [CmdletBinding()]
+    param()
+
+    Invoke-Mutation -Description 'Reparar Winget (Microsoft App Installer)' -Action {
+        if (-not (Install-WingetBootstrap)) {
+            throw "N$([char]0x00E3)o foi poss$([char]0x00ED)vel reparar o Winget."
+        }
+        Write-OptimizerLog -Level OK -Message 'Winget reparado com sucesso.'
     } | Out-Null
 }
 
@@ -10771,7 +10852,7 @@ function Initialize-OptiKitUi {
         'GridDrivers', 'TxtDriverSearch', 'BtnRefreshDrivers', 'BtnExportDrivers', 'BtnWindowsUpdate', 'BtnOpenDriverLink', 'TxtDriverStatus',
         'BtnCheckDriverUpdates', 'BtnOpenOptionalUpdates', 'GridDriverUpdates', 'TxtDriverUpdateStatus', 'BtnShowDriverInventory',
         'BtnRefreshDiagnostics', 'TxtDiagnosticsSummary', 'DiagnosticsHost', 'GridStorage', 'TxtStorageStatus', 'TxtStorageDetail', 'BtnRefreshStorage',
-        'BtnResetNetwork', 'BtnRunSfcDism', 'BtnRepairSettings', 'BtnCancelMaintenance', 'BtnRebootUefi', 'BtnClearTemp', 'BtnOpenBackupsDir',
+        'BtnResetNetwork', 'BtnRunSfcDism', 'BtnRepairSettings', 'BtnResetWindowsUpdate', 'BtnRepairWinget', 'BtnCancelMaintenance', 'BtnRebootUefi', 'BtnClearTemp', 'BtnOpenBackupsDir',
         'BtnExportProfile', 'BtnImportProfile', 'BtnExportReport',
         'CmbDohProvider', 'BtnApplyDoh', 'BtnUndoDoh', 'BtnWingetUpgrade', 'BtnAdvancedCleanup',
         'GridStartupItems', 'BtnEnableStartup', 'BtnDisableStartup', 'BtnRefreshStartup',
@@ -11340,7 +11421,7 @@ function Start-OptiKitWorkerTask {
         'Find-GameExecutable', 'Set-AppCompatFlags', 'Set-DirectXGpuPreference',
         'Optimize-NetworkAdapterGaming', 'Disable-RiotClientStartup', 'Clear-ShaderCache',
         'Invoke-GameOptimization', 'Test-GameOptimizationApplied',
-        'Invoke-NetworkReset', 'Invoke-NativeStep', 'Invoke-CancelableProcess', 'Invoke-SystemIntegrityRepair', 'Repair-OptiKitSettingsApp', 'Clear-TemporaryFiles',
+        'Invoke-NetworkReset', 'Invoke-NativeStep', 'Invoke-CancelableProcess', 'Invoke-SystemIntegrityRepair', 'Repair-OptiKitSettingsApp', 'Reset-OptiKitWindowsUpdate', 'Repair-OptiKitWinget', 'Clear-TemporaryFiles',
         'ConvertFrom-OptiKitRegistryEntry', 'ConvertFrom-OptiKitAppxPackage', 'Get-OptiKitInstalledPrograms', 'Get-OptiKitUninstallCommand', 'Uninstall-OptiKitProgram',
         'Get-OptiKitDriverVendorLink', 'Get-OptiKitDriverInventory', 'Export-OptiKitDrivers',
         'ConvertTo-OptiKitDriverUpdateRow', 'Get-OptiKitDriverUpdates',
@@ -11755,6 +11836,26 @@ function Start-OptiKitMain {
 
         Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
             Repair-OptiKitSettingsApp
+        }
+    }.GetNewClosure())
+
+    $ui.BtnResetWindowsUpdate.Add_Click({
+        if ($sync.IsBusy) { return }
+        $confirm = [System.Windows.MessageBox]::Show($window, "Redefinir os componentes do Windows Update?`r`n`r`nOs servi$([char]0x00E7)os ser$([char]0x00E3)o parados e reiniciados, e SoftwareDistribution/catroot2 ser$([char]0x00E3)o renomeados para backup. Pode ser necess$([char]0x00E1)rio reiniciar.", 'Redefinir Windows Update', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
+
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
+            Reset-OptiKitWindowsUpdate
+        }
+    }.GetNewClosure())
+
+    $ui.BtnRepairWinget.Add_Click({
+        if ($sync.IsBusy) { return }
+        $confirm = [System.Windows.MessageBox]::Show($window, 'Reinstalar/reparar o Microsoft App Installer? Requer internet e pode demorar.', 'Reparar Winget', [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+        if ($confirm -ne [System.Windows.MessageBoxResult]::Yes) { return }
+
+        Start-OptiKitWorkerTask -SyncHash $sync -WorkerScript {
+            Repair-OptiKitWinget
         }
     }.GetNewClosure())
 
@@ -12256,6 +12357,8 @@ function Start-OptiKitMain {
         $ui.BtnResetNetwork.IsEnabled = (-not $busy)
         $ui.BtnRunSfcDism.IsEnabled = (-not $busy)
         $ui.BtnRepairSettings.IsEnabled = (-not $busy)
+        $ui.BtnResetWindowsUpdate.IsEnabled = (-not $busy)
+        $ui.BtnRepairWinget.IsEnabled = (-not $busy)
         $ui.BtnRebootUefi.IsEnabled = (-not $busy)
         $ui.BtnClearTemp.IsEnabled = (-not $busy)
         $ui.BtnRefreshDiagnostics.IsEnabled = (-not $busy)

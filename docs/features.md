@@ -113,6 +113,8 @@ A interface WPF é gerada dinamicamente a partir dos catálogos JSON e inclui:
 ## Manutenção e inicialização
 
 - Reset de rede/DNS.
+- Reset do Windows Update: para serviços e renomeia `SoftwareDistribution`/`catroot2` para backup antes de reiniciar.
+- Reparo do Winget/Microsoft App Installer pelo bootstrap oficial.
 - `DISM /RestoreHealth` + `SFC /scannow` em segundo plano, com cancelamento.
 - Reparo do app de Configurações do Windows (`windows.immersivecontrolpanel`) e da dependência `Microsoft.UI.Xaml.CBS`.
 - Limpeza de arquivos temporários.
